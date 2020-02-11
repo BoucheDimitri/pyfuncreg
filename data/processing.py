@@ -48,6 +48,48 @@ def process_dti_dataset(cca, rcst, n_train=70, normalize01=True, interpout=True,
     return (Xtrain_locs, Xtrain_evals), (Ytrain_locs, Ytrain_evals), (Xtest_locs, Xtest_evals), (Ytest_locs, Ytest_evals)
 
 
+def process_dti_bis(cca, rcst, n_train=80, normalize01=True, interpout=True,
+                    pad_train=True, pad_mode="symmetric", pad_width=((0, 0), (55, 55))):
+    dimx, dimy = cca.shape[1], rcst.shape[1]
+    n = cca.shape[0]
+    if normalize01:
+        norma_in, norma_out = dimx, dimy
+    else:
+        norma_in, norma_out = 1, 1
+    cca_train, cca_test = cca[:n_train, :], cca[n_train:, :]
+    rcst_train, rcst_test = rcst[:n_train, :], rcst[n_train:, :]
+    if pad_train:
+        rcst_train = np.pad(rcst_train, pad_width=pad_width, mode=pad_mode)
+    full_input_locs = (1 / norma_in) * np.arange(dimx)
+    full_output_locs = (1 / norma_out) * np.arange(dimy)
+    if pad_train:
+        full_output_locs_pad = (1 / norma_out) * np.arange(- pad_width[1][0], dimy + pad_width[1][1])
+    else:
+        full_output_locs_pad = full_output_locs
+    Xtrain_locs, Xtrain_evals, Ytrain_locs, Ytrain_evals = [], [], [], []
+    Xtest_locs, Xtest_evals, Ytest_locs, Ytest_evals = [], [], [], []
+    for i in range(n_train):
+        if interpout:
+            ylocs = (1 / norma_out) * (np.argwhere(~ np.isnan(rcst_train[i])).squeeze() - pad_width[1][0])
+            Ytrain_locs.append(full_output_locs_pad)
+            Ytrain_evals.append(np.interp(full_output_locs_pad, ylocs, rcst_train[i][~ np.isnan(rcst_train[i])]))
+        else:
+            Ytrain_evals.append(rcst_train[i][~ np.isnan(rcst_train[i])])
+            Ytrain_locs.append((1 / norma_out) * (np.argwhere(~ np.isnan(rcst_train[i])).squeeze() - pad_width[1][0]))
+        xlocs = (1 / norma_in) * np.argwhere(~ np.isnan(cca_train[i])).squeeze()
+        Xtrain_locs.append(full_input_locs)
+        Xtrain_evals.append(np.interp(full_input_locs, xlocs, cca_train[i][~ np.isnan(cca_train[i])]))
+    for i in range(n - n_train):
+        xlocs = (1 / norma_in) * np.argwhere(~ np.isnan(cca_test[i])).squeeze()
+        Xtest_locs.append(full_input_locs)
+        Xtest_evals.append(np.interp(full_input_locs, xlocs, cca_test[i][~ np.isnan(cca_test[i])]))
+        Ytest_evals.append(rcst_test[i][~ np.isnan(rcst_test[i])])
+        Ytest_locs.append((1 / norma_out) * np.argwhere(~ np.isnan(rcst_test[i])).squeeze())
+    return (Xtrain_locs, Xtrain_evals), (Ytrain_locs, Ytrain_evals), (Xtest_locs, Xtest_evals), (Ytest_locs, Ytest_evals)
+
+
+
+
 def process_speech_dataset(X, Y, duration="max", pad_mode="symmetric",
                            shuffle_seed=784, n_train=300, normalize01_output=True):
     n = len(X)

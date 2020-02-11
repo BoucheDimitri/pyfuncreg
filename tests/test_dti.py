@@ -3,6 +3,7 @@ import os
 
 from expes.expes_tools import generate_expes
 from data import loading, processing
+from misc import model_eval
 
 SHUFFLE_SEED = 784
 N_TRAIN = 70
@@ -63,12 +64,18 @@ Xtrain, Ytrain, Xtest, Ytest = processing.process_dti_dataset(cca, rcst, n_train
                                                               interpout=False, pad_train_input=False,
                                                               pad_train_output=True, pad_width_output=pad_width,
                                                               pad_mode_output="symmetric")
+Xtrain, Ytrain, Xtest, Ytest = processing.process_dti_bis(cca, rcst, n_train=N_TRAIN, normalize01=True,
+                                                          interpout=False, pad_train=True, pad_width=pad_width,
+                                                          pad_mode="symmetric")
 Xtrain = np.array(Xtrain[1]).squeeze()
 Xtest = np.array(Xtest[1]).squeeze()
-
-dict_test = {"regu": 1e-3, "ker_sigma": 0.9, "pywt_name": "db", "init_dilat": 1, "dilat": 2, "translat": 1,
+# TODO : understand why there is a difference between the two processing (and take the one that works if we do not find)
+dict_test = {"regu": 0.009236708571873866, "ker_sigma": 0.9, "pywt_name": "db", "init_dilat": 1, "dilat": 2, "translat": 1,
              "moments": 2, "n_dilat": 5, "center_outputs": True,
-             "penalize_freqs": 1, "add_constant": True}
+             "penalize_freqs": 1.2, "add_constant": True}
 reg = generate_expes.create_kpl_dti(dict_test, domain_out, domain_out_pad, pad_width)
 reg.fit(Xtrain, Ytrain)
-test_pred = reg.predict_evaluate(Xtest, Ytest[0][0])
+test_pred = reg.predict_evaluate_diff_locs(Xtest, Ytest[0])
+score = model_eval.mean_squared_error(test_pred, Ytest[1])
+
+# ############################# Triple basis estimator (3BE) ###########################################################

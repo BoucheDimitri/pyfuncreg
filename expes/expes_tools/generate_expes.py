@@ -9,6 +9,7 @@ from functional_regressors import ovkernel_ridge
 from functional_regressors import kernel_projection_learning as kproj_learning
 from functional_regressors import triple_basis
 from functional_data import basis
+from solvers import first_order
 
 
 def expe_generator(expe_parametrizer):
@@ -101,11 +102,10 @@ def create_kpl_dti(expe_dict, domain_out, domain_out_pad, pad_width):
     non_padded_index = (pad_width[1][0], 55 + pad_width[1][0])
     reg = kproj_learning.KPLExact(gauss_ker, B, func_dict, expe_dict["regu"],
                                   non_padded_index=non_padded_index, center_output=expe_dict["center_outputs"])
-    # bfgs = first_order.ScipySolver(maxit=config.MAXIT, tol=config.TOL, method="L-BFGS-B")
-    # non_padded_index = (config.PAD_WIDTH[1][0], 55 + config.PAD_WIDTH[1][0])
-    # reg = dictout_ovkreg.DictOutOVKRidge(gauss_ker, B, func_dict, expe_dict["regu"], bfgs,
-    #                                      non_padded_index=non_padded_index,
-    #                                      center_outputs=expe_dict["center_outputs"])
+    # bfgs = first_order.ScipySolver(maxit=3000, tol=1e-8, method="L-BFGS-B")
+    # reg = kproj_learning.KPLApprox(gauss_ker, B, func_dict, expe_dict["regu"], bfgs,
+    #                                non_padded_index=non_padded_index,
+    #                                center_output=expe_dict["center_outputs"])
     return reg
 
 
