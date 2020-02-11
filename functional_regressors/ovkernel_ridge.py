@@ -71,12 +71,14 @@ class SeparableOVKRidgeFunctional:
             return Ypred.reshape((len(Xnew), len(self.approx_locs)))
 
     def predict_func(self, Xnew):
-        if not isinstance(Xnew, list):
-            Xnew_bis = [Xnew]
-        else:
-            Xnew_bis = Xnew
-        Ypred = self.predict(Xnew_bis)
-        rep_locs = [np.expand_dims(self.approx_locs, axis=1) for i in range(len(Xnew_bis))]
+        # if not isinstance(Xnew, list):
+        #     Xnew_bis = [Xnew]
+        # else:
+        #     Xnew_bis = Xnew
+        # Ypred = self.predict(Xnew_bis)
+        # rep_locs = [np.expand_dims(self.approx_locs, axis=1) for i in range(len(Xnew_bis))]
+        Ypred = self.predict(Xnew)
+        rep_locs = [np.expand_dims(self.approx_locs, axis=1) for i in range(len(Xnew))]
         self.smoother.fit(rep_locs, Ypred)
         return self.smoother.get_functions()
 

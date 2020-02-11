@@ -37,7 +37,7 @@ class KPLExact:
         self.center_output = center_output
         self.non_padded_index = non_padded_index
         self.full_output_locs = None
-        self.ovkridge = None
+        self.ovkridge = ovkernel_ridge.SeparableOVKRidge(kernel_scalar, B, regu)
 
     @staticmethod
     def get_func_outputs(Y):
@@ -324,3 +324,18 @@ class KPLExactFPCA:
         for i in range(n_preds):
             preds.append(np.squeeze(self.predict_evaluate([Xnew[i]], Yins_new[i])))
         return preds
+
+
+def wavelet_freqs_penalization(wav_dict, decrease_base=2, add_constant=True, mode="Linear"):
+    n_basis_scales = [b.n_basis for b in wav_dict.scale_bases]
+    freqs_penalization = []
+    if mode == "Linear":
+        for j in range(len(n_basis_scales)):
+            freqs_penalization += [1 / (j + 1) for i in range(n_basis_scales[j])]
+    else:
+        for j in range(len(n_basis_scales)):
+            freqs_penalization += [(1 / decrease_base) ** j for i in range(n_basis_scales[j])]
+    if add_constant:
+        freqs_penalization += [1]
+    freqs_penalization = np.array(freqs_penalization)
+    return freqs_penalization

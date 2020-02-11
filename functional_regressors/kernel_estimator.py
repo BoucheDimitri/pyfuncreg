@@ -6,9 +6,8 @@ from functional_data import functional_algebra
 
 class KernelEstimatorFunc:
 
-    def __init__(self, kernel, bandwidth, center_output=False):
+    def __init__(self, kernel, center_output=False):
         self.kernel = kernel
-        self.bandwidth = bandwidth
         self.X = None
         self.Yfunc = None
         self.center_output = center_output
@@ -28,10 +27,11 @@ class KernelEstimatorFunc:
     def predict(self, Xnew):
         n = self.X.shape[0]
         m = Xnew.shape[0]
-        gram_mat = np.zeros((m, n))
-        for j in range(m):
-            gram_mat[j, :] = np.linalg.norm(self.X - Xnew[j], axis=1) ** 2
-        Knew = np.apply_along_axis(self.kernel, 0, gram_mat / self.bandwidth)
+        # gram_mat = np.zeros((m, n))
+        # for j in range(m):
+        #     gram_mat[j, :] = np.linalg.norm(self.X - Xnew[j], axis=1) ** 2
+        # Knew = np.apply_along_axis(self.kernel, 0, gram_mat / self.bandwidth)
+        Knew = self.kernel(self.X, Xnew)
         W = Knew / np.expand_dims(np.sum(Knew, axis=1), axis=1)
         return [functional_algebra.weighted_sum_function(W[i], self.Yfunc) for i in range(m)]
 
@@ -41,7 +41,7 @@ class KernelEstimatorFunc:
             extrapolate_mean = np.expand_dims(np.interp(locs.squeeze(), self.Ymean[0], self.Ymean[1]), axis=0)
             return np.array([func(locs) for func in pred_funcs]) + extrapolate_mean
         else:
-            np.array([func(locs) for func in pred_funcs])
+            return np.array([func(locs) for func in pred_funcs])
 
 
 class KernelEstimatorStructIn:
