@@ -121,5 +121,5 @@ dict_test = {"regu": 1, "ker_sigma": 20, "max_freq_in": 25,
 
 reg = generate_expes.create_3be_dti(dict_test, domain_out, domain_out, nrffs, rffs_seed, pad_width)
 reg.fit(Xtrain, Ytrain)
-test_pred = [reg.predict_evaluate(([Xtest[0][i]], [Xtest[1][i]]), Ytest[0][i]) for i in range(len(Xtest[0]))]
-score = model_eval.mean_squared_error(test_pred, [Ytest[1][i] for i in range(len_test)])
+preds = [reg.predict_evaluate(([Xtest[0][i]], [Xtest[1][i]]), Ytest[0][i]) for i in range(len(Xtest[0]))]
+score_test = model_eval.mean_squared_error(preds, [Ytest[1][i] for i in range(len(Xtest[0]))])

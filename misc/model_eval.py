@@ -116,11 +116,12 @@ def exec_regressors_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest,
     best_ind = np.argmin(results)
     best_regressor = regressors[best_ind]
     best_regressor.fit(Xtrain, Ytrain)
-    len_test = len(Xtest)
     if isinstance(Xtrain, np.ndarray):
+        len_test = len(Xtest)
         preds = [best_regressor.predict_evaluate(np.expand_dims(Xtest[i], axis=0), Ytest[0][i])
                  for i in range(len_test)]
     else:
+        len_test = len(Xtest[0])
         preds = [best_regressor.predict_evaluate([Xtest[i]], Ytest[0][i])
                  for i in range(len_test)]
     score_test = mean_squared_error(preds, [Ytest[1][i] for i in range(len_test)])
@@ -175,7 +176,7 @@ def exec_regressors_eval_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Yt
     best_ind = np.argmin(results)
     best_regressor = regressors[best_ind]
     best_regressor.fit(Xtrain, Ytrain)
-    len_test = len(Xtest)
+    len_test = len(Xtest[0])
     preds = [best_regressor.predict_evaluate(([Xtest[0][i]], [Xtest[1][i]]), Ytest[0][i]) for i in range(len_test)]
     score_test = mean_squared_error(preds, [Ytest[1][i] for i in range(len_test)])
     return expe_dicts, results, best_ind, expe_dicts[best_ind], results[best_ind], score_test
