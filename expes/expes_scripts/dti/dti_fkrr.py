@@ -15,28 +15,33 @@ from misc import model_eval
 from data import loading, processing
 from expes.expes_scripts.dti import config as config
 
-# ############################### Config ###############################################################################
+# ############################### Execution config #####################################################################
 # Path to the data
 DATA_PATH = path + "/data/dataDTI/"
 # Record config
 OUTPUT_FOLDER = "dti_kpl"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 EXPE_NAME = "dti_kpl"
-# Domain
-DOMAIN_OUT = np.array([[0, 1]])
 # Exec config
 NPROCS = 8
 
-# ############################### Fixed global variables ###############################################################
+# ############################### Regressor config #####################################################################
+# Domain
+DOMAIN_OUT = np.array([[0, 1]])
+# Pre cross validated dict
 CV_DICT = {'ker_sigma': 0.9, 'center_outputs': True, 'regu': 0.00271858824273294, 'ky': 0.1}
+# Regularization parameter grid
 REGU_GRID = np.geomspace(1e-6, 1e-1, 100)
+# Output kernel bandwidth grid
 KY_GRID = [0.01, 0.025, 0.05, 0.75, 0.1, 0.125, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0]
+# Input kernel standard deviation
 KER_SIGMA = 0.9
+# Location used for discrete approximation
 APPROX_LOCS = np.linspace(0, 1, 200)
 
 if __name__ == '__main__':
 
-    # ############################# GLOBAL PARAMETERS ##################################################################
+    # ############################# Create folder for recording ########################################################
     try:
         os.mkdir(path + "/outputs")
     except FileExistsError:

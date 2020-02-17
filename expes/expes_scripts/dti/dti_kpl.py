@@ -15,18 +15,20 @@ from misc import model_eval
 from data import loading, processing
 from expes.expes_scripts.dti import config as config
 
-# ############################### Config ###############################################################################
+# ############################### Execution config #####################################################################
 # Path to the data
 DATA_PATH = path + "/data/dataDTI/"
 # Record config
 OUTPUT_FOLDER = "dti_kpl"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 EXPE_NAME = "dti_kpl"
-# Exec config
+# Number of processors
 NPROCS = 8
 
-# ############################### Fixed global variables ###############################################################
+# ############################### Regressor config #####################################################################
+# Output domain
 DOMAIN_OUT = np.array([[0, 1]])
+# Padding parameters
 PAD_WIDTH_OUTPUT = ((0, 0), (3*55, 3*55))
 PAD_WIDTH_INPUT = ((0, 0), (0, 0))
 DOMAIN_OUT_PAD = np.array([[-PAD_WIDTH_OUTPUT[1][0] / 55, 1 + PAD_WIDTH_OUTPUT[1][0] / 55]])
@@ -34,16 +36,22 @@ DOMAIN_OUT_PAD = np.array([[-PAD_WIDTH_OUTPUT[1][0] / 55, 1 + PAD_WIDTH_OUTPUT[1
 CV_DICT = {'ker_sigma': 0.9,'pywt_name': 'db', 'init_dilat': 1, 'dilat': 2, 'translat': 1,
            'n_dilat': 5, 'center_outputs': True, 'add_constant': True, 'regu': 0.009236708571873866,
            'moments': 2, 'penalize_freqs': 1.2}
+# Regularization parameters grid
 REGU_GRID = np.geomspace(1e-8, 1, 100)
+# Wavelet name for the dictionary
 PYWT_NAME = "db"
+# Number of vanishing moments to test
 MOMENTS = (2, 3)
+# Number of dilations to test
 NDILATS = (4, 5)
+# Bases for penalization of smaller scales
 FREQS_PEN = (1.0, 1.2, 1.4, 1.6)
+# Standard deviation parameter for the input kernel
 KER_SIGMA = 0.9
 
 if __name__ == '__main__':
 
-    # ############################# GLOBAL PARAMETERS ##################################################################
+    # ############################# Create folder for recording ########################################################
     try:
         os.mkdir(path + "/outputs")
     except FileExistsError:

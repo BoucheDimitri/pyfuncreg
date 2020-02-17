@@ -32,7 +32,7 @@ WINDOW_GRID = [np.sqrt(t) for t in np.linspace(0.02, 1, 100)]
 
 if __name__ == '__main__':
 
-    # ############################# GLOBAL PARAMETERS ##################################################################
+    # ############################# Create folder for recording ########################################################
     try:
         os.mkdir(path + "/outputs")
     except FileExistsError:

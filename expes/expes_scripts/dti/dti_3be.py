@@ -18,30 +18,36 @@ from expes.expes_scripts.dti import config as config
 # ############################### Config ###############################################################################
 # Path to the data
 DATA_PATH = path + "/data/dataDTI/"
-# Method config
-DOMAIN_OUT = np.array([[0, 1]])
-PAD_WIDTH = ((0, 0), (0, 0))
-N_RFFS = 300
-RFFS_SEED = 567
 # Record config
 OUTPUT_FOLDER = "dti_3be"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 EXPE_NAME = "dti_3be"
-# Exec config
+# Number of processors
 NPROCS = 8
 
 # ############################### Fixed global variables ###############################################################
 # Dictionary obtained by cross validation for quick run fitting on train and get score on test
 CV_DICT = {'center_outputs': True, 'regu': 1.0, 'ker_sigma': 20, 'max_freq_in': 25, 'max_freq_out': 5}
+# Output domain
+DOMAIN_OUT = np.array([[0, 1]])
+# Padding of the output
+PAD_WIDTH = ((0, 0), (0, 0))
+# Number of random fourier features
+N_RFFS = 300
+# Seed for the random fourier features
+RFFS_SEED = 567
+# Regularization grid
 REGU_GRID = list(np.geomspace(1e-8, 1, 100))
+# Standard deviation grid for input kernel
 KER_SIGMA = [20, 25, 30, 35, 40]
+# Maximum frequency to include for input and output
 FREQS_IN_GRID = [5, 10, 15, 20, 25, 30, 35, 40]
 FREQS_OUT_GRID = [5, 10, 15, 20, 25, 30, 35, 40]
 
 
 if __name__ == '__main__':
 
-    # ############################# GLOBAL PARAMETERS ##################################################################
+    # ############################# Create folder for recording ########################################################
     try:
         os.mkdir(path + "/outputs")
     except FileExistsError:

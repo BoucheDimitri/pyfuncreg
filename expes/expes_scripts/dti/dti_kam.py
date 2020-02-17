@@ -18,11 +18,6 @@ from expes.expes_scripts.dti import config as config
 # ############################### Config ###############################################################################
 # Path to the data
 DATA_PATH = path + "/data/dataDTI/"
-# Method config
-DOMAIN_OUT = np.array([[0, 1]])
-NEVALS_IN = 100
-NEVALS_OUT = 60
-NEVALS_FPCA = 500
 # Record config
 OUTPUT_FOLDER = "dti_kam"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
@@ -42,7 +37,7 @@ NFPCA_GRID = [10, 15, 20, 30]
 
 if __name__ == '__main__':
 
-    # ############################# GLOBAL PARAMETERS ##################################################################
+    # ############################# Create folder for recording ########################################################
     try:
         os.mkdir(path + "/outputs")
     except FileExistsError:
