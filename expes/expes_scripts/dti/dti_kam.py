@@ -6,7 +6,6 @@ import pathlib
 
 # Execution path
 exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
-print(exec_path)
 path = str(exec_path.parent.parent.parent)
 sys.path.append(path)
 
@@ -17,6 +16,8 @@ from data import loading, processing
 from expes.expes_scripts.dti import config as config
 
 # ############################### Config ###############################################################################
+# Path to the data
+DATA_PATH = path + "/data/dataDTI/"
 # Method config
 DOMAIN_OUT = np.array([[0, 1]])
 NEVALS_IN = 100
@@ -53,7 +54,7 @@ if __name__ == '__main__':
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
     # ############################# Load the data ######################################################################
-    cca, rcst = loading.load_dti(path + "/data/dataDTI/", shuffle_seed=config.SHUFFLE_SEED)
+    cca, rcst = loading.load_dti(DATA_PATH, shuffle_seed=config.SHUFFLE_SEED)
     Xtrain, Ytrain, Xtest, Ytest = processing.process_dti_dataset(cca.copy(), rcst.copy(),
                                                                   n_train=config.N_TRAIN, normalize01=True)
 

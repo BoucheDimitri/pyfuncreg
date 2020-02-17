@@ -100,12 +100,12 @@ def create_kpl_dti(expe_dict, domain_out, domain_out_pad, pad_width):
         B = np.eye(func_dict.n_basis)
     gauss_ker = kernels.GaussianScalarKernel(expe_dict["ker_sigma"], normalize=False)
     non_padded_index = (pad_width[1][0], 55 + pad_width[1][0])
-    reg = kproj_learning.KPLExact(gauss_ker, B, func_dict, expe_dict["regu"],
-                                  non_padded_index=non_padded_index, center_output=expe_dict["center_outputs"])
-    # bfgs = first_order.ScipySolver(maxit=3000, tol=1e-8, method="L-BFGS-B")
-    # reg = kproj_learning.KPLApprox(gauss_ker, B, func_dict, expe_dict["regu"], bfgs,
-    #                                non_padded_index=non_padded_index,
-    #                                center_output=expe_dict["center_outputs"])
+    # reg = kproj_learning.KPLExact(gauss_ker, B, func_dict, expe_dict["regu"],
+    #                               non_padded_index=non_padded_index, center_output=expe_dict["center_outputs"])
+    bfgs = first_order.ScipySolver(maxit=3000, tol=1e-8, method="L-BFGS-B")
+    reg = kproj_learning.KPLApprox(gauss_ker, B, func_dict, expe_dict["regu"], bfgs,
+                                   non_padded_index=non_padded_index,
+                                   center_output=expe_dict["center_outputs"])
     return reg
 
 
