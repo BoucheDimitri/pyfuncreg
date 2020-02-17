@@ -76,7 +76,7 @@ if __name__ == '__main__':
                                                     rec_path=rec_path, nprocs=NPROCS)
         # Save the results
         with open(rec_path + "/" + EXPE_NAME + ".pkl", "wb") as inp:
-            pickle.dump((expe_dicts, results, best_ind, best_dict, best_result, score_test), inp,
+            pickle.dump((best_dict, best_result, score_test), inp,
                         pickle.HIGHEST_PROTOCOL)
         # Print the result
         print("Score on test set: " + str(score_test))
