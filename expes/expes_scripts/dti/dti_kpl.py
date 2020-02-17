@@ -39,6 +39,7 @@ PYWT_NAME = "db"
 MOMENTS = (2, 3)
 NDILATS = (4, 5)
 FREQS_PEN = (1.0, 1.2, 1.4, 1.6)
+KER_SIGMA = 0.9
 
 if __name__ == '__main__':
 
@@ -68,7 +69,7 @@ if __name__ == '__main__':
         argv = ""
     if argv == "full":
         # Generate config dictionaries
-        params = {"regu": REGU_GRID, "ker_sigma": 0.9, "pywt_name": PYWT_NAME,
+        params = {"regu": REGU_GRID, "ker_sigma": KER_SIGMA, "pywt_name": PYWT_NAME,
                   "init_dilat": 1, "dilat": 2, "translat": 1,
                   "moments": MOMENTS, "n_dilat": NDILATS, "center_outputs": True,
                   "penalize_freqs": FREQS_PEN, "add_constant": True}
