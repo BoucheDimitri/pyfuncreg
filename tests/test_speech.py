@@ -1,9 +1,8 @@
 import numpy as np
 import os
 
-from expes.expes_tools import generate_expes
+from expes import generate_expes
 from data import loading, processing
-from misc import model_eval
 
 SHUFFLE_SEED = 784
 N_TRAIN = 300

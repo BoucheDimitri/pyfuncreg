@@ -1,33 +1,22 @@
 import numpy as np
 import os
 
-from expes.expes_tools import generate_expes
+from expes import generate_expes
 from data import loading, processing
+from data import degradation
 from misc import model_eval
 
 SHUFFLE_SEED = 784
 N_TRAIN = 70
+DEGRADE_SEED = 564
+NOISE_SEED = 432
 
 # ############################ Load DTI data ###########################################################################
 cca, rcst = loading.load_dti(os.getcwd() + "/data/dataDTI/", shuffle_seed=SHUFFLE_SEED)
 
-Xtrain0, Ytrain0, Xtest0, Ytest0 = processing.process_dti_bis(cca.copy(), rcst.copy(), n_train=N_TRAIN,
-                                                              normalize01=True, interpout=False, pad_train=True,
-                                                          pad_width=((0, 0), (0, 0)), pad_mode="symmetric")
+Xtrain0, Ytrain0, Xtest0, Ytest0 = processing.process_dti_dataset(cca.copy(), rcst.copy(), n_train=N_TRAIN,
+                                                                  normalize01=True)
 
-Xtrain1, Ytrain1, Xtest1, Ytest1 = processing.process_dti_dataset(cca.copy(), rcst.copy(), n_train=N_TRAIN,
-                                                                  normalize01=True, interpout=False,
-                                                                  pad_train_output=True, pad_train_input=True,
-                                                                  pad_width_output=((0, 0), (0, 0)),
-                                                                  pad_mode_output="symmetric",
-                                                                  pad_train_input=True,
-                                                                  pad_width_input=((0, 0), (0, 0)),
-                                                                  pad_mode_input="symmetric")
-
-
-
-Xtrain, Ytrain, Xtest, Ytest = Xtrain1, Ytrain1, Xtest1, Ytest1
-Xtrain, Ytrain, Xtest, Ytest = Xtrain0, Ytrain0, Xtest0, Ytest0
 # ############################# Kernel additive model (KAM) ############################################################
 # Xtrain, Ytrain, Xtest, Ytest = processing.process_dti_dataset(cca, rcst, n_train=N_TRAIN, normalize01=True,
 #                                                               interpout=False, pad_train_input=False,
@@ -96,11 +85,26 @@ Xtrain, Ytrain, Xtest, Ytest = processing.process_dti_dataset(cca.copy(), rcst.c
                                                               pad_width_input=pad_width_input,
                                                               pad_mode_output="symmetric",
                                                               pad_width_output=pad_width_output)
+
+Ytrain = degradation.downsample_output(Ytrain, 0.3, seed=DEGRADE_SEED)
+Ytrain = degradation.add_noise_outputs(Ytrain, 0.03, seed=NOISE_SEED)
 Xtrain = np.array(Xtrain[1]).squeeze()
 Xtest = np.array(Xtest[1]).squeeze()
 dict_test = {"regu": 0.009236708571873866, "ker_sigma": 0.9, "pywt_name": "db", "init_dilat": 1, "dilat": 2, "translat": 1,
              "moments": 2, "n_dilat": 5, "center_outputs": True,
              "penalize_freqs": 1.0, "add_constant": True}
+dict_test = {'ker_sigma': 0.9,
+ 'pywt_name': 'db',
+ 'init_dilat': 1,
+ 'dilat': 2,
+ 'translat': 1,
+ 'moments': 2,
+ 'n_dilat': 5,
+ 'center_outputs': True,
+ 'add_constant': True,
+ 'regu': 1.0,
+ 'penalize_freqs': 1.0}
+
 reg = generate_expes.create_kpl_dti(dict_test, domain_out, domain_out_pad, pad_width_output)
 reg.fit(Xtrain, Ytrain)
 test_pred = reg.predict_evaluate_diff_locs(Xtest, Ytest[0])
