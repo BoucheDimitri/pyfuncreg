@@ -1,16 +1,22 @@
 import numpy as np
 import os
+import matplotlib.pyplot as plt
 
 from expes import generate_expes
 from data import loading, processing
+
+from misc import model_eval
 
 SHUFFLE_SEED = 784
 N_TRAIN = 300
 
 # ##################################### Load the data and process it ###################################################
 Xraw, Yraw = loading.load_speech_dataset_bis(os.getcwd() + "/data/dataspeech/raw/")
-Xtrain, Ytrain, Xtest, Ytest = processing.process_speech_dataset(Xraw, Yraw, shuffle_seed=SHUFFLE_SEED, n_train=N_TRAIN)
+Xtrain, Ytrain, Xtest, Ytest = processing.process_speech_dataset(Xraw, Yraw, shuffle_seed=SHUFFLE_SEED,
+                                                                 n_train=N_TRAIN, normalize01_output=True)
 Ytrain_sub, Ytest_sub = Ytrain["LA"], Ytest["LA"]
+
+plt.plot(Ytrain_sub[0][0], Ytrain_sub[1][0])
 
 
 # ############################# Kernel estimator (KE) ##################################################################
@@ -45,3 +51,5 @@ dict_test = {"regu": 1e-4, "ker_sigma": 1, "nfpca": 30, "center_output": True}
 reg = generate_expes.create_3be_speech(dict_test, nevals_fpca)
 reg.fit(Xtrain, Ytrain_sub)
 test_pred = reg.predict_evaluate(Xtest, Ytest_sub[0][0])
+
+score = model_eval.mean_squared_error(preds, Ytest[1])

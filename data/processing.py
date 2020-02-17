@@ -1,5 +1,7 @@
 import numpy as np
 import python_speech_features
+import pickle
+import os
 
 
 def process_dti_dataset(cca, rcst, n_train=70, normalize01=True,
@@ -47,7 +49,7 @@ def process_dti_dataset(cca, rcst, n_train=70, normalize01=True,
 
 
 def process_speech_dataset(X, Y, duration="max", pad_mode="symmetric",
-                           shuffle_seed=784, n_train=300, normalize01_output=True):
+                           shuffle_seed=784, n_train=300, normalize01_domain=True, normalize_range=True):
     n = len(X)
     durations = [len(x) / 10000 for x in X]
     if duration == "max":
@@ -62,7 +64,7 @@ def process_speech_dataset(X, Y, duration="max", pad_mode="symmetric",
     np.random.seed(shuffle_seed)
     np.random.shuffle(inds)
     ylocs = np.arange(0, duration - 0.005, 0.005)
-    if normalize01_output:
+    if normalize01_domain:
         norma = ylocs[-1]
     else:
         norma = 1
@@ -92,4 +94,76 @@ def process_speech_dataset(X, Y, duration="max", pad_mode="symmetric",
         for key in Ytest.keys():
             Ytest[key][0].append((1 / norma) * Y[key][0][inds[i]])
             Ytest[key][1].append(Y[key][1][inds[i]])
-    return Xtrain, Ytrain, Xtest, Ytest
+    if normalize_range:
+        Ytrain_normalized = {"LP": [[], []], "LA": [[], []], "TBCL": [[], []], "TBCD": [[], []],
+                         "VEL": [[], []], "GLO": [[], []], "TTCL": [[], []], "TTCD": [[], []]}
+        Ytest_normalized = {"LP": [[], []], "LA": [[], []], "TBCL": [[], []], "TBCD": [[], []],
+                         "VEL": [[], []], "GLO": [[], []], "TTCL": [[], []], "TTCD": [[], []]}
+        for key in Ytrain.keys():
+            m = np.min(np.array(Ytrain[key][1]))
+            M = np.max(np.array(Ytrain[key][1]))
+            a = 2 / (M - m)
+            b = 1 - a * M
+            for j in range(len(Ytrain[key][0])):
+                Ytrain_normalized[key][1].append(a * Ytrain[key][1][j] + b)
+                Ytrain_normalized[key][0].append(Ytrain[key][0][j])
+            for j in range(len(Ytest[key][1])):
+                Ytest_normalized[key][1].append(a * Ytest[key][1][j] + b)
+                Ytest_normalized[key][0].append(Ytest[key][0][j])
+    else:
+        Ytrain_normalized = Ytrain
+        Ytest_normalized = Ytest
+    return Xtrain, Ytrain_normalized, Xtest, Ytest_normalized
+
+
+def load_processed_speech_dataset(path=os.getcwd() + "/data/dataspeech/processed/",
+                                  pad_width=None, pad_mode="symmetric", normalize_output=True):
+    with open(path + "Xtrain.pkl", "rb") as inp:
+        Xtrain = pickle.load(inp)
+    with open(path + "Ytrain.pkl", "rb") as inp:
+        Ytrain = pickle.load(inp)
+    with open(path + "Xtest.pkl", "rb") as inp:
+        Xtest = pickle.load(inp)
+    with open(path + "Ytest.pkl", "rb") as inp:
+        Ytest = pickle.load(inp)
+    if pad_width is not None:
+        Ytrain_padded = {"LP": [[], []], "LA": [[], []], "TBCL": [[], []], "TBCD": [[], []],
+                         "VEL": [[], []], "GLO": [[], []], "TTCL": [[], []], "TTCD": [[], []]}
+        for key in Ytrain.keys():
+            Ytrain_sub_array = np.array(Ytrain[key][1]).squeeze()
+            leny = Ytrain_sub_array.shape[1]
+            Ytrain_sub_array = np.pad(Ytrain_sub_array,
+                                      pad_width=((0, 0), (pad_width[0] * leny, pad_width[1] * leny)),
+                                      mode=pad_mode)
+            n = Ytrain_sub_array.shape[0]
+            Ylocs_padded = Ytrain[key][0][0]
+            locs = Ytrain[key][0][0]
+            for i in range(pad_width[0]):
+                Ylocs_padded = np.concatenate((-i - 1 + locs, Ylocs_padded))
+            for i in range(pad_width[1]):
+                Ylocs_padded = np.concatenate((Ylocs_padded, locs + i + 1))
+            for j in range(n):
+                Ytrain_padded[key][0].append(Ylocs_padded)
+                Ytrain_padded[key][1].append(Ytrain_sub_array[j])
+    else:
+        Ytrain_padded = Ytrain
+    if normalize_output:
+        Ytrain_normalized = {"LP": [[], []], "LA": [[], []], "TBCL": [[], []], "TBCD": [[], []],
+                         "VEL": [[], []], "GLO": [[], []], "TTCL": [[], []], "TTCD": [[], []]}
+        Ytest_normalized = {"LP": [[], []], "LA": [[], []], "TBCL": [[], []], "TBCD": [[], []],
+                         "VEL": [[], []], "GLO": [[], []], "TTCL": [[], []], "TTCD": [[], []]}
+        for key in Ytrain.keys():
+            m = np.min(np.array(Ytrain_padded[key][1]))
+            M = np.max(np.array(Ytrain_padded[key][1]))
+            a = 2 / (M - m)
+            b = 1 - a * M
+            for j in range(len(Ytrain[key][0])):
+                Ytrain_normalized[key][1].append(a * Ytrain_padded[key][1][j] + b)
+                Ytrain_normalized[key][0].append(Ytrain[key][0][j])
+            for j in range(len(Ytest[key][1])):
+                Ytest_normalized[key][1].append(a * Ytest[key][1][j] + b)
+                Ytest_normalized[key][0].append(Ytest[key][0][j])
+    else:
+        Ytrain_normalized = Ytrain_padded
+        Ytest_normalized = Ytest
+    return Xtrain, Ytrain_normalized, Xtest, Ytest_normalized
