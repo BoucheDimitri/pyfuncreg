@@ -40,17 +40,21 @@ score = model_eval.mean_squared_error(test_pred, [Ytest[1][i] for i in range(len
 
 
 # ############################# Kernel estimator (KE) ##################################################################
-Xtrain, Ytrain, Xtest, Ytest = processing.process_dti_dataset(cca, rcst, n_train=N_TRAIN, normalize01=True,
-                                                              interpout=False, pad_train_input=False,
-                                                              pad_train_output=False)
+Xtrain, Ytrain, Xtest, Ytest = processing.process_dti_dataset(cca.copy(), rcst.copy(), n_train=N_TRAIN,
+                                                                  normalize01=True)
+
 Xtrain = np.array(Xtrain[1]).squeeze()
 Xtest = np.array(Xtest[1]).squeeze()
 
-dict_test = {"window": 0.1}
+dict_test = {'window': np.sqrt(0.2773737373737374)}
 
 reg = generate_expes.create_ke_dti(dict_test)
 reg.fit(Xtrain, Ytrain)
 test_pred = reg.predict_evaluate(Xtest, Ytest[0][0])
+len_test = len(Xtest)
+preds = [reg.predict_evaluate(np.expand_dims(Xtest[i], axis=0), Ytest[0][i])
+         for i in range(len_test)]
+score = model_eval.mean_squared_error(preds, Ytest[1])
 
 
 # ############################# Functional kernel ridge regression (FKR) ###############################################
