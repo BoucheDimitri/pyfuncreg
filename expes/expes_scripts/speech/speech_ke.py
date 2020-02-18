@@ -25,7 +25,7 @@ EXPE_NAME = "speech_ke"
 # Exec config
 NPROCS = 8
 
-# ############################### Fixed global variables ###############################################################
+# ############################### Regressor config #####################################################################
 # Pre cross validated dictionaries
 CV_DICTS = dict()
 CV_DICTS["LA"] = {'center_output': False, 'ker_sigma': 0.3}

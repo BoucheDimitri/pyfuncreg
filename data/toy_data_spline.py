@@ -66,3 +66,14 @@ def generate_toy_spline(n_samples, dom_input, dom_output, n_locs_input, n_locs_o
     X = ([locs_input.copy() for i in range(n_samples)], [func(locs_input) for func in smooth_in])
     Y = ([locs_output.copy() for i in range(n_samples)], [func(locs_output) for func in smooth_out])
     return X, Y
+
+
+def get_toy_data(n_train):
+    X, Y = generate_toy_spline(N_SAMPLES + N_TEST, DOM_INPUT, DOM_OUTPUT, N_LOCS_INPUT, N_LOCS_OUTPUT, N_FREQS,
+                               FREQS_DRAW_FUNC, COEFS_DRAW_FUNC, WIDTH, SEED_TOY)
+    Xtrain = np.array([X[1][n] for n in range(n_train)])
+    Ytrain = ([np.expand_dims(Y[0][n], axis=1) for n in range(n_train)], [Y[1][n] for n in range(n_train)])
+    Xtest = np.array([X[1][n] for n in range(N_SAMPLES, N_SAMPLES + N_TEST)])
+    Ytest = ([np.expand_dims(Y[0][n], axis=1) for n in range(N_SAMPLES, N_SAMPLES + N_TEST)],
+             [Y[1][n] for n in range(N_SAMPLES, N_SAMPLES + N_TEST)])
+    return Xtrain, Ytrain, Xtest, Ytest
