@@ -120,8 +120,12 @@ def exec_regressors_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest,
         len_test = len(Xtest)
         preds = [best_regressor.predict_evaluate(np.expand_dims(Xtest[i], axis=0), Ytest[0][i])
                  for i in range(len_test)]
-    else:
+    elif len(Xtest) == 2:
         len_test = len(Xtest[0])
+        preds = [best_regressor.predict_evaluate([Xtest[i]], Ytest[0][i])
+                 for i in range(len_test)]
+    else:
+        len_test = len(Xtest)
         preds = [best_regressor.predict_evaluate([Xtest[i]], Ytest[0][i])
                  for i in range(len_test)]
     score_test = mean_squared_error(preds, [Ytest[1][i] for i in range(len_test)])

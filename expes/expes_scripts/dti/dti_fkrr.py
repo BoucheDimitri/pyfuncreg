@@ -19,9 +19,9 @@ from expes.expes_scripts.dti import config as config
 # Path to the data
 DATA_PATH = path + "/data/dataDTI/"
 # Record config
-OUTPUT_FOLDER = "dti_kpl"
+OUTPUT_FOLDER = "dti_fkrr"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
-EXPE_NAME = "dti_kpl"
+EXPE_NAME = "dti_fkrr"
 # Exec config
 NPROCS = 8
 

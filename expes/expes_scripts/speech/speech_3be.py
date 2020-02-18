@@ -3,17 +3,20 @@ import os
 import sys
 import pickle
 import pathlib
+import importlib
 
 # Execution path
 exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
 path = str(exec_path.parent.parent.parent)
 sys.path.append(path)
+# path = os.getcwd()
 
 # Local imports
 from expes import generate_expes
 from misc import model_eval
 from data import loading, processing
 from expes.expes_scripts.dti import config as config
+importlib.reload(model_eval)
 
 # ############################### Config ###############################################################################
 # Path to the data
@@ -41,13 +44,11 @@ DOMAIN_OUT = np.array([[0, 1]])
 # Padding of the output
 PAD_WIDTH = ((0, 0), (0, 0))
 # Regularization grid
-# REGU_GRID = list(np.geomspace(1e-10, 1e-5, 40))
-REGU_GRID = [1e-6, 1e-5]
+REGU_GRID = list(np.geomspace(1e-10, 1e-5, 40))
 # Standard deviation grid for input kernel
 KER_SIGMA = 1
 # Number of principal components used
-# N_FPCA = [20, 30, 40]
-N_FPCA = [20]
+N_FPCA = [20, 30, 40]
 # Number of evaluations for FPCA
 NEVALS_FPCA = 300
 
@@ -66,14 +67,12 @@ if __name__ == '__main__':
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
     # ############################# Load the data ######################################################################
-    # X, Y = loading.load_speech_dataset_bis(DATA_PATH)
-    # Xtrain, Ytrain_full, Xtest, Ytest_full = processing.process_speech_dataset(
-    #     X, Y, shuffle_seed=config.SHUFFLE_SEED, n_train=config.N_TRAIN, normalize01_domain=True, normalize_range=True)
     Xtrain, Ytrain_full, Xtest, Ytest_full = processing.load_processed_speech_dataset(DATA_PATH)
     try:
         key = sys.argv[1]
     except IndexError:
-        raise IndexError("You need to define a vocal tract subproblem")
+        raise IndexError(
+            'You need to define a vocal tract subproblem in the set {"LA", "LP", "TBCL", "VEL", "GLO", "TTCL", "TTCD"}')
     Ytrain, Ytest = Ytrain_full[key], Ytest_full[key]
 
     # ############################# Full cross-validation experiment ###################################################
@@ -90,7 +89,7 @@ if __name__ == '__main__':
         # Cross validation of the regressor queue
         expe_dicts, results, best_ind, best_dict, best_result, score_test \
             = model_eval.exec_regressors_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest,
-                                               rec_path=rec_path, nprocs=NPROCS)
+                                               rec_path=rec_path, nprocs=NPROCS, eval_diff_locs=True)
         # Save the results
         with open(rec_path + "/" + EXPE_NAME + ".pkl", "wb") as inp:
             pickle.dump((best_dict, best_result, score_test), inp,

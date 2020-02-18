@@ -17,11 +17,11 @@ from expes.expes_scripts.dti import config as config
 
 # ############################### Execution config #####################################################################
 # Path to the data
-DATA_PATH = path + "/data/dataDTI/"
+DATA_PATH = path + "/data/dataspeech/processed/"
 # Record config
-OUTPUT_FOLDER = "dti_kpl"
+OUTPUT_FOLDER = "speech_kpl"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
-EXPE_NAME = "dti_kpl"
+EXPE_NAME = "speech_kpl"
 # Number of processors
 NPROCS = 8
 
@@ -29,25 +29,33 @@ NPROCS = 8
 # Output domain
 DOMAIN_OUT = np.array([[0, 1]])
 # Padding parameters
-PAD_WIDTH_OUTPUT = ((0, 0), (3*55, 3*55))
-PAD_WIDTH_INPUT = ((0, 0), (0, 0))
-DOMAIN_OUT_PAD = np.array([[-PAD_WIDTH_OUTPUT[1][0] / 55, 1 + PAD_WIDTH_OUTPUT[1][0] / 55]])
+PAD_WIDTH= ((0, 0), (0, 0))
 # Dictionary obtained by cross validation for quick run fitting on train and get score on test
-CV_DICT = {'ker_sigma': 0.9,'pywt_name': 'db', 'init_dilat': 1, 'dilat': 2, 'translat': 1,
-           'n_dilat': 5, 'center_outputs': True, 'add_constant': True, 'regu': 0.009236708571873866,
-           'moments': 2, 'penalize_freqs': 1.2}
+CV_DICTS = dict()
+CV_DICTS["LP"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
+                  'penalize_eigvals': 0, 'n_fpca': 30, 'penalize_pow': 1}
+CV_DICTS["LA"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
+                  'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
+CV_DICTS["TBCL"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
+                    'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
+CV_DICTS["TBCD"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
+                    'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
+CV_DICTS["VEL"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
+                   'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
+CV_DICTS["GLO"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
+                   'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
+CV_DICTS["TTCL"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
+                    'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
+CV_DICTS["TTCD"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
+                    'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
 # Regularization parameters grid
-REGU_GRID = np.geomspace(1e-8, 1, 100)
-# Wavelet name for the dictionary
-PYWT_NAME = "db"
-# Number of vanishing moments to test
-MOMENTS = (2, 3)
-# Number of dilations to test
-NDILATS = (4, 5)
-# Bases for penalization of smaller scales
-FREQS_PEN = (1.0, 1.2, 1.4, 1.6)
+REGU_GRID = list(np.geomspace(1e-10, 1e-5, 40))
+# Number of principal components to consider
+N_FPCA = [20, 30, 40]
 # Standard deviation parameter for the input kernel
-KER_SIGMA = 0.9
+KER_SIGMA = 1
+# Number of evaluations for FPCA
+NEVALS_FPCA = 300
 
 if __name__ == '__main__':
 
@@ -63,28 +71,27 @@ if __name__ == '__main__':
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
     # ############################# Load the data ######################################################################
-    cca, rcst = loading.load_dti(DATA_PATH, shuffle_seed=config.SHUFFLE_SEED)
-    Xtrain, Ytrain, Xtest, Ytest = processing.process_dti_dataset(cca.copy(), rcst.copy(),
-                                                                  n_train=config.N_TRAIN, normalize01=True,
-                                                                  pad_width_output=PAD_WIDTH_OUTPUT)
-    Xtrain = np.array(Xtrain[1]).squeeze()
-    Xtest = np.array(Xtest[1]).squeeze()
+    Xtrain, Ytrain_full, Xtest, Ytest_full = processing.load_processed_speech_dataset(DATA_PATH)
+    try:
+        key = sys.argv[1]
+    except IndexError:
+        raise IndexError(
+            'You need to define a vocal tract subproblem in the set {"LA", "LP", "TBCL", "VEL", "GLO", "TTCL", "TTCD"}')
+    Ytrain, Ytest = Ytrain_full[key], Ytest_full[key]
 
     # ############################# Full cross-validation experiment ###################################################
     try:
-        argv = sys.argv[1]
+        argv = sys.argv[2]
     except IndexError:
         argv = ""
     if argv == "full":
         # Generate config dictionaries
-        params = {"regu": REGU_GRID, "ker_sigma": KER_SIGMA, "pywt_name": PYWT_NAME,
-                  "init_dilat": 1, "dilat": 2, "translat": 1,
-                  "moments": MOMENTS, "n_dilat": NDILATS, "center_outputs": True,
-                  "penalize_freqs": FREQS_PEN, "add_constant": True}
+        params = {"regu": REGU_GRID, "ker_sigma": KER_SIGMA, "penalize_eigvals": 0, "n_fpca": N_FPCA,
+                  "penalize_pow": 1, "center_output": True}
 
         expe_dicts = generate_expes.expe_generator(params)
         # Create a queue of regressor to cross validate
-        regressors = [generate_expes.create_kpl_dti(expdict, DOMAIN_OUT, DOMAIN_OUT_PAD, PAD_WIDTH_OUTPUT)
+        regressors = [generate_expes.create_kpl_speech(expdict, NEVALS_FPCA)
                       for expdict in expe_dicts]
         # Cross validation of the regressor queue
         expe_dicts, results, best_ind, best_dict, best_result, score_test \
@@ -100,10 +107,12 @@ if __name__ == '__main__':
     # ############################# Reduced experiment with the pre cross validated configuration ######################
     else:
         # Use directly the regressor stemming from the cross validation
-        best_regressor = generate_expes.create_kpl_dti(CV_DICT, DOMAIN_OUT, DOMAIN_OUT_PAD, PAD_WIDTH_OUTPUT)
+        best_regressor = generate_expes.create_kpl_speech(CV_DICTS[key], NEVALS_FPCA)
         best_regressor.fit(Xtrain, Ytrain)
         # Evaluate it on test set
-        preds = best_regressor.predict_evaluate_diff_locs(Xtest, Ytest[0])
+        len_test = len(Xtest)
+        preds = [best_regressor.predict_evaluate(np.expand_dims(Xtest[i], axis=0), Ytest[0][i])
+                 for i in range(len_test)]
         score_test = model_eval.mean_squared_error(preds, Ytest[1])
         # Print the result
         print("Score on test set: " + str(score_test))

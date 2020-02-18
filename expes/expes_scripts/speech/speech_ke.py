@@ -17,17 +17,27 @@ from expes.expes_scripts.dti import config as config
 
 # ############################### Config ###############################################################################
 # Path to the data
-DATA_PATH = path + "/data/dataDTI/"
+DATA_PATH = path + "/data/dataspeech/processed/"
 # Record config
-OUTPUT_FOLDER = "dti_ke"
+OUTPUT_FOLDER = "speech_ke"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
-EXPE_NAME = "dti_ke"
+EXPE_NAME = "speech_ke"
 # Exec config
 NPROCS = 8
 
 # ############################### Fixed global variables ###############################################################
-CV_DICT = {'window': 0.2773737373737374}
-WINDOW_GRID = [np.sqrt(t) for t in np.linspace(0.02, 1, 100)]
+# Pre cross validated dictionaries
+CV_DICTS = dict()
+CV_DICTS["LA"] = {'center_output': False, 'ker_sigma': 0.3}
+CV_DICTS["TBCL"] = {'center_output': False, 'ker_sigma': 0.3}
+CV_DICTS["TBCD"] = {'center_output': False, 'ker_sigma': 0.3}
+CV_DICTS["VEL"] = {'center_output': False, 'ker_sigma': 0.2}
+CV_DICTS["GLO"] = {'center_output': False, 'ker_sigma': 0.2}
+CV_DICTS["TTCL"] = {'center_output': False, 'ker_sigma': 0.2}
+CV_DICTS["TTCD"] = {'center_output': False, 'ker_sigma': 0.3}
+# Kernel standard deviation
+# KER_SIGMA = np.arange(0.1, 2.1, 0.1)
+KER_SIGMA = [0.1, 1]
 
 
 if __name__ == '__main__':
@@ -44,25 +54,25 @@ if __name__ == '__main__':
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
     # ############################# Load the data ######################################################################
-    cca, rcst = loading.load_dti(DATA_PATH, shuffle_seed=config.SHUFFLE_SEED)
-    Xtrain, Ytrain, Xtest, Ytest = processing.process_dti_dataset(cca.copy(), rcst.copy(),
-                                                                  n_train=config.N_TRAIN, normalize01=True)
-    Xtrain = np.array(Xtrain[1]).squeeze()
-    Xtest = np.array(Xtest[1]).squeeze()
+    Xtrain, Ytrain_full, Xtest, Ytest_full = processing.load_processed_speech_dataset(DATA_PATH)
+    try:
+        key = sys.argv[1]
+    except IndexError:
+        raise IndexError(
+            'You need to define a vocal tract subproblem in the set {"LA", "LP", "TBCL", "VEL", "GLO", "TTCL", "TTCD"}')
+    Ytrain, Ytest = Ytrain_full[key], Ytest_full[key]
 
     # ############################# Full cross-validation experiment ###################################################
     try:
-        argv = sys.argv[1]
+        argv = sys.argv[2]
     except IndexError:
         argv = ""
     if argv == "full":
         # Generate config dictionaries
-        params = {"window": WINDOW_GRID}
-
+        params = {"ker_sigma": KER_SIGMA, "center_output": False}
         expe_dicts = generate_expes.expe_generator(params)
         # Create a queue of regressor to cross validate
-        regressors = [generate_expes.create_ke_dti(expdict)
-                      for expdict in expe_dicts]
+        regressors = [generate_expes.create_ke_speech(expdict) for expdict in expe_dicts]
         # Cross validation of the regressor queue
         expe_dicts, results, best_ind, best_dict, best_result, score_test \
             = model_eval.exec_regressors_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest,
@@ -77,7 +87,7 @@ if __name__ == '__main__':
     # ############################# Reduced experiment with the pre cross validated configuration ######################
     else:
         # Use directly the regressor stemming from the cross validation
-        best_regressor = generate_expes.create_ke_dti(CV_DICT)
+        best_regressor = generate_expes.create_ke_speech(CV_DICTS[key])
         best_regressor.fit(Xtrain, Ytrain)
         # Evaluate it on test set
         len_test = len(Xtest)
