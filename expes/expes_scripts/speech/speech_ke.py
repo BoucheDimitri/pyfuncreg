@@ -12,8 +12,7 @@ sys.path.append(path)
 # Local imports
 from expes import generate_expes
 from misc import model_eval
-from data import loading, processing
-from expes.expes_scripts.dti import config as config
+from data import loading
 
 # ############################### Config ###############################################################################
 # Path to the data
@@ -54,7 +53,7 @@ if __name__ == '__main__':
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
     # ############################# Load the data ######################################################################
-    Xtrain, Ytrain_full, Xtest, Ytest_full = processing.load_processed_speech_dataset(DATA_PATH)
+    Xtrain, Ytrain_full, Xtest, Ytest_full = loading.load_processed_speech_dataset(DATA_PATH)
     try:
         key = sys.argv[1]
     except IndexError:

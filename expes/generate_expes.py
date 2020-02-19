@@ -46,8 +46,6 @@ def create_kam_dti(expe_dict, n_evals_in, n_evals_out, domain_in, domain_out, n_
 
 # ############################# Kernel estimator (KE) ##################################################################
 def create_ke_dti(expe_dict):
-    # gauss_ker = kernels.GaussianScalarKernel(stdev=np.sqrt(expe_dict["window"]), normalize=False)
-    # reg = kernel_estimator.KernelEstimatorFunc(gauss_ker, center_output=expe_dict["center_output"])
     reg = kernel_estimator.KernelEstimatorFunc(kernel_estimator.gaussian_window, expe_dict["window"])
     return reg
 

@@ -81,7 +81,16 @@ class ExpandedLasso:
 
 
 class Smoother:
-
+    """
+    Parameters
+    ----------
+    basis: functional_data.basis.Basis
+        The basis on which to perform the smoothing
+    regu: float
+        The regularization for the smoothing
+    method: str, {"Ridge", "Lasso"}
+        Whether to use Ridge or Lasso.
+    """
     def __init__(self, basis, regu, method="Ridge"):
         self.basis = basis
         self.regu = regu
