@@ -12,7 +12,9 @@ def mean_squared_error(ytrue, ypred):
 
 
 class CrossValidationEval:
-
+    """
+    Cross validation for sparsely observed functional data
+    """
     def __init__(self, score_func=mean_squared_error, n_folds=5, seed=0, shuffle=False, pred_diff_locs=False):
         self.score_func = score_func
         self.n_folds = n_folds
@@ -48,7 +50,9 @@ class CrossValidationEval:
 
 
 class CrossValidationEvalLocs:
-
+    """
+    Cross validation for sparsely observed functional data with locations varying
+    """
     def __init__(self, score_func=mean_squared_error, n_folds=5, seed=0, shuffle=False):
         self.score_func = score_func
         self.n_folds = n_folds
@@ -70,6 +74,9 @@ class CrossValidationEvalLocs:
 
 def exec_regressors_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest,
                           rec_path=None, key="", nprocs=None, timeout=0, minnprocs=4, eval_diff_locs=False):
+    """
+    Parallelized cross-validation of regressors
+    """
     if nprocs is None:
         cpu_occup = np.array(psutil.cpu_percent(percpu=True))
         nprocs = (cpu_occup[cpu_occup < 90]).shape[0]
@@ -134,6 +141,9 @@ def exec_regressors_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest,
 
 def exec_regressors_eval_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest, nprocs=None,
                                rec_path=None, key="", timeout=0, minnprocs=4):
+    """
+    Parallelized cross-validation of regressors
+    """
     if nprocs is None:
         cpu_occup = np.array(psutil.cpu_percent(percpu=True))
         nprocs = (cpu_occup[cpu_occup < 90]).shape[0]

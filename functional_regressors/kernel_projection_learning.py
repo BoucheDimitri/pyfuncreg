@@ -84,6 +84,8 @@ class KPLExact:
 
 class KPLApprox:
     """
+    Kernel projection learning using approximate L-BFGS solver
+
     Parameters
     ----------
     kernel_scalar: functional_regressors.kernels.ScalarKernel
@@ -241,6 +243,19 @@ class KPLExactFPCA:
 
     def __init__(self, kernel_scalar, regu, n_fpca, nevals_fpca=500, penalize_eigvals=0,
                  penalize_pow=1, center_output=True):
+        """
+        Kernel projection learning with FPCA dictionary using exact solver
+
+        Parameters
+        ----------
+        kernel_scalar
+        regu
+        n_fpca
+        nevals_fpca
+        penalize_eigvals
+        penalize_pow
+        center_output
+        """
         self.kernel_scalar = kernel_scalar
         self.regu = regu
         self.alpha = None

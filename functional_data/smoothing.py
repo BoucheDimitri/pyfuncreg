@@ -118,7 +118,9 @@ class Smoother:
 
 
 class LinearInterpSmoother:
-
+    """
+    Smoother using linear interpolation
+    """
     def __init__(self):
         self.regressors = []
 

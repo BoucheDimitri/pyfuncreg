@@ -9,7 +9,18 @@ from functional_data import functional_algebra
 
 
 class SeparableOVKRidge:
+    """
+    Ovk ridge with separable kernel using Sylvester solver
 
+    Parameters
+    ----------
+    input_kernel: functional_regressors.kernels.ScalarKernel
+        The input scalar kernel
+    output_mat: array-like, shape = [n_output_features, n_output_features]
+        The matrix encoding the similarity between the outputs
+    lamb: float
+        The regularization parameter
+    """
     def __init__(self, input_kernel, output_mat, lamb):
         self.input_kernel = input_kernel
         self.B = output_mat
@@ -34,7 +45,22 @@ class SeparableOVKRidge:
 
 
 class SeparableOVKRidgeFunctional:
+    """
+    Discrete approximation of FKRR Ovk ridge with separable kernel using Sylvester solver
 
+    Parameters
+    ----------
+    regu: float
+        The regularization parameter
+    input_kernel: functional_regressors.kernels.ScalarKernel
+        The input scalar kernel
+    output_kernel: functional_regressors.kernels.ScalarKernel
+        The output scalar kernel
+    approx_locs: array-like
+        The discretization space to use
+    center_outputs: bool
+        Should the outputs be centered upon training
+    """
     def __init__(self, regu, input_kernel, output_kernel, approx_locs, center_outputs=False):
         self.input_kernel = input_kernel
         self.output_kernel = output_kernel
@@ -71,12 +97,6 @@ class SeparableOVKRidgeFunctional:
             return Ypred.reshape((len(Xnew), len(self.approx_locs)))
 
     def predict_func(self, Xnew):
-        # if not isinstance(Xnew, list):
-        #     Xnew_bis = [Xnew]
-        # else:
-        #     Xnew_bis = Xnew
-        # Ypred = self.predict(Xnew_bis)
-        # rep_locs = [np.expand_dims(self.approx_locs, axis=1) for i in range(len(Xnew_bis))]
         Ypred = self.predict(Xnew)
         rep_locs = [np.expand_dims(self.approx_locs, axis=1) for i in range(len(Xnew))]
         self.smoother.fit(rep_locs, Ypred)

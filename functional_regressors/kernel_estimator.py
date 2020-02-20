@@ -9,7 +9,14 @@ def gaussian_window(x):
 
 
 class KernelEstimatorFunc:
-
+    """
+    Parameters
+    ----------
+    kernel: callable
+        The window function
+    bandwidth: float
+        The window width parameter
+    """
     def __init__(self, kernel, bandwidth):
         self.bandwidth = bandwidth
         self.X = None
@@ -39,7 +46,15 @@ class KernelEstimatorFunc:
 
 
 class KernelEstimatorStructIn:
-
+    """
+    Version of the kernel estimator with kernelized input
+    Parameters
+    ----------
+    kernel: functional_regressors.kernels.ScalarKernel
+        The kernel for the input data
+    center_output: bool
+        Should the output data be centered upon training
+    """
     def __init__(self, kernel, center_output=False):
         self.kernel = kernel
         self.X = None

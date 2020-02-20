@@ -27,11 +27,9 @@ EXPE_NAME = "output_noise"
 # ############################### Experiment parameters ################################################################
 N_TRAIN = 500
 KER_SIGMA = 20
-# REGU_GRID = np.geomspace(1e-7, 1e-4, 100)
-REGU_GRID = [1e-7, 1e-6]
+REGU_GRID = np.geomspace(1e-7, 1e-4, 100)
 NOISE_INPUT = 0.07
-# NOISE_OUTPUT = np.linspace(0, 1.5, 50)
-NOISE_OUTPUT = [0.1, 0.2]
+NOISE_OUTPUT = np.linspace(0, 1.5, 50)
 SEED_INPUT = 768
 SEED_OUTPUT = 456
 N_FOLDS = 5

@@ -9,7 +9,7 @@ from functional_data import smoothing
 
 
 class KernelRidge:
-
+    """Wrapper for scikit learn kernel ridge with custom kernel"""
     def __init__(self, kernel, regu):
         self.kernel = kernel
         self.regu = regu
@@ -28,7 +28,24 @@ class KernelRidge:
 
 
 class TripleBasisEstimator:
+    """
+    Triple basis estimator
 
+    Parameters
+    ----------
+    basis_in: functional_data.basis.Basis
+        The input orthonormal basis
+    basis_rffs: functional_data.basis.RandomFourierFeatures
+        Random Fourier Features used for the approximation
+    basis_out: functional_data.basis.Basis
+        The output orthonormal basis
+    regu: float
+        Regularization parameter
+    center_output: bool, optional
+        Should outputs be centered ?
+    non_padded_index: array-like, optional
+        The full set of locations of observations, only needed if center_output is True
+    """
     def __init__(self, basis_in, basis_rffs, basis_out, regu, non_padded_index=None, center_output=True):
         self.basis_in = basis_in
         self.basis_rffs = basis_rffs
@@ -42,17 +59,6 @@ class TripleBasisEstimator:
 
     @staticmethod
     def projection_coefs(X, func_basis):
-        """
-        Parameters
-        ----------
-        X: list
-            list of two numpy arrays: [locations, evaluations]
-
-        Returns
-        -------
-        array_like
-            Evaluation of
-        """
         n_samples = len(X[0])
         eval_mats = [func_basis.compute_matrix(X[0][i]) for i in range(n_samples)]
         scalar_prods = np.array([eval_mats[i].T.dot((1/X[1][i].shape[0]) * X[1][i]) for i in range(n_samples)])
@@ -101,7 +107,20 @@ class TripleBasisEstimator:
 
 
 class BiBasisEstimator:
+    """
+    Triple basis estimator with structured input
 
+    Parameters
+    ----------
+    kernel: functional_regressors.kernels.ScalarKernel
+        The input kernel
+    basis_out: functional_data.basis.Basis
+        The output orthonormal basis
+    regu: float
+        Regularization parameter
+    center_output: bool, optional
+        Should outputs be centered ?
+    """
     def __init__(self, kernel, basis_out, regu, center_output=False):
         self.basis_out = basis_out
         self.kernel = kernel
@@ -113,17 +132,6 @@ class BiBasisEstimator:
 
     @staticmethod
     def projection_coefs(X, func_basis):
-        """
-        Parameters
-        ----------
-        X: list
-            list of two numpy arrays: [locations, evaluations]
-
-        Returns
-        -------
-        array_like
-            Evaluation of
-        """
         n_samples = len(X[0])
         eval_mats = [func_basis.compute_matrix(X[0][i]) for i in range(n_samples)]
         scalar_prods = np.array([eval_mats[i].T.dot((1 / X[1][i].shape[0]) * X[1][i]) for i in range(n_samples)])
@@ -173,7 +181,22 @@ class BiBasisEstimator:
 
 
 class BiBasisEstimatorFpca:
+    """
+    Triple basis estimator with structured input and FPCA output basis
 
+    Parameters
+    ----------
+    kernel: functional_regressors.kernels.ScalarKernel
+        The input kernel
+    regu: float
+        Regularization parameter
+    nfpca: int
+        The number of function principal components to include
+    nevals_fpca: int
+        The number of evaluations to use for approximation of the FPCA
+    center_output: bool, optional
+        Should outputs be centered ?
+    """
     def __init__(self, kernel, regu, nfpca, nevals_fpca=500, center_output=True):
         self.kernel = kernel
         self.regu = regu
@@ -189,17 +212,6 @@ class BiBasisEstimatorFpca:
 
     @staticmethod
     def projection_coefs(X, func_basis):
-        """
-        Parameters
-        ----------
-        X: list
-            list of two numpy arrays: [locations, evaluations]
-
-        Returns
-        -------
-        array_like
-            Evaluation of
-        """
         n_samples = len(X[0])
         eval_mats = [func_basis.compute_matrix(X[0][i]) for i in range(n_samples)]
         # shape = (n_samples, n_basis)
