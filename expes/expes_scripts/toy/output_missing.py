@@ -27,16 +27,13 @@ EXPE_NAME = "output_missing"
 # ############################### Experiment parameters ################################################################
 N_TRAIN = 500
 KER_SIGMA = 20
-# REGU_GRID = np.geomspace(1e-7, 1e-4, 100)
-REGU_GRID = [1e-5, 1e-4]
+REGU_GRID = np.geomspace(1e-7, 1e-4, 100)
 NOISE_INPUT = 0.07
 NOISE_OUTPUT = 0.02
 SEED_INPUT = 768
 SEED_OUTPUT = 456
-# NSAMPLES_LIST = [20, 50, 100, 250, 500]
-# MISSING_LEVELS = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9]
-NSAMPLES_LIST = [20, 50]
-MISSING_LEVELS = [0, 0.1]
+NSAMPLES_LIST = [20, 50, 100, 250, 500]
+MISSING_LEVELS = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9]
 SEED_MISSING = 560
 N_FOLDS = 5
 

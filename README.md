@@ -31,7 +31,7 @@ conda install -c conda-forge slycot
 conda install -c conda-forge control
 ```
 
-## II / Quick start
+## II / Running instructions
 The different experimental scripts are in the folder `./expes/expes_scripts` 
 and the data for the experiments are included in the folder `./data` of the repository.
 thus the experiments can be run directly in the following way. 
@@ -106,7 +106,7 @@ with open(path_to_file, "rb") as inp:
 where 
 - **best_dict** is the configuration selected by cross-validation
 - **best_result** is the average cross-validation score for this configuration
-- **score_test** is the score obtained on test set with this selected configuration
+- **score_test** is the corresponding list of scores obtained on test set with this selected configuration
 - **path_to_file** is the path to the pickled file
 
 **SOME WARNINGS AND REMARKS**
@@ -115,3 +115,30 @@ by modifying the corresponding global variables in the "**Regressor config**" se
 of the scripts.  
 - The paths for recording the experiments as well as the number of processors to 
 use for parallel execution can be set in the **Config** section in each script. 
+
+### 1. Toy dataset
+Scripts for the toy datasets are in the 
+`./expes/expes_scripts/toy`. 
+
+For any script **script.py** in this folder, running 
+```
+python script.py
+```
+will run the full experiments used to generate the plots in the main paper. 
+This will record the results in a pickle file which can be loaded the following way: 
+
+```
+with open(path_to_file, "rb") as inp:
+    input_config, score_test = pickle.load(inp)
+```
+where 
+- **input_config** corresponds to the configuration for the experiment. For **output_noise.py**, 
+this corresponds to the level of noise, and for **output_missing.py** this corresponds to 
+the couple (number_of_samples, percentage_of_missing_data).
+- **score_test** is the corresponding list of scores obtained on test set.  
+
+**SOME WARNINGS AND REMARKS**
+- Those experiments take a long time to run, however, smaller grids can be used
+by modifying the corresponding global variables in the "**Experiment parameters**" section at the beginning
+of the scripts.  
+- The paths for recording the experiments can be set in the **Config** section in each script. 
