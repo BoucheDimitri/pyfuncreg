@@ -87,7 +87,7 @@ if __name__ == '__main__':
                 score_test = model_eval.mean_squared_error(best_regressor.predict_evaluate(Xtest, Ytest[0][0]),
                                                            Ytest[1])
                 scores_list.append(score_test)
-                products_list.append((n_samples, deg))
+            products_list.append((n_samples, deg))
         print("Finished for N=" + str(n_samples))
     # Save result
     with open(rec_path + "/" + EXPE_NAME + ".pkl", "wb") as inp:
