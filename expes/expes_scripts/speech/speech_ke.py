@@ -77,7 +77,7 @@ if __name__ == '__main__':
             = model_eval.exec_regressors_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest,
                                                rec_path=rec_path, nprocs=NPROCS)
         # Save the results
-        with open(rec_path + "/" + EXPE_NAME + ".pkl", "wb") as inp:
+        with open(rec_path + "/" + EXPE_NAME + "_" + key + ".pkl", "wb") as inp:
             pickle.dump((best_dict, best_result, score_test), inp,
                         pickle.HIGHEST_PROTOCOL)
         # Print the result

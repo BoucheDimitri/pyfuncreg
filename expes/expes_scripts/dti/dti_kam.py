@@ -25,7 +25,7 @@ EXPE_NAME = "dti_kam"
 # Exec config
 NPROCS = 8
 
-# ############################### Fixed global variables ###############################################################
+# ############################### Regressor config #####################################################################
 # Dictionary obtained by cross validation for quick run fitting on train and get score on test
 CV_DICT = {'regu': 0.007564633275546291, 'kx': 0.1, 'ky': 0.05, 'keval': 0.1, 'nfpca': 30}
 REGU_GRID = np.geomspace(1e-8, 1, 100)

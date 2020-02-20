@@ -25,7 +25,7 @@ EXPE_NAME = "dti_3be"
 # Number of processors
 NPROCS = 8
 
-# ############################### Fixed global variables ###############################################################
+# ############################### Regressor config #####################################################################
 # Dictionary obtained by cross validation for quick run fitting on train and get score on test
 CV_DICT = {'center_outputs': True, 'regu': 1.0, 'ker_sigma': 20, 'max_freq_in': 25, 'max_freq_out': 5}
 # Output domain
