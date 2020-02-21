@@ -9,6 +9,7 @@ The following packages are needed on top of the built-in Python packages:
 - pywt
 - scikit-learn
 - pandas
+- matplotlib
 - multiprocessing
 - psutil
 - pathlib
