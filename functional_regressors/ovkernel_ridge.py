@@ -2,6 +2,7 @@
 # $conda install -c conda-forge slycot
 # $conda install -c conda-forge control
 from control import dlyap
+from slycot import sb04qd
 import numpy as np
 
 from functional_data import smoothing
@@ -36,7 +37,10 @@ class SeparableOVKRidge:
         else:
             self.K = self.input_kernel(X, X)
         n = len(X)
-        self.alpha = np.array(dlyap(-self.K/(self.lamb * n), self.B.T, Y/(self.lamb * n)))
+        m = len(self.B)
+        # self.alpha = sb04qd(n, m, -self.K/(self.lamb * n), self.B.T, Y/(self.lamb * n))
+        self.alpha = sb04qd(n, m, self.K / (self.lamb * n), self.B, Y / (self.lamb * n))
+        # self.alpha = np.array(dlyap(-self.K/(self.lamb * n), self.B.T, Y/(self.lamb * n)))
 
     def predict(self, Xnew):
         Knew = self.input_kernel(self.X, Xnew)
