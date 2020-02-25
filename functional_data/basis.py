@@ -5,6 +5,8 @@ from scipy.interpolate import BSpline
 import pywt
 
 
+# ######################## Bases #######################################################################################
+
 class Basis(ABC):
     """
     Abstract class for set of basis functions
@@ -179,8 +181,10 @@ class FourierBasis(Basis):
 
     Parameters
     ----------
-    freq_bounds: array-like, shape = [1, 2]
-        Bounds of frequencies to consider
+    lower_freq: int
+        Minimum frequency to consider
+    upper_freq: int
+        Maximum frequency to consider
     domain: array-like, shape = [input_dim, 2]
         Bounds for the domain of the basis function
 
@@ -192,12 +196,12 @@ class FourierBasis(Basis):
         The number of dimensions of the input space
     domain: array-like, shape = [input_dim, 2]
         Bounds for the domain of the basis function
-    freqs: iterable
+    freqs: tuple, len = 2
         Frequencies included in the basis
     """
-    def __init__(self, freq_bounds, domain):
-        self.freqs = np.arange(freq_bounds[0], freq_bounds[1])
-        if 0 in freq_bounds:
+    def __init__(self, lower_freq, upper_freq, domain):
+        self.freqs = np.arange(lower_freq, upper_freq)
+        if lower_freq == 0:
             n_basis = 2 * (len(self.freqs) - 1) + 1
         else:
             n_basis = 2 * len(self.freqs) + 1
@@ -447,4 +451,31 @@ class MultiscaleCompactlySupported(Basis):
         if self.add_constant:
             evals.append(constant)
         return np.concatenate(evals, axis=1)
+
+
+# ######################## Basis generation ############################################################################
+
+SUPPORTED_DICT = {"random_fourier": RandomFourierFeatures,
+                  "fourier": FourierBasis,
+                  "wavelets": MultiscaleCompactlySupported}
+
+
+def generate_basis(basis_name, kwargs):
+    """
+    Generate basis from name and keywords arguments
+
+    Parameters
+    ----------
+    basis_name: {"random_fourier", "fourier", "wavelets", "from_smooth_funcs", "functional_pca"}
+        The basis reference name
+    kwargs: dict
+        key words argument to build the basis in question
+
+    Returns
+    -------
+    Basis
+        Generated basis
+    """
+    return SUPPORTED_DICT[basis_name](**kwargs)
+
 

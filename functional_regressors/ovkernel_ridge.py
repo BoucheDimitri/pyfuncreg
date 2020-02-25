@@ -40,6 +40,7 @@ class SeparableOVKRidge:
         m = len(self.B)
         # self.alpha = sb04qd(n, m, -self.K/(self.lamb * n), self.B.T, Y/(self.lamb * n))
         self.alpha = sb04qd(n, m, self.K / (self.lamb * n), self.B, Y / (self.lamb * n))
+        print(self.alpha.shape)
         # self.alpha = np.array(dlyap(-self.K/(self.lamb * n), self.B.T, Y/(self.lamb * n)))
 
     def predict(self, Xnew):

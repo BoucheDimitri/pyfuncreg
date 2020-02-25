@@ -9,6 +9,82 @@ from functional_data import sparsely_observed
 from functional_data import functional_algebra
 
 
+class SperableKPL:
+    """
+    Parameters
+    ----------
+    kernel_scalar: functional_regressors.kernels.ScalarKernel
+        The scalar kernel
+    B: array-like, shape = [n_output_features, n_output_features]
+        Matrix encoding the similarities between output tasks
+    output_basis: functional_data.basis.Basis
+        The output dictionary of functions
+    regu: float
+        Regularization parameter
+    center_output: bool, optional
+        Should outputs be centered ?
+    non_padded_index: array-like, optional
+        The full set of locations of observations, only needed if center_output is True
+    """
+    def __init__(self, kernel_scalar, B, output_basis, regu, center_output=False, non_padded_index=None):
+        self.kernel_scalar = kernel_scalar
+        self.regu = regu
+        self.alpha = None
+        self.X = None
+        self.Ymean = None
+        self.output_basis_params = output_basis
+        self.output_basis = None
+        self.B = None
+        self.center_output = center_output
+        self.non_padded_index = non_padded_index
+        self.full_output_locs = None
+        self.ovkridge = None
+
+    def fit(self, X, Y, K=None):
+        if self.center_output:
+            full_output_locs, Ymean = sparsely_observed.mean_missing(Y[0], Y[1])
+            self.Ymean = Ymean[self.non_padded_index[0]:self.non_padded_index[1]]
+            self.full_output_locs = full_output_locs[self.non_padded_index[0]:self.non_padded_index[1]]
+            Ycentered = sparsely_observed.substract_missing(full_output_locs, Ymean, Y[0], Y[1])
+        else:
+            Ycentered = Y
+        # Memorize training input data
+        self.X = X
+        # Generate output dictionary
+        self.output_basis = basis.generate_basis(self.output_basis_params[0], self.output_basis_params[1])
+        self.B = np.eye(self.output_basis.n_basis)
+        # Compute input kernel matrix if not given
+        if K is None:
+            K = self.kernel_scalar(X, X)
+        n = K.shape[0]
+        # Compute approximate dot product between output functions and dictionary functions
+        phi_mats = [(1 / len(Ycentered[1][i]))
+                    * self.output_basis.compute_matrix(Ycentered[0][i]).T for i in range(n)]
+        Yproj = np.array([phi_mats[i].dot(Ycentered[1][i]) for i in range(n)])
+        # Fit ovk ridge using those approximate projections
+        self.ovkridge = ovkernel_ridge.SeparableOVKRidge(self.kernel_scalar, self.B, self.regu)
+        self.ovkridge.fit(X, Yproj)
+
+    def predict(self, Xnew):
+        return self.ovkridge.predict(Xnew)
+
+    def predict_evaluate(self, Xnew, yin_new):
+        pred_coefs = self.predict(Xnew)
+        basis_evals = self.output_basis.compute_matrix(yin_new)
+        if self.center_output:
+            extrapolate_mean = np.expand_dims(np.interp(yin_new.squeeze(), self.full_output_locs, self.Ymean), axis=0)
+            return pred_coefs.dot(basis_evals.T) + extrapolate_mean
+        else:
+            return pred_coefs.dot(basis_evals.T)
+
+    def predict_evaluate_diff_locs(self, Xnew, Yins_new):
+        n_preds = len(Xnew)
+        preds = []
+        for i in range(n_preds):
+            preds.append(np.squeeze(self.predict_evaluate([Xnew[i]], Yins_new[i])))
+        return preds
+
+
 class KPLExact:
     """
     Parameters
