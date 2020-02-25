@@ -7,6 +7,7 @@ from functional_data import fpca
 from functional_data import smoothing
 from functional_data import sparsely_observed
 from functional_data import functional_algebra
+from functional_regressors import regularization
 
 
 class SperableKPL:
@@ -15,9 +16,9 @@ class SperableKPL:
     ----------
     kernel_scalar: functional_regressors.kernels.ScalarKernel
         The scalar kernel
-    B: array-like, shape = [n_output_features, n_output_features]
+    B: regularization.OutputMatrix or array-like, shape = [n_output_features, n_output_features]
         Matrix encoding the similarities between output tasks
-    output_basis: functional_data.basis.Basis
+    output_basis: functional_data.basis.Basis or tuple
         The output dictionary of functions
     regu: float
         Regularization parameter
@@ -32,13 +33,40 @@ class SperableKPL:
         self.alpha = None
         self.X = None
         self.Ymean = None
-        self.output_basis_params = output_basis
-        self.output_basis = None
-        self.B = None
+        # If a basis is given, the output dictionary is fixed, else it is generated from the passed config upon fitting
+        if isinstance(output_basis, basis.Basis):
+            self.output_basis = output_basis
+            self.output_basis_config = None
+        else:
+            self.output_basis_config = output_basis
+            self.output_basis = None
+        # If a numpy array is explicitly it remains fixed, else it is generated with the output_basis
+        # upon fitting using the passed config
+        if isinstance(B, np.ndarray):
+            self.B = B
+            self.abstract_B = None
+        elif isinstance(B, regularization.OutputMatrix):
+            self.B = None
+            self.abstract_B = B
+        else:
+            raise ValueError("B must be either numpy.ndarray or functional_regressors.regularization.OutputMatrix")
+        # Attributes used for centering
         self.center_output = center_output
         self.non_padded_index = non_padded_index
         self.full_output_locs = None
+        # Underlying solver
         self.ovkridge = None
+
+    def generate_output_basis(self, Y):
+        if self.output_basis is None:
+            #TODO: In the case where we want to penalize according to eigenvalues, how to we do so
+            if basis.is_data_dependant(self.output_basis_config[0]):
+                self.output_basis_config[1]["Y"] = Y
+            self.output_basis = basis.generate_basis(self.output_basis_config[0], self.output_basis_config[1])
+
+    def generate_output_matrix(self):
+        if self.B is None:
+            self.B = self.abstract_B.get_matrix(self.output_basis)
 
     def fit(self, X, Y, K=None):
         if self.center_output:
@@ -51,8 +79,9 @@ class SperableKPL:
         # Memorize training input data
         self.X = X
         # Generate output dictionary
-        self.output_basis = basis.generate_basis(self.output_basis_params[0], self.output_basis_params[1])
-        self.B = np.eye(self.output_basis.n_basis)
+        self.generate_output_basis(Y)
+        # Generate output matrix
+        self.generate_output_matrix()
         # Compute input kernel matrix if not given
         if K is None:
             K = self.kernel_scalar(X, X)
@@ -415,18 +444,3 @@ class KPLExactFPCA:
         for i in range(n_preds):
             preds.append(np.squeeze(self.predict_evaluate([Xnew[i]], Yins_new[i])))
         return preds
-
-
-def wavelet_freqs_penalization(wav_dict, decrease_base=2, add_constant=True, mode="Linear"):
-    n_basis_scales = [b.n_basis for b in wav_dict.scale_bases]
-    freqs_penalization = []
-    if mode == "Linear":
-        for j in range(len(n_basis_scales)):
-            freqs_penalization += [1 / (j + 1) for i in range(n_basis_scales[j])]
-    else:
-        for j in range(len(n_basis_scales)):
-            freqs_penalization += [(1 / decrease_base) ** j for i in range(n_basis_scales[j])]
-    if add_constant:
-        freqs_penalization += [1]
-    freqs_penalization = np.array(freqs_penalization)
-    return freqs_penalization

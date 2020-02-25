@@ -459,14 +459,22 @@ SUPPORTED_DICT = {"random_fourier": RandomFourierFeatures,
                   "fourier": FourierBasis,
                   "wavelets": MultiscaleCompactlySupported}
 
+DATA_DEPENDENCE_DICT = {"random_fourier": False,
+                        "fourier": False,
+                        "wavelets": False}
 
-def generate_basis(basis_name, kwargs):
+
+def is_data_dependant(basis_name):
+    return DATA_DEPENDENCE_DICT[basis_name]
+
+
+def generate_basis(key, kwargs):
     """
     Generate basis from name and keywords arguments
 
     Parameters
     ----------
-    basis_name: {"random_fourier", "fourier", "wavelets", "from_smooth_funcs", "functional_pca"}
+    key: {"random_fourier", "fourier", "wavelets", "from_smooth_funcs", "functional_pca"}
         The basis reference name
     kwargs: dict
         key words argument to build the basis in question
@@ -476,6 +484,6 @@ def generate_basis(basis_name, kwargs):
     Basis
         Generated basis
     """
-    return SUPPORTED_DICT[basis_name](**kwargs)
+    return SUPPORTED_DICT[key](**kwargs)
 
 

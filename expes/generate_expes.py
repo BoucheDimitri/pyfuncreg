@@ -8,6 +8,7 @@ from functional_regressors import kernel_estimator
 from functional_regressors import ovkernel_ridge
 from functional_regressors import kernel_projection_learning as kproj_learning
 from functional_regressors import triple_basis
+from functional_regressors import regularization
 from functional_data import basis
 from solvers import first_order
 
@@ -112,7 +113,8 @@ def create_kpl_dti_bis(expe_dict, output_basis_dict, pad_width):
     gauss_ker = kernels.GaussianScalarKernel(expe_dict["ker_sigma"], normalize=False)
     non_padded_index = (pad_width[1][0], 55 + pad_width[1][0])
     output_basis = ("wavelets", output_basis_dict)
-    reg = kproj_learning.SperableKPL(gauss_ker, None, output_basis, expe_dict["regu"],
+    output_matrix = regularization.WaveletsPow(1.2)
+    reg = kproj_learning.SperableKPL(gauss_ker, output_matrix, output_basis, expe_dict["regu"],
                                      non_padded_index=non_padded_index, center_output=expe_dict["center_outputs"])
     # bfgs = first_order.ScipySolver(maxit=3000, tol=1e-8, method="L-BFGS-B")
     # reg = kproj_learning.KPLApprox(gauss_ker, B, func_dict, expe_dict["regu"], bfgs,
