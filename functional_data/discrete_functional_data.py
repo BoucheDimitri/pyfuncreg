@@ -4,7 +4,7 @@ from functional_data import smoothing
 from functional_data import functional_algebra
 
 
-def extrapolated_mean(Ylocs, Yevals):
+def extrapolated_mean(Ylocs, Yobs):
     """
     Functions are firstly linearly extrapolated and then the obtained functions are averaged. Advised when
     the locations are shifting for each observations.
@@ -13,8 +13,8 @@ def extrapolated_mean(Ylocs, Yevals):
     ----------
     Ylocs: iterable of array-like
         The input locations, len = n_samples and for the i-th sample, Ylocs[i] has shape = [n_observations_i, 1]
-    Yevals: iterable of array-like
-        The observations len = n_samples and for the i-th sample, Yevals[i] has shape = [n_observations_i, ]
+    Yobs: iterable of array-like
+        The observations len = n_samples and for the i-th sample, Yobs[i] has shape = [n_observations_i, ]
 
     Returns
     -------
@@ -22,11 +22,11 @@ def extrapolated_mean(Ylocs, Yevals):
         The mean function
     """
     linear_smoother = smoothing.LinearInterpSmoother()
-    linear_smoother.fit(Ylocs, Yevals)
+    linear_smoother.fit(Ylocs, Yobs)
     return functional_algebra.mean_function(linear_smoother.get_functions())
 
 
-def missing_sameloc_mean(Ylocs, Yevals):
+def missing_sameloc_mean(Ylocs, Yobs):
     """
     Compute the mean directly on the sample ignoring nans and then extrapolate it to a function, advised for the case
     where most locations are in common with missing data.
@@ -35,8 +35,8 @@ def missing_sameloc_mean(Ylocs, Yevals):
     ----------
     Ylocs: iterable of array-like
         The input locations, len = n_samples and for the i-th sample, Ylocs[i] has shape = [n_observations_i, 1]
-    Yevals: iterable of array-like
-        The observations len = n_samples and for the i-th sample, Yevals[i] has shape = [n_observations_i, ]
+    Yobs: iterable of array-like
+        The observations len = n_samples and for the i-th sample, Yobs[i] has shape = [n_observations_i, ]
 
     Returns
     -------
@@ -52,7 +52,7 @@ def missing_sameloc_mean(Ylocs, Yevals):
         n_missing = 0
         for j in range(dimy):
             if full_locs[j] in Ylocs[i]:
-                temp[i, j] = Yevals[i][j - n_missing]
+                temp[i, j] = Yobs[i][j - n_missing]
             else:
                 n_missing += 1
     return smoothing.LinearInterpSmoother.interp_function(full_locs, np.nanmean(temp, axis=0))

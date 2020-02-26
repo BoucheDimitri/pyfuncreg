@@ -23,8 +23,8 @@ class SperableKPL:
         The output dictionary of functions
     regu: float
         Regularization parameter
-    center_output: bool, optional
-        Should outputs be centered ?
+    center_output: {"samelocs_missing", "full_extrapolate", False}
+        Mode for centering, set to False for no centering
     """
     def __init__(self, kernel_scalar, B, output_basis, regu, center_output="samelocs_missing"):
         self.kernel_scalar = kernel_scalar

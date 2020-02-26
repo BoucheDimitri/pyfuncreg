@@ -5,7 +5,94 @@ from scipy.interpolate import BSpline
 import pywt
 
 
-# ######################## Bases #######################################################################################
+# ######################## Abstract classes ############################################################################
+
+class Basis(ABC):
+    """
+    Abstract class for set of basis functions
+
+    Parameters
+    ----------
+    n_basis: int
+        Number of basis functions
+    domain: array-like, shape = [input_dim, 2]
+        Bounds for the domain of the basis function
+
+    Attributes
+    ----------
+    n_basis: int
+        Number of basis functions
+    input_dim: int
+        The number of dimensions of the input space
+    domain: array-like, shape = [input_dim, 2]
+        Bounds for the domain of the basis function
+    """
+    def __init__(self, n_basis, input_dim, domain):
+        self.n_basis = n_basis
+        self.input_dim = input_dim
+        self.domain = np.array(domain)
+        if self.domain.ndim == 1:
+            self.domain = np.expand_dims(self.domain, axis=0)
+        self._gram_mat = None
+        super().__init__()
+
+    @abstractmethod
+    def compute_matrix(self, X):
+        """
+        Evaluate the set of basis functions on a given set of values
+
+        Parameters
+        ----------
+        X : array-like, shape = [n_input, input_dim]
+            The input data
+
+        Returns
+        -------
+        array-like, shape=[n_input, n_basis]
+            Matrix of evaluations of the inputs for all basis-function
+        """
+        pass
+
+
+class DataDependantBasis(Basis):
+    """
+    Abstract class for set of basis functions
+
+    Parameters
+    ----------
+    n_basis: int
+        Number of basis functions
+    domain: array-like, shape = [input_dim, 2]
+        Bounds for the domain of the basis function
+
+    Attributes
+    ----------
+    n_basis: int
+        Number of basis functions
+    input_dim: int
+        The number of dimensions of the input space
+    domain: array-like, shape = [input_dim, 2]
+        Bounds for the domain of the basis function
+    """
+    def __init__(self, n_basis, input_dim, domain):
+        super().__init__(n_basis, input_dim, domain)
+
+    @abstractmethod
+    def fit(self, Ylocs, Yobs):
+        """
+        Fit the basis to the data
+
+        Parameters
+        ----------
+        Ylocs: iterable of array-like
+            The input locations, len = n_samples and for the i-th sample, Ylocs[i] has shape = [n_observations_i, 1]
+        Yobs: iterable of array-like
+            The observations len = n_samples and for the i-th sample, Yobs[i] has shape = [n_observations_i, ]
+        """
+        pass
+
+
+# ######################## Classic Bases ###############################################################################
 
 class Basis(ABC):
     """

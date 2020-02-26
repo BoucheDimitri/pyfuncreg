@@ -3,12 +3,26 @@ import numpy as np
 
 
 class OutputMatrix(ABC):
-
+    """
+    Abstract class for output matrix
+    """
     def __init__(self):
         super().__init__()
 
     @abstractmethod
     def get_matrix(self, output_basis):
+        """
+
+        Parameters
+        ----------
+        output_basis: functional_data.basis.Basis
+            The output basis
+
+        Returns
+        -------
+        array-like
+            The output matrix
+        """
         pass
 
 
@@ -24,10 +38,29 @@ class Eye(OutputMatrix):
 class WaveletsPow(OutputMatrix):
 
     def __init__(self, decrease_base):
+        """
+        Power penalization with scale
+
+        Parameters
+        ----------
+        decrease_base: float
+            Penalization is done in 1 / decrease_base^j
+        """
         self.decrease_base = decrease_base
         super().__init__()
 
     def get_matrix(self, output_basis):
+        """
+        Parameters
+        ----------
+        output_basis: functional_data.basis.MultiscaleCompactlySupported
+            The wavelet dictionary
+
+        Returns
+        -------
+        array-like, shape = [output_basis.n_basis, output_basis.n_basis]
+            The output matrix
+        """
         n_basis_scales = [b.n_basis for b in output_basis.scale_bases]
         freqs_penalization = []
         for j in range(len(n_basis_scales)):
@@ -41,9 +74,23 @@ class WaveletsPow(OutputMatrix):
 class WaveletsLinear(OutputMatrix):
 
     def __init__(self):
+        """
+        Linear penalization with scale for wavelet bases
+        """
         super().__init__()
 
     def get_matrix(self, output_basis):
+        """
+        Parameters
+        ----------
+        output_basis: functional_data.basis.MultiscaleCompactlySupported
+            The wavelet dictionary
+
+        Returns
+        -------
+        array-like, shape = [output_basis.n_basis, output_basis.n_basis]
+            The output matrix
+        """
         n_basis_scales = [b.n_basis for b in output_basis.scale_bases]
         freqs_penalization = []
         for j in range(len(n_basis_scales)):
