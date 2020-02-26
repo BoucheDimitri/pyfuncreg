@@ -8,6 +8,7 @@ from functional_data import smoothing
 from functional_data import sparsely_observed
 from functional_data import functional_algebra
 from functional_regressors import regularization
+from functional_data import discrete_functional_data
 
 
 class SperableKPL:
@@ -24,10 +25,8 @@ class SperableKPL:
         Regularization parameter
     center_output: bool, optional
         Should outputs be centered ?
-    non_padded_index: array-like, optional
-        The full set of locations of observations, only needed if center_output is True
     """
-    def __init__(self, kernel_scalar, B, output_basis, regu, center_output=False, non_padded_index=None):
+    def __init__(self, kernel_scalar, B, output_basis, regu, center_output="samelocs_missing"):
         self.kernel_scalar = kernel_scalar
         self.regu = regu
         self.alpha = None
@@ -52,8 +51,6 @@ class SperableKPL:
             raise ValueError("B must be either numpy.ndarray or functional_regressors.regularization.OutputMatrix")
         # Attributes used for centering
         self.center_output = center_output
-        self.non_padded_index = non_padded_index
-        self.full_output_locs = None
         # Underlying solver
         self.ovkridge = None
 
@@ -69,11 +66,10 @@ class SperableKPL:
             self.B = self.abstract_B.get_matrix(self.output_basis)
 
     def fit(self, X, Y, K=None):
-        if self.center_output:
-            full_output_locs, Ymean = sparsely_observed.mean_missing(Y[0], Y[1])
-            self.Ymean = Ymean[self.non_padded_index[0]:self.non_padded_index[1]]
-            self.full_output_locs = full_output_locs[self.non_padded_index[0]:self.non_padded_index[1]]
-            Ycentered = sparsely_observed.substract_missing(full_output_locs, Ymean, Y[0], Y[1])
+        # Center output functions if relevant
+        if self.center_output is not False:
+            self.Ymean = discrete_functional_data.mean(Y[0], Y[1], mode=self.center_output)
+            Ycentered = Y[0], discrete_functional_data.substract_function(Y[0], Y[1], self.Ymean)
         else:
             Ycentered = Y
         # Memorize training input data
@@ -100,9 +96,9 @@ class SperableKPL:
     def predict_evaluate(self, Xnew, yin_new):
         pred_coefs = self.predict(Xnew)
         basis_evals = self.output_basis.compute_matrix(yin_new)
-        if self.center_output:
-            extrapolate_mean = np.expand_dims(np.interp(yin_new.squeeze(), self.full_output_locs, self.Ymean), axis=0)
-            return pred_coefs.dot(basis_evals.T) + extrapolate_mean
+        if self.center_output is not False:
+            mean_eval = np.expand_dims(self.Ymean(yin_new), axis=0)
+            return pred_coefs.dot(basis_evals.T) + mean_eval
         else:
             return pred_coefs.dot(basis_evals.T)
 

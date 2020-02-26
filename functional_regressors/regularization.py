@@ -56,7 +56,7 @@ class WaveletsLinear(OutputMatrix):
 
 # ########################### Generate #################################################################################
 
-SUPPORTED_DICT = {"wavelets_pow": WaveletsPow, "wavelets_linear": WaveletsLinear}
+SUPPORTED_DICT = {"wavelets_pow": WaveletsPow, "wavelets_linear": WaveletsLinear, "eye": Eye}
 
 
 def generate_output_matrix(key, kwargs):

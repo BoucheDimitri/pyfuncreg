@@ -58,6 +58,7 @@ if __name__ == '__main__':
     Xtrain, Ytrain, Xtest, Ytest = processing.process_dti_dataset(cca.copy(), rcst.copy(),
                                                                   n_train=config.N_TRAIN, normalize01=True,
                                                                   pad_width_output=PAD_WIDTH_OUTPUT)
+    print(Xtrain[0][0].shape)
     Xtrain = np.array(Xtrain[1]).squeeze()
     Xtest = np.array(Xtest[1]).squeeze()
 
