@@ -12,10 +12,10 @@ class FunctionalPCA:
         Bounds for the domain to consider
     n_evals: int
         number of evaluations to use for the discrete approximation
-    output_smoother: functional_data.smoothing.RegressionSmoother
+    output_smoother: functional_data.smoothing.Smoother
         The smoother to use to pass from the discrete approximation to functions
     """
-    def __init__(self, domain, n_evals, output_smoother):
+    def __init__(self, domain, n_evals, output_smoother=smoothing.LinearInterpSmoother()):
         self.domain = domain
         self.output_smoother = output_smoother
         self.n_evals = n_evals
@@ -34,27 +34,27 @@ class FunctionalPCA:
         space = np.linspace(self.domain[0, 0], self.domain[0, 1], self.n_evals)
         data_mat = np.array([func(space) for func in Xfuncs]).squeeze()
         u, v, w = np.linalg.svd(data_mat, full_matrices=False)
+        # print(u.shape)
+        # print(w.shape)
         a = (self.domain[0, 1] - self.domain[0, 0]) / self.n_evals
+        # TODO: THERE IS A BUG IF N_EVALS < N_SAMPLES, THE RESULT OF THE SVD IS NOT THE SAME AND IT DOES NOT WORK
         self.output_smoother.fit([space for i in range(n)], (1 / np.sqrt(a)) * w)
+        # self.output_smoother.fit([space for i in range(n)], (1 / np.sqrt(a)) * u)
         self.eig_vals = v ** 2
 
     def fit_from_discrete_funcs(self, Xlocs, Xobs, smoother_in=smoothing.LinearInterpSmoother()):
-        """
-        Fit the PCA from functions
-
-        Parameters
-        ----------
-        Xfuncs: iterable of callables
-            The functional data
-        """
         n = len(Xobs)
         smoother_in.fit(Xlocs, Xobs)
         Xfuncs = smoother_in.get_functions()
         space = np.linspace(self.domain[0, 0], self.domain[0, 1], self.n_evals)
         data_mat = np.array([func(space) for func in Xfuncs]).squeeze()
         u, v, w = np.linalg.svd(data_mat, full_matrices=False)
+        # print(u.shape)
+        # print(w.shape)
         a = (self.domain[0, 1] - self.domain[0, 0]) / self.n_evals
+        # TODO: THERE IS A BUG IF N_EVALS < N_SAMPLES, THE RESULT OF THE SVD IS NOT THE SAME AND IT DOES NOT WORK
         self.output_smoother.fit([space for i in range(n)], (1 / np.sqrt(a)) * w)
+        # self.output_smoother.fit([space for i in range(n)], (1 / np.sqrt(a)) * u)
         self.eig_vals = v ** 2
 
     def fit(self, *args):

@@ -56,10 +56,9 @@ class SperableKPL:
 
     def generate_output_basis(self, Y):
         if self.output_basis is None:
-            #TODO: In the case where we want to penalize according to eigenvalues, how to we do so
-            if basis.is_data_dependant(self.output_basis_config[0]):
-                self.output_basis_config[1]["Y"] = Y
             self.output_basis = basis.generate_basis(self.output_basis_config[0], self.output_basis_config[1])
+        if isinstance(self.output_basis, basis.DataDependantBasis):
+            self.output_basis.fit(Y[0], Y[1])
 
     def generate_output_matrix(self):
         if self.B is None:
@@ -75,7 +74,7 @@ class SperableKPL:
         # Memorize training input data
         self.X = X
         # Generate output dictionary
-        self.generate_output_basis(Y)
+        self.generate_output_basis(Ycentered)
         # Generate output matrix
         self.generate_output_matrix()
         # Compute input kernel matrix if not given
@@ -86,6 +85,7 @@ class SperableKPL:
         phi_mats = [(1 / len(Ycentered[1][i]))
                     * self.output_basis.compute_matrix(Ycentered[0][i]).T for i in range(n)]
         Yproj = np.array([phi_mats[i].dot(Ycentered[1][i]) for i in range(n)])
+        # return Yproj
         # Fit ovk ridge using those approximate projections
         self.ovkridge = ovkernel_ridge.SeparableOVKRidge(self.kernel_scalar, self.B, self.regu)
         self.ovkridge.fit(X, Yproj)

@@ -34,9 +34,10 @@ PAD_WIDTH_INPUT = ((0, 0), (0, 0))
 DOMAIN_OUT_PAD = np.array([[-PAD_WIDTH_OUTPUT[1][0] / 55, 1 + PAD_WIDTH_OUTPUT[1][0] / 55]])
 # Dictionary obtained by cross validation for quick run fitting on train and get score on test
 PARAMS_DICT = {'ker_sigma': 0.9, 'center_outputs': True, 'regu': 0.009236708571873866}
-BASIS_DICT = {"domain": DOMAIN_OUT, "locs_bounds": DOMAIN_OUT_PAD,
-              'pywt_name': 'db', 'init_dilat': 1, 'dilat': 2, 'translat': 1,
-              'n_dilat': 5, 'add_constant': True}
+# BASIS_DICT = {"domain": DOMAIN_OUT, "locs_bounds": DOMAIN_OUT_PAD,
+#               'pywt_name': 'db', 'init_dilat': 1, 'dilat': 2, 'translat': 1,
+#               'n_dilat': 5, 'add_constant': True}
+BASIS_DICT = {"domain": DOMAIN_OUT, "input_dim": 1, "n_basis": 20, "n_evals": 100}
 # Standard deviation parameter for the input kernel
 KER_SIGMA = 0.9
 
@@ -62,7 +63,7 @@ if __name__ == '__main__':
     Xtrain = np.array(Xtrain[1]).squeeze()
     Xtest = np.array(Xtest[1]).squeeze()
 
-    best_regressor = generate_expes.create_kpl_dti_bis(PARAMS_DICT, BASIS_DICT, PAD_WIDTH_OUTPUT)
+    best_regressor = generate_expes.create_kpl_dti_bis(PARAMS_DICT, BASIS_DICT)
     best_regressor.fit(Xtrain, Ytrain)
     # Evaluate it on test set
     preds = best_regressor.predict_evaluate_diff_locs(Xtest, Ytest[0])

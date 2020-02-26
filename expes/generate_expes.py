@@ -109,10 +109,12 @@ def create_kpl_dti(expe_dict, domain_out, domain_out_pad, pad_width):
     return reg
 
 
-def create_kpl_dti_bis(expe_dict, output_basis_dict, pad_width):
+def create_kpl_dti_bis(expe_dict, output_basis_dict):
     gauss_ker = kernels.GaussianScalarKernel(expe_dict["ker_sigma"], normalize=False)
-    output_basis = ("wavelets", output_basis_dict)
-    output_matrix = regularization.WaveletsPow(1.2)
+    # output_basis = ("wavelets", output_basis_dict)
+    output_basis = ("functional_pca", output_basis_dict)
+    # output_matrix = regularization.WaveletsPow(1.2)
+    output_matrix = regularization.Eye()
     reg = kproj_learning.SperableKPL(gauss_ker, output_matrix, output_basis, expe_dict["regu"],
                                      center_output="samelocs_missing")
     # bfgs = first_order.ScipySolver(maxit=3000, tol=1e-8, method="L-BFGS-B")

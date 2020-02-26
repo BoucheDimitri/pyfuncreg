@@ -4,6 +4,9 @@ import functools
 from scipy.interpolate import BSpline
 import pywt
 
+from functional_data import smoothing
+from functional_data import fpca
+
 
 # ######################## Abstract classes ############################################################################
 
@@ -540,19 +543,28 @@ class MultiscaleCompactlySupported(Basis):
         return np.concatenate(evals, axis=1)
 
 
+# ######################## Data-dependant bases ########################################################################
+
+class FPCABasis(DataDependantBasis):
+
+    def __init__(self, n_basis, input_dim, domain, n_evals, output_smoother=smoothing.LinearInterpSmoother()):
+        self.fpca = fpca.FunctionalPCA(domain, n_evals, output_smoother)
+        super().__init__(n_basis, input_dim, domain)
+
+    def fit(self, *args):
+        self.fpca.fit(*args)
+
+    def compute_matrix(self, X):
+        evals = [self.fpca.predict(X[i])[:self.n_basis] for i in range(len(X))]
+        return np.array(evals)
+
+
 # ######################## Basis generation ############################################################################
 
 SUPPORTED_DICT = {"random_fourier": RandomFourierFeatures,
                   "fourier": FourierBasis,
-                  "wavelets": MultiscaleCompactlySupported}
-
-DATA_DEPENDENCE_DICT = {"random_fourier": False,
-                        "fourier": False,
-                        "wavelets": False}
-
-
-def is_data_dependant(basis_name):
-    return DATA_DEPENDENCE_DICT[basis_name]
+                  "wavelets": MultiscaleCompactlySupported,
+                  "functional_pca": FPCABasis}
 
 
 def generate_basis(key, kwargs):
