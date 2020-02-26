@@ -1,6 +1,9 @@
 import numpy as np
+from abc import ABC, abstractmethod
 from sklearn.linear_model import Ridge, Lasso
 
+
+# ##################### Expanded regressions ###########################################################################
 
 class ExpandedRidge:
     """
@@ -80,7 +83,62 @@ class ExpandedLasso:
         return self.predict(X)
 
 
-class Smoother:
+# ##################### Smoothers ######################################################################################
+
+class Smoother(ABC):
+
+    def __init__(self):
+        """
+        Perform smoothing on a whole sample of discretized functions
+        """
+        self.regressors = []
+        super().__init__()
+
+    @abstractmethod
+    def fit(self, Xlocs, Xobs):
+        """
+        Fit the smoother
+
+        Parameters
+        ----------
+        Xlocs: iterable of array-like
+            The input locations, len = n_samples and for the i-th sample, Ylocs[i] has shape = [n_observations_i, 1]
+        Xobs: iterable of array-like
+            The observations len = n_samples and for the i-th sample, Yobs[i] has shape = [n_observations_i, ]
+        """
+        pass
+
+    @abstractmethod
+    def get_functions(self):
+        """
+        Getter for the regressors attribute
+
+        Returns
+        -------
+        iterable of callable
+            The list of smoothed functions
+        """
+        pass
+
+    @abstractmethod
+    def predict(self, locs):
+        """
+        Evaluate at new locations using the smoothed functions
+
+        Parameters
+        ----------
+        locs: array-like
+            The locations where to evaluate
+
+        Returns
+        -------
+        array-like
+            Array of evaluations
+        """
+        pass
+
+
+class RegressionSmoother(Smoother):
     """
     Parameters
     ----------
@@ -95,9 +153,9 @@ class Smoother:
         self.basis = basis
         self.regu = regu
         self.method = method
-        self.regressors = []
+        super().__init__()
 
-    def fit(self, Xlocs, Xevals):
+    def fit(self, Xlocs, Xobs):
         n = len(Xlocs)
         self.regressors = []
         for i in range(n):
@@ -107,22 +165,22 @@ class Smoother:
                 reg = ExpandedLasso(self.regu, self.basis)
             else:
                 raise ValueError('method should be either "Ridge" or "Lasso"')
-            reg.fit(Xlocs[i], Xevals[i])
+            reg.fit(Xlocs[i], Xobs[i])
             self.regressors.append(reg)
 
     def get_functions(self):
         return self.regressors
 
-    def predict(self, xlocs):
-        return np.array([reg.predict(xlocs) for reg in self.regressors])
+    def predict(self, locs):
+        return np.array([reg.predict(locs) for reg in self.regressors])
 
 
-class LinearInterpSmoother:
+class LinearInterpSmoother(Smoother):
     """
-    Smoother using linear interpolation
+    RegressionSmoother using linear interpolation
     """
     def __init__(self):
-        self.regressors = []
+        super().__init__()
 
     @staticmethod
     def interp_function(xloc, xeval):
@@ -130,14 +188,14 @@ class LinearInterpSmoother:
             return np.interp(x.squeeze(), xloc.squeeze(), xeval.squeeze())
         return func_interp
 
-    def fit(self, Xlocs, Xevals):
-        self.regressors = [LinearInterpSmoother.interp_function(Xlocs[i], Xevals[i]) for i in range(len(Xlocs))]
+    def fit(self, Xlocs, Xobs):
+        self.regressors = [LinearInterpSmoother.interp_function(Xlocs[i], Xobs[i]) for i in range(len(Xlocs))]
 
     def get_functions(self):
         return self.regressors
 
-    def predict(self, xlocs):
-        return np.array([reg(xlocs) for reg in self.regressors])
+    def predict(self, locs):
+        return np.array([reg(locs) for reg in self.regressors])
 
 
 
