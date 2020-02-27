@@ -115,8 +115,8 @@ def create_kpl_dti_bis(expe_dict, output_basis_dict):
     output_basis = ("functional_pca", output_basis_dict)
     # output_matrix = regularization.WaveletsPow(1.2)
     output_matrix = regularization.Eye()
-    reg = kproj_learning.SperableKPL(gauss_ker, output_matrix, output_basis, expe_dict["regu"],
-                                     center_output="samelocs_missing")
+    reg = kproj_learning.SeperableKPL(gauss_ker, output_matrix, output_basis, expe_dict["regu"],
+                                      center_output="samelocs_missing")
     # bfgs = first_order.ScipySolver(maxit=3000, tol=1e-8, method="L-BFGS-B")
     # reg = kproj_learning.KPLApprox(gauss_ker, B, func_dict, expe_dict["regu"], bfgs,
     #                                non_padded_index=non_padded_index,

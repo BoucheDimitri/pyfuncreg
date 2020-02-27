@@ -59,7 +59,7 @@ output_basis = ('functional_pca', output_basis_config)
 
 regu = 1e-10
 
-test_kproj = kproj.SperableKPL(multi_ker, output_matrix, output_basis, regu)
+test_kproj = kproj.SeperableKPL(multi_ker, output_matrix, output_basis, regu)
 
 # start = perf_counter()
 test_kproj.fit(Xtrain, Ytrain)

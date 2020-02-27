@@ -32,7 +32,7 @@ output_matrix = regularization.Eye()
 
 regu = 1e-3
 
-test_kpl = kproj.SperableKPL(gauss_ker, output_matrix, output_basis, regu)
+test_kpl = kproj.SeperableKPL(gauss_ker, output_matrix, output_basis, regu)
 
 Xtrain = np.array(Xtrain[1]).squeeze()
 Xtest = np.array(Xtest[1]).squeeze()

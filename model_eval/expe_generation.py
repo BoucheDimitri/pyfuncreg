@@ -2,7 +2,7 @@ from collections.abc import Iterable
 import itertools
 
 
-def configs_combinations(params_dict):
+def configs_combinations(params_dict, exclude_list=()):
     """
     For a dictionary, generate dictionaries by combining all the possible values for the keys pointing to iterables.
 
@@ -21,7 +21,7 @@ def configs_combinations(params_dict):
     uni_params = []
     multi_vals = []
     for key in params_dict.keys():
-        if isinstance(params_dict[key], Iterable) and not isinstance(params_dict[key], str):
+        if isinstance(params_dict[key], Iterable) and not isinstance(params_dict[key], str) and key not in exclude_list:
             multi_params.append(key)
             multi_vals.append(params_dict[key])
         else:

@@ -124,7 +124,8 @@ def parallel_tuning(regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=None, key=None,
 
     Parameters
     ----------
-    regs
+    regs: list or tuple
+        list or tuple of functional_regressors.functional_regressor.FunctionalRegressor
     Xtrain:
         The training input data in the format corresponding to `cv_mode`
     Ytrain: list of tuple, len = 2

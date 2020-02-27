@@ -1,9 +1,6 @@
 import numpy as np
 from sklearn.model_selection import KFold
-import multiprocessing
-import time
-import pickle
-import psutil
+
 
 from model_eval import metrics
 
@@ -39,8 +36,8 @@ class KfoldsCrossVal:
 
         Parameters
         ----------
-        reg:
-            The regressors, must implement the methods **fit** and **predict_evaluate_diff_locs**
+        reg: functional_regressors.functional_regressor.FunctionalRegressor
+            The regressors
         X: tuple or list, len = 2
             The input data, with X = (Xlocs, Xobs), with Xlocs and Xobs of len = n_samples
             and for 1 <= i <= n_samples, Xlocs[i] and Xobs[i] have shape = [n_observations_i, 1]
@@ -70,8 +67,8 @@ class KfoldsCrossVal:
 
         Parameters
         ----------
-        reg:
-            The regressors, must implement the methods **fit** and **predict_evaluate_diff_locs**
+        reg: functional_regressors.functional_regressor.FunctionalRegressor
+            The regressors
         X: array-like, len = n_samples
             The input data
         Y: tuple or list, len = 2
@@ -102,8 +99,8 @@ class KfoldsCrossVal:
 
         Parameters
         ----------
-        reg:
-            Must implement the methods **fit** and **predict_evaluate_diff_locs**
+        reg: functional_regressors.functional_regressor.FunctionalRegressor
+            The regressor to cross-validate
         X:
             The input data in the form corresponding to the mode
         Y:

@@ -10,9 +10,10 @@ from functional_data import sparsely_observed
 from functional_data import functional_algebra
 from functional_regressors import regularization
 from functional_data import discrete_functional_data
+from functional_regressors.functional_regressor import FunctionalRegressor
 
 
-class SperableKPL:
+class SeperableKPL(FunctionalRegressor):
     """
     Parameters
     ----------
@@ -28,6 +29,7 @@ class SperableKPL:
         Mode for centering, set to False for no centering
     """
     def __init__(self, kernel_scalar, B, output_basis, regu, center_output="samelocs_missing"):
+        super().__init__()
         self.kernel_scalar = kernel_scalar
         self.regu = regu
         self.alpha = None
