@@ -10,6 +10,8 @@ def configs_combinations(params_dict, exclude_list=()):
     ----------
     params_dict: dict
         Input dictionary
+    exclude_list: list or tuple
+        keys corresponding to Iterables to exclude from the combination stripping process
 
     Returns
     -------
@@ -36,6 +38,28 @@ def configs_combinations(params_dict, exclude_list=()):
     return expe_queue
 
 
+def subconfigs_combinations(subconfig_name, params_dict, exclude_list=()):
+    """
+    For a dictionary, generate dictionaries by combining all the possible values for the keys pointing to iterables.
+
+    Parameters
+    ----------
+    subconfig_name: str
+        The name of the subconfig
+    params_dict: dict
+        Input dictionary
+    exclude_list: list or tuple
+        keys corresponding to Iterables to exclude from the combination stripping process
+
+    Returns
+    -------
+    list
+        List of tuples of the form (subconfig_name, config_dict)
+    """
+    expe_queue = configs_combinations(params_dict, exclude_list)
+    return [(subconfig_name, config) for config in expe_queue]
+
+
 def combine_config_lists(configs1, configs2):
     """
     Combine two lists of configs using cartesian product
@@ -53,5 +77,8 @@ def combine_config_lists(configs1, configs2):
         List of tuples of possible configuration dictionaries
     """
     return list(itertools.product(configs1, configs2))
+
+
+
 
 

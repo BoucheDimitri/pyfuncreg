@@ -15,7 +15,7 @@ from expes import generate_expes
 from model_eval import parallel_tuning
 from functional_regressors import kernels
 from functional_regressors import regularization
-from model_eval import expe_generation
+from model_eval import configs_generation
 from data import loading
 from functional_regressors import kernel_projection_learning as kproj
 
@@ -90,7 +90,7 @@ if __name__ == '__main__':
     except IndexError:
         argv = ""
     if argv == "full":
-        output_basis_configs = expe_generation.configs_combinations(
+        output_basis_configs = configs_generation.configs_combinations(
             {"n_basis": N_FPCA, "input_dim": 1, "domain": DOMAIN_OUT, "n_evals": NEVALS_FPCA},
             exclude_list={"domain"})
         output_bases = [("functional_pca", config) for config in output_basis_configs]
@@ -100,7 +100,7 @@ if __name__ == '__main__':
         # Generate config dictionaries
         B = regularization.Eye()
         params = {"regu": REGU_GRID, "kernel_scalar": multi_ker, "output_basis": output_bases, "B": B}
-        expe_dicts = expe_generation.configs_combinations(params)
+        expe_dicts = configs_generation.configs_combinations(params)
         for di in expe_dicts:
             print(di)
         # Create a queue of regressor to cross validate
