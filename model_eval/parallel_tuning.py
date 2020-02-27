@@ -10,7 +10,7 @@ from model_eval import metrics
 
 def check_cpu_availability(min_nprocs=4, timeout_sleep=3, n_timeout=0, cpu_avail_thresh=30):
     """
-    Allocate CPUs for execution based on a minimum number of available CPUs ` for n_procs`, if the number of
+    Allocate CPUs for execution based on a minimum number of available CPUs for `n_procs`, if the number of
     CPUs available are inferior to that number, the function can be set to wait and re-try several times.
 
     Parameters
@@ -42,6 +42,26 @@ def check_cpu_availability(min_nprocs=4, timeout_sleep=3, n_timeout=0, cpu_avail
     return n_procs
 
 
+def run_cross_vals_batch(regs_split, Xtrain, Ytrain, cross_val):
+    with multiprocessing.Pool(processes=len(regs_split)) as pool:
+        multiple_results = [pool.apply_async(cross_val, (regs_split[j], Xtrain, Ytrain,))
+                            for j in range(len(regs_split))]
+        return [res.get() for res in multiple_results]
+
+
+def record_up_to_current_batch(rec_path, key, results, configs, batch_no, n_batches, n_procs):
+    if rec_path is not None:
+        if configs is not None:
+            with open(rec_path + "/batch_no" + str(batch_no)
+                      + "out_of" + str(n_batches) + "_" + key + ".pkl", "wb") as outp:
+                pickle.dump((configs[:(batch_no + 1) * n_procs], results[:(batch_no + 1) * n_procs]), outp,
+                            pickle.HIGHEST_PROTOCOL)
+        else:
+            with open(rec_path + "/batch_no" + str(batch_no)
+                      + "out_of" + str(n_batches) + "_" + key + ".pkl", "wb") as outp:
+                pickle.dump(results[:(batch_no + 1) * n_procs], outp, pickle.HIGHEST_PROTOCOL)
+
+
 def parallel_cross_vals(regs, Xtrain, Ytrain, cross_val, n_procs, rec_path=None, key=None, configs=None):
     """
     Cross validate the regressors in reg in parallel.
@@ -71,42 +91,27 @@ def parallel_cross_vals(regs, Xtrain, Ytrain, cross_val, n_procs, rec_path=None,
     list
         The list of cross-validation scores
     """
-    # Number of experiments
-    nexpes = len(regs)
-    # Number of experiments batch
-    nsplits = len(regs) // n_procs
+    # Number of batches
+    n_batches = len(regs) // n_procs
     results = []
-    if nsplits == 0:
-        with multiprocessing.Pool(processes=nexpes) as pool:
-            multiple_results = [pool.apply_async(cross_val, (regs[i], Xtrain, Ytrain, )) for i in range(nexpes)]
-            results += [res.get() for res in multiple_results]
+    if n_batches == 0:
+        results += run_cross_vals_batch(regs, Xtrain, Ytrain, cross_val)
     else:
-        count = 0
-        for i in range(nsplits + 1):
-            if count < nsplits:
+        # Execute batches sequentially
+        for i in range(n_batches + 1):
+            if i < n_batches:
+                # Create batch
                 regs_split = regs[i * n_procs: (i + 1) * n_procs]
-                with multiprocessing.Pool(processes=n_procs) as pool:
-                    multiple_results = [pool.apply_async(cross_val, (regs_split[j], Xtrain, Ytrain, ))
-                                        for j in range(len(regs_split))]
-                    results += [res.get() for res in multiple_results]
-                print("Process batch number " + str(count) + " finished. Remaining: " + str(nsplits - count - 1))
-                if rec_path is not None:
-                    with open(rec_path + "/batch_no" + str(count) + "out_of"
-                              + str(nsplits) + "_" + key + ".pkl", "wb") as outp:
-                        if configs is not None:
-                            pickle.dump((configs[:(i + 1) * n_procs], results[:(i + 1) * n_procs]), outp,
-                                        pickle.HIGHEST_PROTOCOL)
-                        else:
-                            pickle.dump(results[:(i + 1) * n_procs], outp,
-                                        pickle.HIGHEST_PROTOCOL)
-                count += 1
+                # Execute batch
+                results += run_cross_vals_batch(regs_split, Xtrain, Ytrain, cross_val)
+                # Print progress
+                print("Process batch number " + str(i) + " finished. Remaining: " + str(n_batches - i - 1))
+                # Record results up to current batch
+                record_up_to_current_batch(rec_path, key, results, configs, i, n_batches, n_procs)
             else:
                 regs_split = regs[i * n_procs:]
                 if len(regs_split) > 0:
-                    with multiprocessing.Pool(processes=len(regs_split)) as pool:
-                        multiple_results = [pool.apply_async(cross_val, (regs_split[j], Xtrain, Ytrain, ))
-                                            for j in range(len(regs_split))]
-                        results += [res.get() for res in multiple_results]
+                    results += run_cross_vals_batch(regs_split, Xtrain, Ytrain, cross_val)
     return results
 
 
@@ -114,22 +119,29 @@ def parallel_tuning(regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=None, key=None,
                     cv_mode="vector", n_folds=5, n_procs=None, min_nprocs=4, timeout_sleep=3,
                     n_timeout=0, cpu_avail_thresh=30):
     """
+    Tuning of the regressors in parallel by cross-validation, selecting the best and fitting it on the train set,
+    its score on test set is then computed.
 
     Parameters
     ----------
     regs
     Xtrain:
         The training input data in the format corresponding to `cv_mode`
-    Ytrain:
-        The output data, with `Ytrain` = (Ytrain_locs, Ytrain_obs), with Ytrain_locs and Yobs of len = n_samples
-            and for 1 <= i <= n_samples, Ylocs[i] and Yobs[i] have shape = [n_observations_i, 1]
+    Ytrain: list of tuple, len = 2
+        The training output data,`Ytrain` = (Ytrain_locs, Ytrain_obs), Ytrain_locs and Ytrain_obs of len = n_samples_train
+        and for 1 <= i <= n_samples, Ytrain_locs[i] and Ytrain_obs[i] have shape = [n_observations_i, 1]
     Xtest:
         The testing input data in the format corresponding to `cv_mode`
-    Ytest
-    rec_path
-    key
-    configs: list or tuple
-        The configurations dictionaries corresponding to
+    Ytest: list or tuple, len = 2
+        The testing output data,`Ytest` = (Ytest_locs, Ytest_obs), Ytest_locs and Ytest_obs of len = n_samples_test
+        and for 1 <= i <= n_samples, Ytest_locs[i] and Ytest_obs[i] have shape = [n_observations_i, 1]
+    rec_path: str, optional
+        Path for recording incrementally the batches of results
+    key: str, optional
+        String added to the file name of the batch if `rec_path` is not None
+    configs: dict, optional
+        The dictionaries of configuration corresponding to the regressors in `regs`, if `rec_path` is not None,
+        the corresponding dictionaries are saved along with the results
     cv_mode: {"discrete_func", "vector", "smooth_func"}
         The form of the input data
     n_folds: int
@@ -145,10 +157,11 @@ def parallel_tuning(regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=None, key=None,
     cpu_avail_thresh:
         Percentage of occupation under which a CPU is considered available
 
-
     Returns
     -------
-
+    tuple
+        Either (best_config, crossval_score_train, score_test) if `configs` is not None or
+        (crossval_score_train, score_test) otherwise.
     """
     # Number of processors for execution
     if n_procs is None:
@@ -156,12 +169,17 @@ def parallel_tuning(regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=None, key=None,
                                          n_timeout=n_timeout, cpu_avail_thresh=cpu_avail_thresh)
     # Instantiate cross validation
     cross_val = cross_validation.KfoldsCrossVal(n_folds=n_folds, mode=cv_mode)
+    # Run cross-validations in parallel for the regressors in regs
     results = parallel_cross_vals(regs, Xtrain, Ytrain, cross_val, n_procs, rec_path=rec_path, key=key, configs=configs)
+    # Select regressor corresponding to best cross-validation score
     best_ind = int(np.argmin(results))
     best_reg = regs[best_ind]
+    # Fit best regressor on full training data
     best_reg.fit(Xtrain, Ytrain)
+    # Evaluate its performance on test set
     preds = best_reg.predict_evaluate_diff_locs(Xtest, Ytest[0])
     score_test = metrics.mse(preds, Ytest[1])
+    # Return the results
     if configs is not None:
         return configs[best_ind], results[best_ind], score_test
     else:
