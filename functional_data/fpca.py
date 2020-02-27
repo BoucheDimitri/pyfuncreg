@@ -58,11 +58,11 @@ class FunctionalPCA:
         self.eig_vals = v ** 2
 
     def fit(self, *args):
-        if len(args)==1:
+        if len(args) == 1:
             self.fit_from_funcs(args[0])
-        elif len(args)==2:
+        elif len(args) == 2:
             self.fit_from_discrete_funcs(args[0], args[1])
-        elif len(args)==3:
+        elif len(args) == 3:
             self.fit_from_discrete_funcs(args[0], args[1], smoother_in=args[2])
         else:
             raise ValueError("Maximum number of argument is 3: (Xlocs, Xobs, smoother_in)")

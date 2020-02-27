@@ -1,7 +1,16 @@
 import os
 import numpy as np
 import importlib
+import sys
+import pathlib
 import matplotlib.pyplot as plt
+from time import perf_counter
+
+# Execution path
+# exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
+# path = str(exec_path.parent)
+# sys.path.append(path)
+path = os.getcwd()
 
 from data import loading
 from functional_regressors import kernels
@@ -15,8 +24,6 @@ importlib.reload(fpca)
 
 domain_out = np.array([[0, 1]])
 
-
-path = os.getcwd()
 
 Xtrain, Ytrain_full, Xtest, Ytest_full = loading.load_processed_speech_dataset(path + "/data/dataspeech/processed/")
 
@@ -47,13 +54,17 @@ gauss_kers = [kernels.GaussianScalarKernel(sig, normalize=False, normalize_dist=
 multi_ker = kernels.SumOfScalarKernel(gauss_kers, normalize=False)
 
 output_matrix = regularization.Eye()
-output_basis_config = {"n_basis": 40, "input_dim": 1, "domain": domain_out, "n_evals": 500}
+output_basis_config = {"n_basis": 40, "input_dim": 1, "domain": domain_out, "n_evals": 300}
 output_basis = ('functional_pca', output_basis_config)
 
 regu = 1e-10
 
 test_kproj = kproj.SperableKPL(multi_ker, output_matrix, output_basis, regu)
+
+# start = perf_counter()
 test_kproj.fit(Xtrain, Ytrain)
+# end = perf_counter()
+# print(end - start)
 
 preds = test_kproj.predict_evaluate_diff_locs(Xtest, Ytest[0])
 score_test = model_eval.mean_squared_error(preds, Ytest[1])

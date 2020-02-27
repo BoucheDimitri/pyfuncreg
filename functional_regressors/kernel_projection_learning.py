@@ -1,5 +1,6 @@
 import numpy as np
 import functools
+from time import perf_counter
 
 from functional_regressors import ovkernel_ridge
 from functional_data import basis
@@ -66,29 +67,51 @@ class SperableKPL:
 
     def fit(self, X, Y, K=None):
         # Center output functions if relevant
+        # start_center = perf_counter()
         if self.center_output is not False:
             self.Ymean = discrete_functional_data.mean(Y[0], Y[1], mode=self.center_output)
             Ycentered = Y[0], discrete_functional_data.substract_function(Y[0], Y[1], self.Ymean)
         else:
             Ycentered = Y
+        # end_center = perf_counter()
+        # print("Centering of the data perf :" + str(end_center - start_center))
         # Memorize training input data
         self.X = X
         # Generate output dictionary
+        # start_basis = perf_counter()
         self.generate_output_basis(Ycentered)
+        # end_basis = perf_counter()
+        # print("Generating the output basis perf :" + str(end_basis - start_basis))
         # Generate output matrix
+        # start_outmat = perf_counter()
         self.generate_output_matrix()
+        # end_outmat = perf_counter()
+        # print("Generating output matrix perf :" + str(end_outmat - start_outmat))
         # Compute input kernel matrix if not given
+        # start_kmat = perf_counter()
         if K is None:
             K = self.kernel_scalar(X, X)
+        # end_kmat = perf_counter()
+        # print("Computing kernel matrix perf: " + str(end_kmat - start_kmat))
         n = K.shape[0]
         # Compute approximate dot product between output functions and dictionary functions
+        # return Ycentered, self.output_basis
+        # start_phimats = perf_counter()
         phi_mats = [(1 / len(Ycentered[1][i]))
                     * self.output_basis.compute_matrix(Ycentered[0][i]).T for i in range(n)]
+        # end_phimats = perf_counter()
+        # print("Computing phi mats perf: " + str(end_phimats - start_phimats))
+        # start_yproj = perf_counter()
         Yproj = np.array([phi_mats[i].dot(Ycentered[1][i]) for i in range(n)])
+        # end_yproj = perf_counter()
+        # print("Computing Y projection on dict perf: " + str(end_yproj - start_yproj))
         # return Yproj
         # Fit ovk ridge using those approximate projections
+        # start_fitovk = perf_counter()
         self.ovkridge = ovkernel_ridge.SeparableOVKRidge(self.kernel_scalar, self.B, self.regu)
-        self.ovkridge.fit(X, Yproj)
+        self.ovkridge.fit(X, Yproj, K=K)
+        # end_fitovk = perf_counter()
+        # print("Fitting the OVK Ridge: " + str(end_fitovk - start_fitovk))
 
     def predict(self, Xnew):
         return self.ovkridge.predict(Xnew)
@@ -406,22 +429,34 @@ class KPLExactFPCA:
                 self.B = np.diag(self.n_fpca + 1)
 
     def fit(self, X, Y, K=None):
+        # start_center = perf_counter()
         Yfunc = KPLExactFPCA.get_func_outputs(Y)
         self.Ymean_func = functional_algebra.mean_function(Yfunc)
         if self.center_output:
             Yfunc_centered = functional_algebra.diff_function_list(Yfunc, self.Ymean_func)
         else:
             Yfunc_centered = Yfunc
+        # end_center = perf_counter()
+        # print("Centering of the data perf :" + str(end_center - start_center))
         domain = np.array([[Y[0][0][0], Y[0][0][-1]]])
+        # start_B_dict = perf_counter()
         self.intialize_dict_and_B(Yfunc_centered, domain)
+        # end_B_dict = perf_counter()
+        # print("Initializing the output matrix and dictionary: " + str(end_B_dict - start_B_dict))
         self.ovkridge = ovkernel_ridge.SeparableOVKRidge(self.kernel_scalar, self.B, self.regu)
         n = len(Yfunc)
+        # start_yproj = perf_counter()
         Ycentered = (Y[0], [Y[1][i] - self.Ymean_func(Y[0][i].squeeze()) for i in range(n)])
         phi_mats = [(1 / len(Ycentered[1][i]))
                     * self.output_basis.compute_matrix(Ycentered[0][i]).T for i in range(n)]
         Yproj = np.array([phi_mats[i].dot(Ycentered[1][i]) for i in range(n)])
+        # end_yproj = perf_counter()
+        # print("Computing Yproj: " + str(end_yproj - start_yproj))
         # return Yproj
+        # start_fit = perf_counter()
         self.ovkridge.fit(X, Yproj)
+        # end_fit = perf_counter()
+        # print("Fitting the OVK Ridge: " + str(end_fit - start_fit))
 
     def predict(self, Xnew):
         return self.ovkridge.predict(Xnew)

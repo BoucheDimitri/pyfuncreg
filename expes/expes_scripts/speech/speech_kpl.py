@@ -3,6 +3,7 @@ import os
 import sys
 import pickle
 import pathlib
+from time import perf_counter
 
 # Execution path
 exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
@@ -108,7 +109,10 @@ if __name__ == '__main__':
     else:
         # Use directly the regressor stemming from the cross validation
         best_regressor = generate_expes.create_kpl_speech(CV_DICTS[key], NEVALS_FPCA)
+        start = perf_counter()
         best_regressor.fit(Xtrain, Ytrain)
+        end = perf_counter()
+        print(end - start)
         # Evaluate it on test set
         len_test = len(Xtest)
         preds = [best_regressor.predict_evaluate(np.expand_dims(Xtest[i], axis=0), Ytest[0][i])

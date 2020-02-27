@@ -555,8 +555,14 @@ class FPCABasis(DataDependantBasis):
         self.fpca.fit(*args)
 
     def compute_matrix(self, X):
-        evals = [self.fpca.predict(X[i])[:self.n_basis] for i in range(len(X))]
-        return np.array(evals)
+        # evals = [self.fpca.predict(X[i])[:self.n_basis] for i in range(len(X))]
+        # return np.array(evals)
+        n = X.shape[0]
+        funcs = self.fpca.get_regressors(self.n_basis)
+        mat = np.zeros((n, self.n_basis))
+        for i in range(self.n_basis):
+            mat[:, i] = funcs[i](X)
+        return mat
 
 
 # ######################## Basis generation ############################################################################
