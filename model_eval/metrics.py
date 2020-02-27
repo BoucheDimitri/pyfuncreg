@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def mean_squared_error(ytrue, ypred):
+def mse(ytrue, ypred):
     scores = np.array([np.mean(np.linalg.norm(np.squeeze(ytrue[i]) - np.squeeze(ypred[i]))**2) for i in range(len(ytrue))])
     return np.mean(scores)
 

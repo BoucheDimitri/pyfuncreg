@@ -127,3 +127,7 @@ class KernelAdditiveModel:
         n = len(Xfunc_new)
         Ymean_evals = np.tile(Ymean_eval, (n, 1))
         return inter_prod2.T + Ymean_evals
+
+    def predict_evaluate_diff_locs(self, Xnew, Yins_new):
+        n_new = len(Yins_new)
+        return [self.predict_evaluate(([Xnew[0][i]], [Xnew[1][i]]), Yins_new[i]) for i in range(n_new)]

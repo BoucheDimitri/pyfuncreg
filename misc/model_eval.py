@@ -5,6 +5,8 @@ import time
 import pickle
 import psutil
 
+from model_eval import cross_validation
+
 
 def mean_squared_error(ytrue, ypred):
     scores = np.array([np.mean(np.linalg.norm(np.squeeze(ytrue[i]) - np.squeeze(ypred[i]))**2) for i in range(len(ytrue))])
@@ -90,6 +92,73 @@ def exec_regressors_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest,
     nsplits = len(regressors) // nprocs
     results = []
     cross_val = CrossValidationEval(pred_diff_locs=eval_diff_locs)
+    if nsplits == 0:
+        with multiprocessing.Pool(processes=nexpes) as pool:
+            multiple_results = [pool.apply_async(cross_val, (regressors[i], Xtrain, Ytrain, ))
+                                for i in range(nexpes)]
+            results += [res.get() for res in multiple_results]
+    else:
+        count = 0
+        for i in range(nsplits + 1):
+            if count < nsplits:
+                regressors_split = regressors[i * nprocs: (i + 1) * nprocs]
+                with multiprocessing.Pool(processes=nprocs) as pool:
+                    multiple_results = [pool.apply_async(cross_val,
+                                                         (regressors_split[j], Xtrain, Ytrain, ))
+                                        for j in range(len(regressors_split))]
+                    results += [res.get() for res in multiple_results]
+                print(
+                    "Process batch number " + str(count) + " finished. Remaining: " + str(nsplits - count - 1))
+                if rec_path is not None:
+                    with open(rec_path + "/batch_no" + str(count) + "out_of" + str(nsplits) + "_" + key + ".pkl", "wb") as outp:
+                        pickle.dump((expe_dicts[:(i + 1) * nprocs], results[:(i + 1) * nprocs]), outp,
+                                    pickle.HIGHEST_PROTOCOL)
+                count += 1
+            else:
+                regressors_split = regressors[i * nprocs:]
+                if len(regressors_split) > 0:
+                    with multiprocessing.Pool(processes=len(regressors_split)) as pool:
+                        multiple_results = [pool.apply_async(cross_val,
+                                                            (regressors_split[j], Xtrain, Ytrain, ))
+                                            for j in range(len(regressors_split))]
+                        results += [res.get() for res in multiple_results]
+    best_ind = np.argmin(results)
+    best_regressor = regressors[best_ind]
+    best_regressor.fit(Xtrain, Ytrain)
+    if isinstance(Xtrain, np.ndarray):
+        len_test = len(Xtest)
+        preds = [best_regressor.predict_evaluate(np.expand_dims(Xtest[i], axis=0), Ytest[0][i])
+                 for i in range(len_test)]
+    elif len(Xtest) == 2:
+        len_test = len(Xtest[0])
+        preds = [best_regressor.predict_evaluate([Xtest[i]], Ytest[0][i])
+                 for i in range(len_test)]
+    else:
+        len_test = len(Xtest)
+        preds = [best_regressor.predict_evaluate([Xtest[i]], Ytest[0][i])
+                 for i in range(len_test)]
+    score_test = mean_squared_error(preds, [Ytest[1][i] for i in range(len_test)])
+    return expe_dicts, results, best_ind, expe_dicts[best_ind], results[best_ind], score_test
+
+
+def exec_regressors_queue_bis(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest,
+                              rec_path=None, key="", nprocs=None, timeout=0, minnprocs=4, cv_mode="vector"):
+    """
+    Parallelized cross-validation of regressors
+    """
+    if nprocs is None:
+        cpu_occup = np.array(psutil.cpu_percent(percpu=True))
+        nprocs = (cpu_occup[cpu_occup < 90]).shape[0]
+        timeout_count = 0
+        while nprocs < minnprocs and timeout_count < timeout:
+            time.sleep(3)
+            cpu_occup = np.array(psutil.cpu_percent(percpu=True))
+            nprocs = (cpu_occup[cpu_occup < 90]).shape[0]
+            timeout_count += 1
+    nexpes = len(regressors)
+    nsplits = len(regressors) // nprocs
+    results = []
+    cross_val = cross_validation.KfoldsCrossVal(mode=cv_mode)
     if nsplits == 0:
         with multiprocessing.Pool(processes=nexpes) as pool:
             multiple_results = [pool.apply_async(cross_val, (regressors[i], Xtrain, Ytrain, ))
