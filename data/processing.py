@@ -5,7 +5,14 @@ import numpy as np
 # Shifting grid
 
 # def normalize_domain01_samelocs_missing(Xlocs)
-#
+
+
+def normalize_domain(Xlocs, locmin, locmax):
+    return [(Xlocs[i] - locmin) / locmax for i in range(len(Xlocs))]
+
+def normalize_values():
+    pass
+
 
 def process_dti_dataset(cca, rcst, n_train=70, normalize01=True,
                         pad_mode_input="symmetric", pad_width_input=((0, 0), (0, 0)),
