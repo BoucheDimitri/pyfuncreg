@@ -4,6 +4,49 @@ from functional_data import smoothing
 from functional_data import functional_algebra
 
 
+class DiscreteRegular1D:
+
+    def __init__(self, ylocs, Yobs):
+        """
+
+        Parameters
+        ----------
+        ylocs: array_like, shape = [n_locations_full, ]
+        Yobs: array_like, shape = [n_samples, n_locations_full]
+        """
+        self.ylocs_full = ylocs
+        self.pace = ylocs[1] - ylocs[0]
+        self.Yobs_full = Yobs
+        self.n_samples = len(Yobs)
+        self.n_obs = len(ylocs)
+
+    def to_discrete_general(self):
+        Ylocs, Yobs = list(), list()
+        for i in range(len(self.Yobs_full)):
+            Ylocs.append(self.ylocs_full[np.argwhere(~ np.isnan(self.Yobs_full[i])).squeeze()])
+        return Ylocs, [self.Yobs_full[i] for i in range(len(self.Yobs_full))]
+
+    def get_extended_version(self, mode="symmetric", repeats=(0, 0)):
+        padded_locs = [self.ylocs_full + i * len(self.ylocs_full) for i in range(repeats[0] + repeats[1] + 1)]
+        Yobs_full_extended = np.pad(self.Yobs_full, mode=mode,
+                                    pad_width=((0, 0), (repeats[0] * self.n_obs, repeats[1] * self.n_obs)))
+        return DiscreteRegular1D(
+            np.concatenate(padded_locs) - repeats[0] * (self.ylocs_full[-1] - self.ylocs_full[0] + self.pace),
+            Yobs_full_extended)
+
+    def mean_discrete(self):
+        return self.ylocs_full, np.nanmean(self.Yobs_full, axis=0)
+
+    def get_mean_func(self):
+        ylocs_full, yobs_mean = self.mean_discrete()
+        return smoothing.LinearInterpSmoother.interp_function(ylocs_full, yobs_mean)
+
+
+
+
+
+
+
 def extrapolated_mean(Ylocs, Yobs):
     """
     Functions are firstly linearly extrapolated and then the obtained functions are averaged. Advised when

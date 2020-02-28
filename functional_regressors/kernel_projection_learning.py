@@ -12,6 +12,8 @@ from functional_regressors import regularization
 from functional_data import discrete_functional_data
 from functional_regressors.functional_regressor import FunctionalRegressor
 
+# TODO: IL est pertinent de mettre le padding des sorties comme un paramètre du classifier, simplifie pas mal de chose
+
 
 class SeperableKPL(FunctionalRegressor):
     """
@@ -19,7 +21,7 @@ class SeperableKPL(FunctionalRegressor):
     ----------
     kernel_scalar: functional_regressors.kernels.ScalarKernel
         The scalar kernel
-    B: regularization.OutputMatrix or array-like, shape = [n_output_features, n_output_features]
+    B: regularization.OutputMatrix or array-like or tuple
         Matrix encoding the similarities between output tasks
     output_basis: functional_data.basis.Basis or tuple
         The output dictionary of functions
@@ -46,12 +48,13 @@ class SeperableKPL(FunctionalRegressor):
         # upon fitting using the passed config
         if isinstance(B, np.ndarray):
             self.B = B
-            self.abstract_B = None
-        elif isinstance(B, regularization.OutputMatrix):
-            self.B = None
-            self.abstract_B = B
+            self.B_abstract = None
+        # elif isinstance(B, regularization.OutputMatrix):
         else:
-            raise ValueError("B must be either numpy.ndarray or functional_regressors.regularization.OutputMatrix")
+            self.B = None
+            self.B_abstract = B
+        # else:
+        #     raise ValueError("B must be either numpy.ndarray or functional_regressors.regularization.OutputMatrix")
         # Attributes used for centering
         self.center_output = center_output
         # Underlying solver
@@ -65,7 +68,11 @@ class SeperableKPL(FunctionalRegressor):
 
     def generate_output_matrix(self):
         if self.B is None:
-            self.B = self.abstract_B.get_matrix(self.output_basis)
+            if isinstance(self.B_abstract, regularization.OutputMatrix):
+                self.B = self.B_abstract.get_matrix(self.output_basis)
+            else:
+                self.B = regularization.generate_output_matrix(
+                    self.B_abstract[0], self.B_abstract[1]).get_matrix(self.output_basis)
 
     def fit(self, X, Y, K=None):
         # Center output functions if relevant

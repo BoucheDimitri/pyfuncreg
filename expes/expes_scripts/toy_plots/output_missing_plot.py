@@ -11,7 +11,7 @@ path = str(exec_path.parent.parent.parent)
 sys.path.append(path)
 
 # Local imports
-import expes.expes_scripts.toy.output_missing as output_missing
+import expes.DEPRECATED.expes_scripts.toy.output_missing as output_missing
 
 # Inherits config from output_missing.py which generated the pickle file
 N_SAMPLES_LIST = output_missing.NSAMPLES_LIST

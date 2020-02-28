@@ -1,5 +1,11 @@
 import numpy as np
 
+# Sameloc possibly with missing data
+
+# Shifting grid
+
+# def normalize_domain01_samelocs_missing(Xlocs)
+#
 
 def process_dti_dataset(cca, rcst, n_train=70, normalize01=True,
                         pad_mode_input="symmetric", pad_width_input=((0, 0), (0, 0)),

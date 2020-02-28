@@ -10,10 +10,10 @@ path = str(exec_path.parent.parent.parent)
 sys.path.append(path)
 
 # Local imports
-from expes import generate_expes
+from expes.DEPRECATED import generate_expes
 from misc import model_eval
 from data import loading, processing
-from expes.expes_scripts.dti import config as config
+from expes.DEPRECATED.expes_scripts.dti import config as config
 
 # ############################### Config ###############################################################################
 # Path to the data

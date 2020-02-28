@@ -10,29 +10,33 @@ path = str(exec_path.parent.parent.parent)
 sys.path.append(path)
 
 # Local imports
-from expes import generate_expes
+from expes.DEPRECATED import generate_expes
 from misc import model_eval
-from data import loading, processing
-from expes.expes_scripts.dti import config as config
+from data import loading
 
 # ############################### Config ###############################################################################
 # Path to the data
-DATA_PATH = path + "/data/dataDTI/"
+DATA_PATH = path + "/data/dataspeech/processed/"
 # Record config
-OUTPUT_FOLDER = "dti_kam"
+OUTPUT_FOLDER = "speech_ke"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
-EXPE_NAME = "dti_kam"
+EXPE_NAME = "speech_ke"
 # Exec config
 NPROCS = 8
 
 # ############################### Regressor config #####################################################################
-# Dictionary obtained by cross validation for quick run fitting on train and get score on test
-CV_DICT = {'regu': 0.007564633275546291, 'kx': 0.1, 'ky': 0.05, 'keval': 0.1, 'nfpca': 30}
-REGU_GRID = np.geomspace(1e-8, 1, 100)
-KX_GRID = [0.01, 0.025, 0.05, 0.1]
-KY_GRID = [0.01, 0.025, 0.05, 0.1]
-KEV_GRID = [0.03, 0.06, 0.1]
-NFPCA_GRID = [10, 15, 20, 30]
+# Pre cross validated dictionaries
+CV_DICTS = dict()
+CV_DICTS["LA"] = {'center_output': False, 'ker_sigma': 0.3}
+CV_DICTS["TBCL"] = {'center_output': False, 'ker_sigma': 0.3}
+CV_DICTS["TBCD"] = {'center_output': False, 'ker_sigma': 0.3}
+CV_DICTS["VEL"] = {'center_output': False, 'ker_sigma': 0.2}
+CV_DICTS["GLO"] = {'center_output': False, 'ker_sigma': 0.2}
+CV_DICTS["TTCL"] = {'center_output': False, 'ker_sigma': 0.2}
+CV_DICTS["TTCD"] = {'center_output': False, 'ker_sigma': 0.3}
+# Kernel standard deviation
+# KER_SIGMA = np.arange(0.1, 2.1, 0.1)
+KER_SIGMA = [0.1, 1]
 
 
 if __name__ == '__main__':
@@ -49,28 +53,31 @@ if __name__ == '__main__':
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
     # ############################# Load the data ######################################################################
-    cca, rcst = loading.load_dti(DATA_PATH, shuffle_seed=config.SHUFFLE_SEED)
-    Xtrain, Ytrain, Xtest, Ytest = processing.process_dti_dataset(cca.copy(), rcst.copy(),
-                                                                  n_train=config.N_TRAIN, normalize01=True)
+    Xtrain, Ytrain_full, Xtest, Ytest_full = loading.load_processed_speech_dataset(DATA_PATH)
+    try:
+        key = sys.argv[1]
+    except IndexError:
+        raise IndexError(
+            'You need to define a vocal tract subproblem in the set {"LA", "LP", "TBCL", "VEL", "GLO", "TTCL", "TTCD"}')
+    Ytrain, Ytest = Ytrain_full[key], Ytest_full[key]
 
     # ############################# Full cross-validation experiment ###################################################
     try:
-        argv = sys.argv[1]
+        argv = sys.argv[2]
     except IndexError:
         argv = ""
     if argv == "full":
         # Generate config dictionaries
-        params = {"regu": REGU_GRID, "kx": KX_GRID, "ky": KY_GRID, "keval": KEV_GRID, "nfpca": NFPCA_GRID}
+        params = {"ker_sigma": KER_SIGMA, "center_output": False}
         expe_dicts = generate_expes.expe_generator(params)
         # Create a queue of regressor to cross validate
-        regressors = [generate_expes.create_kam_dti(expdict, NEVALS_IN, NEVALS_OUT, DOMAIN_OUT, DOMAIN_OUT, NEVALS_FPCA)
-                      for expdict in expe_dicts]
+        regressors = [generate_expes.create_ke_speech(expdict) for expdict in expe_dicts]
         # Cross validation of the regressor queue
         expe_dicts, results, best_ind, best_dict, best_result, score_test \
-            = model_eval.exec_regressors_eval_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest,
-                                                    rec_path=rec_path, nprocs=NPROCS)
+            = model_eval.exec_regressors_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest,
+                                               rec_path=rec_path, nprocs=NPROCS)
         # Save the results
-        with open(rec_path + "/" + EXPE_NAME + ".pkl", "wb") as inp:
+        with open(rec_path + "/" + EXPE_NAME + "_" + key + ".pkl", "wb") as inp:
             pickle.dump((best_dict, best_result, score_test), inp,
                         pickle.HIGHEST_PROTOCOL)
         # Print the result
@@ -79,12 +86,12 @@ if __name__ == '__main__':
     # ############################# Reduced experiment with the pre cross validated configuration ######################
     else:
         # Use directly the regressor stemming from the cross validation
-        best_regressor = generate_expes.create_kam_dti(CV_DICT, NEVALS_IN, NEVALS_OUT,
-                                                       DOMAIN_OUT, DOMAIN_OUT, NEVALS_FPCA)
+        best_regressor = generate_expes.create_ke_speech(CV_DICTS[key])
         best_regressor.fit(Xtrain, Ytrain)
         # Evaluate it on test set
-        len_test = len(Xtest[0])
-        preds = [best_regressor.predict_evaluate(([Xtest[0][i]], [Xtest[1][i]]), Ytest[0][i]) for i in range(len_test)]
-        score_test = model_eval.mean_squared_error(preds, [Ytest[1][i] for i in range(len_test)])
+        len_test = len(Xtest)
+        preds = [best_regressor.predict_evaluate(np.expand_dims(Xtest[i], axis=0), Ytest[0][i])
+                 for i in range(len_test)]
+        score_test = model_eval.mean_squared_error(preds, Ytest[1])
         # Print the result
         print("Score on test set: " + str(score_test))

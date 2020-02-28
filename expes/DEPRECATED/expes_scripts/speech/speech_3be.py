@@ -3,40 +3,53 @@ import os
 import sys
 import pickle
 import pathlib
+import importlib
 
 # Execution path
 exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
 path = str(exec_path.parent.parent.parent)
 sys.path.append(path)
+# path = os.getcwd()
 
 # Local imports
-from expes import generate_expes
+from expes.DEPRECATED import generate_expes
 from misc import model_eval
 from data import loading
+importlib.reload(model_eval)
 
 # ############################### Config ###############################################################################
 # Path to the data
 DATA_PATH = path + "/data/dataspeech/processed/"
 # Record config
-OUTPUT_FOLDER = "speech_ke"
+OUTPUT_FOLDER = "speech_3be"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
-EXPE_NAME = "speech_ke"
-# Exec config
+EXPE_NAME = "speech_3be"
+# Number of processors
 NPROCS = 8
 
-# ############################### Regressor config #####################################################################
-# Pre cross validated dictionaries
+# ############################### Fixed global variables ###############################################################
+# Dictionary obtained by cross validation for quick run fitting on train and get score on test
 CV_DICTS = dict()
-CV_DICTS["LA"] = {'center_output': False, 'ker_sigma': 0.3}
-CV_DICTS["TBCL"] = {'center_output': False, 'ker_sigma': 0.3}
-CV_DICTS["TBCD"] = {'center_output': False, 'ker_sigma': 0.3}
-CV_DICTS["VEL"] = {'center_output': False, 'ker_sigma': 0.2}
-CV_DICTS["GLO"] = {'center_output': False, 'ker_sigma': 0.2}
-CV_DICTS["TTCL"] = {'center_output': False, 'ker_sigma': 0.2}
-CV_DICTS["TTCD"] = {'center_output': False, 'ker_sigma': 0.3}
-# Kernel standard deviation
-# KER_SIGMA = np.arange(0.1, 2.1, 0.1)
-KER_SIGMA = [0.1, 1]
+CV_DICTS["LP"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10, 'nfpca': 30}
+CV_DICTS["LA"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10, 'nfpca': 40}
+CV_DICTS["TBCL"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10, 'nfpca': 40}
+CV_DICTS["TBCD"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10, 'nfpca': 40}
+CV_DICTS["VEL"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10, 'nfpca': 40}
+CV_DICTS["GLO"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10, 'nfpca': 40}
+CV_DICTS["TTCL"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10, 'nfpca': 40}
+CV_DICTS["TTCD"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10, 'nfpca': 40}
+# Output domain
+DOMAIN_OUT = np.array([[0, 1]])
+# Padding of the output
+PAD_WIDTH = ((0, 0), (0, 0))
+# Regularization grid
+REGU_GRID = list(np.geomspace(1e-10, 1e-5, 40))
+# Standard deviation grid for input kernel
+KER_SIGMA = 1
+# Number of principal components used
+N_FPCA = [20, 30, 40]
+# Number of evaluations for FPCA
+NEVALS_FPCA = 300
 
 
 if __name__ == '__main__':
@@ -68,14 +81,14 @@ if __name__ == '__main__':
         argv = ""
     if argv == "full":
         # Generate config dictionaries
-        params = {"ker_sigma": KER_SIGMA, "center_output": False}
+        params = {"regu": REGU_GRID, "ker_sigma": KER_SIGMA, "nfpca": N_FPCA, "center_output": True}
         expe_dicts = generate_expes.expe_generator(params)
         # Create a queue of regressor to cross validate
-        regressors = [generate_expes.create_ke_speech(expdict) for expdict in expe_dicts]
+        regressors = [generate_expes.create_3be_speech(expdict, NEVALS_FPCA) for expdict in expe_dicts]
         # Cross validation of the regressor queue
         expe_dicts, results, best_ind, best_dict, best_result, score_test \
             = model_eval.exec_regressors_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest,
-                                               rec_path=rec_path, nprocs=NPROCS)
+                                               rec_path=rec_path, nprocs=NPROCS, eval_diff_locs=True)
         # Save the results
         with open(rec_path + "/" + EXPE_NAME + "_" + key + ".pkl", "wb") as inp:
             pickle.dump((best_dict, best_result, score_test), inp,
@@ -86,7 +99,7 @@ if __name__ == '__main__':
     # ############################# Reduced experiment with the pre cross validated configuration ######################
     else:
         # Use directly the regressor stemming from the cross validation
-        best_regressor = generate_expes.create_ke_speech(CV_DICTS[key])
+        best_regressor = generate_expes.create_3be_speech(CV_DICTS[key], NEVALS_FPCA)
         best_regressor.fit(Xtrain, Ytrain)
         # Evaluate it on test set
         len_test = len(Xtest)

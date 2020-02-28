@@ -35,6 +35,36 @@ class Eye(OutputMatrix):
         return np.eye(output_basis.n_basis)
 
 
+class Pow(OutputMatrix):
+
+    def __init__(self, decrease_base):
+        """
+        Power penalization with basis index
+
+        Parameters
+        ----------
+        decrease_base: float
+            Penalization is done in 1 / decrease_base^j
+        """
+        self.decrease_base = decrease_base
+        super().__init__()
+
+    def get_matrix(self, output_basis):
+        """
+        Parameters
+        ----------
+        output_basis: functional_data.basis.MultiscaleCompactlySupported
+            The wavelet dictionary
+
+        Returns
+        -------
+        array-like, shape = [output_basis.n_basis, output_basis.n_basis]
+            The output matrix
+        """
+        freqs_penalization = np.array([(1 / self.decrease_base) ** j for j in range(output_basis.n_basis)])
+        return np.diag(freqs_penalization)
+
+
 class WaveletsPow(OutputMatrix):
 
     def __init__(self, decrease_base):
@@ -103,7 +133,7 @@ class WaveletsLinear(OutputMatrix):
 
 # ########################### Generate #################################################################################
 
-SUPPORTED_DICT = {"wavelets_pow": WaveletsPow, "wavelets_linear": WaveletsLinear, "eye": Eye}
+SUPPORTED_DICT = {"pow": Pow, "wavelets_pow": WaveletsPow, "wavelets_linear": WaveletsLinear, "eye": Eye}
 
 
 def generate_output_matrix(key, kwargs):

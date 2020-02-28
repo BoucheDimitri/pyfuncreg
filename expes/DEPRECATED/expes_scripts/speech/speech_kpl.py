@@ -11,13 +11,9 @@ path = str(exec_path.parent.parent.parent)
 sys.path.append(path)
 
 # Local imports
-from expes import generate_expes
-from model_eval import parallel_tuning
-from functional_regressors import kernels
-from functional_regressors import regularization
-from model_eval import configs_generation
+from expes.DEPRECATED import generate_expes
+from misc import model_eval
 from data import loading
-from functional_regressors import kernel_projection_learning as kproj
 
 # ############################### Execution config #####################################################################
 # Path to the data
@@ -33,7 +29,7 @@ NPROCS = 8
 # Output domain
 DOMAIN_OUT = np.array([[0, 1]])
 # Padding parameters
-PAD_WIDTH = ((0, 0), (0, 0))
+PAD_WIDTH= ((0, 0), (0, 0))
 # Dictionary obtained by cross validation for quick run fitting on train and get score on test
 CV_DICTS = dict()
 CV_DICTS["LP"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
@@ -53,10 +49,9 @@ CV_DICTS["TTCL"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
 CV_DICTS["TTCD"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
                     'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
 # Regularization parameters grid
-# REGU_GRID = list(np.geomspace(1e-10, 1e-5, 40))
-REGU_GRID = [1e-10, 1e-7]
+REGU_GRID = list(np.geomspace(1e-10, 1e-5, 40))
 # Number of principal components to consider
-N_FPCA = [20, 30]
+N_FPCA = [20, 30, 40]
 # Standard deviation parameter for the input kernel
 KER_SIGMA = 1
 # Number of evaluations for FPCA
@@ -90,24 +85,18 @@ if __name__ == '__main__':
     except IndexError:
         argv = ""
     if argv == "full":
-        output_basis_configs = configs_generation.configs_combinations(
-            {"n_basis": N_FPCA, "input_dim": 1, "domain": DOMAIN_OUT, "n_evals": NEVALS_FPCA},
-            exclude_list={"domain"})
-        output_bases = [("functional_pca", config) for config in output_basis_configs]
-        ker_sigmas = np.ones(13)
-        gauss_kers = [kernels.GaussianScalarKernel(sig, normalize=False, normalize_dist=True) for sig in ker_sigmas]
-        multi_ker = kernels.SumOfScalarKernel(gauss_kers, normalize=False)
         # Generate config dictionaries
-        B = regularization.Eye()
-        params = {"regu": REGU_GRID, "kernel_scalar": multi_ker, "output_basis": output_bases, "B": B}
-        expe_dicts = configs_generation.configs_combinations(params)
-        for di in expe_dicts:
-            print(di)
+        params = {"regu": REGU_GRID, "ker_sigma": KER_SIGMA, "penalize_eigvals": 0, "n_fpca": N_FPCA,
+                  "penalize_pow": 1, "center_output": True}
+
+        expe_dicts = generate_expes.expe_generator(params)
         # Create a queue of regressor to cross validate
-        regressors = [kproj.SeperableKPL(**config) for config in expe_dicts]
+        regressors = [generate_expes.create_kpl_speech(expdict, NEVALS_FPCA)
+                      for expdict in expe_dicts]
         # Cross validation of the regressor queue
-        best_dict, best_result, score_test = parallel_tuning.parallel_tuning(regressors, Xtrain, Ytrain, Xtest, Ytest,
-                                                                             rec_path, key, expe_dicts, n_procs=4)
+        expe_dicts, results, best_ind, best_dict, best_result, score_test \
+            = model_eval.exec_regressors_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest,
+                                               rec_path=rec_path, nprocs=NPROCS)
         # Save the results
         with open(rec_path + "/" + EXPE_NAME + "_" + key + ".pkl", "wb") as inp:
             pickle.dump((best_dict, best_result, score_test), inp,

@@ -3,53 +3,31 @@ import os
 import sys
 import pickle
 import pathlib
-import importlib
 
 # Execution path
 exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
 path = str(exec_path.parent.parent.parent)
 sys.path.append(path)
-# path = os.getcwd()
 
 # Local imports
-from expes import generate_expes
+from expes.DEPRECATED import generate_expes
 from misc import model_eval
-from data import loading
-importlib.reload(model_eval)
+from data import loading, processing
+from expes.DEPRECATED.expes_scripts.dti import config as config
 
 # ############################### Config ###############################################################################
 # Path to the data
-DATA_PATH = path + "/data/dataspeech/processed/"
+DATA_PATH = path + "/data/dataDTI/"
 # Record config
-OUTPUT_FOLDER = "speech_3be"
+OUTPUT_FOLDER = "dti_ke"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
-EXPE_NAME = "speech_3be"
-# Number of processors
+EXPE_NAME = "dti_ke"
+# Exec config
 NPROCS = 8
 
-# ############################### Fixed global variables ###############################################################
-# Dictionary obtained by cross validation for quick run fitting on train and get score on test
-CV_DICTS = dict()
-CV_DICTS["LP"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10, 'nfpca': 30}
-CV_DICTS["LA"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10, 'nfpca': 40}
-CV_DICTS["TBCL"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10, 'nfpca': 40}
-CV_DICTS["TBCD"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10, 'nfpca': 40}
-CV_DICTS["VEL"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10, 'nfpca': 40}
-CV_DICTS["GLO"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10, 'nfpca': 40}
-CV_DICTS["TTCL"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10, 'nfpca': 40}
-CV_DICTS["TTCD"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10, 'nfpca': 40}
-# Output domain
-DOMAIN_OUT = np.array([[0, 1]])
-# Padding of the output
-PAD_WIDTH = ((0, 0), (0, 0))
-# Regularization grid
-REGU_GRID = list(np.geomspace(1e-10, 1e-5, 40))
-# Standard deviation grid for input kernel
-KER_SIGMA = 1
-# Number of principal components used
-N_FPCA = [20, 30, 40]
-# Number of evaluations for FPCA
-NEVALS_FPCA = 300
+# ############################### Regressor config #####################################################################
+CV_DICT = {'window': 0.2773737373737374}
+WINDOW_GRID = [np.sqrt(t) for t in np.linspace(0.02, 1, 100)]
 
 
 if __name__ == '__main__':
@@ -66,31 +44,31 @@ if __name__ == '__main__':
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
     # ############################# Load the data ######################################################################
-    Xtrain, Ytrain_full, Xtest, Ytest_full = loading.load_processed_speech_dataset(DATA_PATH)
-    try:
-        key = sys.argv[1]
-    except IndexError:
-        raise IndexError(
-            'You need to define a vocal tract subproblem in the set {"LA", "LP", "TBCL", "VEL", "GLO", "TTCL", "TTCD"}')
-    Ytrain, Ytest = Ytrain_full[key], Ytest_full[key]
+    cca, rcst = loading.load_dti(DATA_PATH, shuffle_seed=config.SHUFFLE_SEED)
+    Xtrain, Ytrain, Xtest, Ytest = processing.process_dti_dataset(cca.copy(), rcst.copy(),
+                                                                  n_train=config.N_TRAIN, normalize01=True)
+    Xtrain = np.array(Xtrain[1]).squeeze()
+    Xtest = np.array(Xtest[1]).squeeze()
 
     # ############################# Full cross-validation experiment ###################################################
     try:
-        argv = sys.argv[2]
+        argv = sys.argv[1]
     except IndexError:
         argv = ""
     if argv == "full":
         # Generate config dictionaries
-        params = {"regu": REGU_GRID, "ker_sigma": KER_SIGMA, "nfpca": N_FPCA, "center_output": True}
+        params = {"window": WINDOW_GRID}
+
         expe_dicts = generate_expes.expe_generator(params)
         # Create a queue of regressor to cross validate
-        regressors = [generate_expes.create_3be_speech(expdict, NEVALS_FPCA) for expdict in expe_dicts]
+        regressors = [generate_expes.create_ke_dti(expdict)
+                      for expdict in expe_dicts]
         # Cross validation of the regressor queue
         expe_dicts, results, best_ind, best_dict, best_result, score_test \
             = model_eval.exec_regressors_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest,
-                                               rec_path=rec_path, nprocs=NPROCS, eval_diff_locs=True)
+                                               rec_path=rec_path, nprocs=NPROCS)
         # Save the results
-        with open(rec_path + "/" + EXPE_NAME + "_" + key + ".pkl", "wb") as inp:
+        with open(rec_path + "/" + EXPE_NAME + ".pkl", "wb") as inp:
             pickle.dump((best_dict, best_result, score_test), inp,
                         pickle.HIGHEST_PROTOCOL)
         # Print the result
@@ -99,7 +77,7 @@ if __name__ == '__main__':
     # ############################# Reduced experiment with the pre cross validated configuration ######################
     else:
         # Use directly the regressor stemming from the cross validation
-        best_regressor = generate_expes.create_3be_speech(CV_DICTS[key], NEVALS_FPCA)
+        best_regressor = generate_expes.create_ke_dti(CV_DICT)
         best_regressor.fit(Xtrain, Ytrain)
         # Evaluate it on test set
         len_test = len(Xtest)

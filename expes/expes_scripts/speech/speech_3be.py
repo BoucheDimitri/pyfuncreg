@@ -12,7 +12,7 @@ sys.path.append(path)
 # path = os.getcwd()
 
 # Local imports
-from expes import generate_expes
+from expes.DEPRECATED import generate_expes
 from misc import model_eval
 from data import loading
 importlib.reload(model_eval)

@@ -29,27 +29,6 @@ def load_processed_speech_dataset(path=os.getcwd() + "/data/dataspeech/processed
         Xtest = pickle.load(inp)
     with open(path + "Ytest.pkl", "rb") as inp:
         Ytest = pickle.load(inp)
-    if pad_width is not None:
-        Ytrain_padded = {"LP": [[], []], "LA": [[], []], "TBCL": [[], []], "TBCD": [[], []],
-                         "VEL": [[], []], "GLO": [[], []], "TTCL": [[], []], "TTCD": [[], []]}
-        for key in Ytrain.keys():
-            Ytrain_sub_array = np.array(Ytrain[key][1]).squeeze()
-            leny = Ytrain_sub_array.shape[1]
-            Ytrain_sub_array = np.pad(Ytrain_sub_array,
-                                      pad_width=((0, 0), (pad_width[0] * leny, pad_width[1] * leny)),
-                                      mode=pad_mode)
-            n = Ytrain_sub_array.shape[0]
-            Ylocs_padded = Ytrain[key][0][0]
-            locs = Ytrain[key][0][0]
-            for i in range(pad_width[0]):
-                Ylocs_padded = np.concatenate((-i - 1 + locs, Ylocs_padded))
-            for i in range(pad_width[1]):
-                Ylocs_padded = np.concatenate((Ylocs_padded, locs + i + 1))
-            for j in range(n):
-                Ytrain_padded[key][0].append(Ylocs_padded)
-                Ytrain_padded[key][1].append(Ytrain_sub_array[j])
-    else:
-        Ytrain_padded = Ytrain
     if normalize_output:
         Ytrain_normalized = {"LP": [[], []], "LA": [[], []], "TBCL": [[], []], "TBCD": [[], []],
                          "VEL": [[], []], "GLO": [[], []], "TTCL": [[], []], "TTCD": [[], []]}

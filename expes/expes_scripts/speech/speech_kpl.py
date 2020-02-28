@@ -11,10 +11,10 @@ path = str(exec_path.parent.parent.parent)
 sys.path.append(path)
 
 # Local imports
-from expes import generate_expes
-from misc import model_eval
+from model_eval import parallel_tuning
 from data import loading
-from expes.expes_scripts.dti import config as config
+from expes import generate_expes
+from model_eval import metrics
 
 # ############################### Execution config #####################################################################
 # Path to the data
@@ -30,33 +30,37 @@ NPROCS = 8
 # Output domain
 DOMAIN_OUT = np.array([[0, 1]])
 # Padding parameters
-PAD_WIDTH= ((0, 0), (0, 0))
-# Dictionary obtained by cross validation for quick run fitting on train and get score on test
-CV_DICTS = dict()
-CV_DICTS["LP"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
-                  'penalize_eigvals': 0, 'n_fpca': 30, 'penalize_pow': 1}
-CV_DICTS["LA"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
-                  'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
-CV_DICTS["TBCL"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
-                    'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
-CV_DICTS["TBCD"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
-                    'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
-CV_DICTS["VEL"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
-                   'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
-CV_DICTS["GLO"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
-                   'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
-CV_DICTS["TTCL"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
-                    'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
-CV_DICTS["TTCD"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
-                    'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
+PAD_WIDTH = ((0, 0), (0, 0))
 # Regularization parameters grid
-REGU_GRID = list(np.geomspace(1e-10, 1e-5, 40))
+# REGU_GRID = list(np.geomspace(1e-10, 1e-5, 40))
+REGU_GRID = [1e-10, 1e-7]
 # Number of principal components to consider
-N_FPCA = [20, 30, 40]
+N_FPCA_GRID = [20, 30]
 # Standard deviation parameter for the input kernel
 KER_SIGMA = 1
 # Number of evaluations for FPCA
 NEVALS_FPCA = 300
+# Penalization grid
+PENPOW_GRID = [1.0, 1.2]
+# Dictionary obtained by cross validation for quick run fitting on train and get score on test
+CV_DICTS = dict()
+# (ker_sigma, regus, n_fpca, n_evals_fpca, decrease_pow, domain=np.array([[0, 1]]))
+CV_DICTS["LP"] = {'ker_sigma': 1, 'regus': 1e-10, 'n_fpca': 30, 'n_evals_fpca': NEVALS_FPCA,
+                  'decrease_base': 1, 'domain': DOMAIN_OUT}
+CV_DICTS["LA"] = {'ker_sigma': 1, 'regus': 1e-10, 'n_fpca': 40, 'n_evals_fpca': NEVALS_FPCA,
+                  'decrease_base': 1, 'domain': DOMAIN_OUT}
+CV_DICTS["TBCL"] = {'ker_sigma': 1, 'regus': 1e-10, 'n_fpca': 40, 'n_evals_fpca': NEVALS_FPCA,
+                    'decrease_base': 1, 'domain': DOMAIN_OUT}
+CV_DICTS["TBCD"] = {'ker_sigma': 1, 'regus': 1e-10, 'n_fpca': 40, 'n_evals_fpca': NEVALS_FPCA,
+                    'decrease_base': 1, 'domain': DOMAIN_OUT}
+CV_DICTS["VEL"] = {'ker_sigma': 1, 'regus': 1e-10, 'n_fpca': 40, 'n_evals_fpca': NEVALS_FPCA,
+                   'decrease_base': 1, 'domain': DOMAIN_OUT}
+CV_DICTS["GLO"] = {'ker_sigma': 1, 'regus': 1e-10, 'n_fpca': 40, 'n_evals_fpca': NEVALS_FPCA,
+                   'decrease_base': 1, 'domain': DOMAIN_OUT}
+CV_DICTS["TTCL"] = {'ker_sigma': 1, 'regus': 1e-10, 'n_fpca': 40, 'n_evals_fpca': NEVALS_FPCA,
+                    'decrease_base': 1, 'domain': DOMAIN_OUT}
+CV_DICTS["TTCD"] = {'ker_sigma': 1, 'regus': 1e-10, 'n_fpca': 40, 'n_evals_fpca': NEVALS_FPCA,
+                    'decrease_base': 1, 'domain': DOMAIN_OUT}
 
 if __name__ == '__main__':
 
@@ -86,37 +90,24 @@ if __name__ == '__main__':
     except IndexError:
         argv = ""
     if argv == "full":
-        # Generate config dictionaries
-        params = {"regu": REGU_GRID, "ker_sigma": KER_SIGMA, "penalize_eigvals": 0, "n_fpca": N_FPCA,
-                  "penalize_pow": 1, "center_output": True}
-
-        expe_dicts = generate_expes.expe_generator(params)
-        # Create a queue of regressor to cross validate
-        regressors = [generate_expes.create_kpl_speech(expdict, NEVALS_FPCA)
-                      for expdict in expe_dicts]
+        configs, regs = generate_expes.speech_fpca_penpow_kpl(
+            KER_SIGMA, REGU_GRID, N_FPCA_GRID, NEVALS_FPCA, PENPOW_GRID, DOMAIN_OUT)
         # Cross validation of the regressor queue
-        expe_dicts, results, best_ind, best_dict, best_result, score_test \
-            = model_eval.exec_regressors_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest,
-                                               rec_path=rec_path, nprocs=NPROCS)
+        best_dict, best_result, score_test = parallel_tuning.parallel_tuning(
+            regs, Xtrain, Ytrain, Xtest, Ytest, rec_path, key, configs, n_procs=NPROCS)
         # Save the results
-        with open(rec_path + "/" + EXPE_NAME + "_" + key + ".pkl", "wb") as inp:
-            pickle.dump((best_dict, best_result, score_test), inp,
-                        pickle.HIGHEST_PROTOCOL)
+        with open(rec_path + "/" + EXPE_NAME + "_" + key + ".pkl", "wb") as out_file:
+            pickle.dump((best_dict, best_result, score_test), out_file, pickle.HIGHEST_PROTOCOL)
         # Print the result
         print("Score on test set: " + str(score_test))
 
     # ############################# Reduced experiment with the pre cross validated configuration ######################
     else:
         # Use directly the regressor stemming from the cross validation
-        best_regressor = generate_expes.create_kpl_speech(CV_DICTS[key], NEVALS_FPCA)
-        start = perf_counter()
-        best_regressor.fit(Xtrain, Ytrain)
-        end = perf_counter()
-        print(end - start)
+        best_reg = generate_expes.speech_fpca_penpow_kpl(**CV_DICTS[key])
+        best_reg.fit(Xtrain, Ytrain)
         # Evaluate it on test set
-        len_test = len(Xtest)
-        preds = [best_regressor.predict_evaluate(np.expand_dims(Xtest[i], axis=0), Ytest[0][i])
-                 for i in range(len_test)]
-        score_test = model_eval.mean_squared_error(preds, Ytest[1])
+        preds = best_reg.predict_evaluate_diff_locs(Xtest, Ytest[0])
+        score_test = metrics.mse(preds, Ytest[1])
         # Print the result
         print("Score on test set: " + str(score_test))
