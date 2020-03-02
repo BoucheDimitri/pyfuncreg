@@ -22,6 +22,7 @@ importlib.reload(processing)
 shuffle_seed = 784
 path = os.getcwd()
 n_train = 70
+# Signal extension method
 signal_ext = ("symmetric", (1, 1))
 center_output = True
 domain_out = np.array([[0, 1]])
@@ -31,7 +32,14 @@ decrease_base = 1.2
 cca, rcst = loading.load_dti(path + "/data/dataDTI/", shuffle_seed=shuffle_seed)
 Xtrain, Ytrain, Xtest, Ytest = processing.process_dti(cca, rcst)
 
+# Put input data in array form
+Xtrain = np.array(Xtrain[1]).squeeze()
+Xtest = np.array(Xtest[1]).squeeze()
+
+# Input kernel
 gauss_ker = kernels.GaussianScalarKernel(0.9, normalize=False)
+
+# Output basis
 output_basis_config = output_basis_params = {"pywt_name": "db", "moments": 2,
                                              "init_dilat": 1, "translat": 1, "dilat": 2,
                                              "approx_level": 6, "add_constant": True,
@@ -39,60 +47,21 @@ output_basis_config = output_basis_params = {"pywt_name": "db", "moments": 2,
 output_basis = ("wavelets", output_basis_config)
 output_matrix = regularization.WaveletsPow(decrease_base)
 
+# Regularization parameter
 regu = 1e-3
 
-
-# # TEST DEPREC ########################################################################################################
-Xtrain = np.array(Xtrain[1]).squeeze()
-Xtest = np.array(Xtest[1]).squeeze()
-
-Ytrain_wrapped = disc_fd.wrap_functional_data(Ytrain, key='discrete_samelocs_regular_1d')
-Ytrain_wrapped = Ytrain_wrapped.extended_version(repeats=signal_ext[1])
-
-mean_func = Ytrain_wrapped.mean_func()
-test_mean = mean_func(Ytrain[0])
-
-
-Ytrain = Ytrain_wrapped.discrete_general()
-
-Ytest_wrapped = disc_fd.wrap_functional_data(Ytest, key='discrete_samelocs_regular_1d')
-Ytest = Ytest_wrapped.discrete_general()
-
-test_kpl = kproj_dp.SeperableKPL(kernel_scalar=gauss_ker, B=output_matrix, output_basis=output_basis, regu=regu,
-                                 center_output=False)
-
-test_kpl.fit(Xtrain, Ytrain)
-
-preds = test_kpl.predict_evaluate_diff_locs(Xtest, Ytest[0])
-score_test = model_eval.mean_squared_error(preds, Ytest[1])
-
-
-# #########" TEST NEW
+# Create regressor
 test_kpl = kproj.SeperableKPL(kernel_scalar=gauss_ker, B=output_matrix, output_basis=output_basis, regu=regu,
                               center_output=center_output, signal_ext=signal_ext)
 
-Xtrain = np.array(Xtrain[1]).squeeze()
-Xtest = np.array(Xtest[1]).squeeze()
-
-# Ywrapped = disc_fd.wrap_functional_data(Ytrain, key='discrete_samelocs_regular_1d')
-# # Memorize mean function before signal extension
-# if center_output:
-#     Ymean_func = Ywrapped.mean_func()
-# # Extends the signal if relevant
-# Ywrapped = Ywrapped.extended_version(signal_ext[0], signal_ext[1])
-# # Center with extended signal if relevant
-# if center_output:
-#     Ycentered = Ywrapped.centered_discrete_general()
-# else:
-#     Ycentered = Ywrapped.discrete_general()
-
-# Ycentered = test_kpl.fit(Xtrain, Ytrain)
-
+# Fit regressor
 test_kpl.fit(Xtrain, Ytrain)
 
+# Put data in the right form for testing
 Ytest_wrapped = disc_fd.wrap_functional_data(Ytest, key='discrete_samelocs_regular_1d')
 Ytest = Ytest_wrapped.discrete_general()
 
+# Predict
 preds = test_kpl.predict_evaluate_diff_locs(Xtest, Ytest[0])
 score_test = model_eval.mean_squared_error(preds, Ytest[1])
 
