@@ -33,10 +33,9 @@ class ScalarKernel(ABC):
 class GaussianScalarKernel(ScalarKernel):
     """
     Gaussian Kernel:
+
     .. math::
-
         k(x_0, x_1) = \\exp \\left ( \\frac { \\|x_1 - x_0 \\|^2 }{ \\sigma^2} \\right )
-
 
     Parameters
     ----------

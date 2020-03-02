@@ -6,7 +6,7 @@ from functional_data import functional_algebra
 
 class DiscreteSamelocsRegular1D:
 
-    def __init__(self, ylocs, Yobs, extend_mode="symmetric", repeats=(0, 0)):
+    def __init__(self, ylocs, Yobs):
         """
         Discretely sampled functional data with 1D inputs on a regular grid possibly with missing data
 
@@ -95,12 +95,11 @@ class DiscreteSamelocsRegular1D:
         return Ylocs, Yobs
 
 
-
-
-MODES = {"discrete_samelocs_regular_1d": DiscreteSamelocsRegular1D}
+MODES = {'discrete_samelocs_regular_1d': DiscreteSamelocsRegular1D}
 
 
 def wrap_functional_data(Y, mode):
+    print(MODES.keys())
     return MODES[mode](Y[0], Y[1])
 
 

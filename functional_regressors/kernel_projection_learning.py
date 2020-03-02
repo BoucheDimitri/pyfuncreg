@@ -74,7 +74,7 @@ class SeperableKPL(FunctionalRegressor):
                 self.B = regularization.generate_output_matrix(
                     self.B_abstract[0], self.B_abstract[1]).get_matrix(self.output_basis)
 
-    def fit(self, X, Y, K=None, mode="discrete_samelocs_regular_1d"):
+    def fit(self, X, Y, K=None, mode='discrete_samelocs_regular_1d'):
         # Center output functions if relevant
         # start_center = perf_counter()
         Ywrapped = discrete_functional_data.wrap_functional_data(Y, mode)
