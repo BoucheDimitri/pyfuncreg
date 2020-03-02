@@ -64,10 +64,3 @@ Ytest = Ytest_wrapped.discrete_general()
 # Predict
 preds = test_kpl.predict_evaluate_diff_locs(Xtest, Ytest[0])
 score_test = model_eval.mean_squared_error(preds, Ytest[1])
-
-test_fpca1 = fpca.FunctionalPCA(domain_out, 30)
-spaces, outputs = test_fpca1.fit(Ytrain[0], Ytrain[1])
-
-test_fpca = basis.FPCABasis(**output_basis_config)
-test_fpca.fit(Ytrain[0], Ytrain[1])
-test_comp_mat = test_fpca.compute_matrix(Ytrain[0][0])
