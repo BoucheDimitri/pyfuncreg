@@ -7,9 +7,9 @@ from functional_data import discrete_functional_data
 
 importlib.reload(discrete_functional_data)
 
-cca, rcst = loading.load_dti(os.getcwd() + "/data/dataDTI/")
+Xtrain, Ytrain, Xtest, Ytest = loading.load_dti(os.getcwd() + "/data/dataDTI/")
 
-rcst_test = discrete_functional_data.DiscreteRegular1D(np.arange(0, 55, 1), rcst)
+rcst_test = discrete_functional_data.DiscreteSamelocsRegular1D(np.arange(0, 55, 1), Ytrain)
 
 Ylocs, Yobs = rcst_test.discrete_general()
 

@@ -4,20 +4,23 @@ import os
 import pickle
 
 
-def load_dti(path, shuffle_seed=0, n_train=70):
+def load_dti(path, shuffle_seed=0):
+    # Set random seed
     np.random.seed(shuffle_seed)
+    # Load the data
     cca = pd.read_csv(path + "cca_DTI_1st_visit.csv").iloc[:, 1:]
     rcst = pd.read_csv(path + "rcst_DTI_1st_visit.csv").iloc[:, 1:]
     n = cca.shape[0]
+    # Shuffle index
     shuffle_inds = np.random.choice(n, n, replace=False)
+    # Extract in numpy form and apply shuffle
     try:
         cca = cca.to_numpy()[shuffle_inds, 0:]
         rcst = rcst.to_numpy()[shuffle_inds, 0:]
     except AttributeError:
         cca = cca.values[shuffle_inds, 0:]
         rcst = rcst.values[shuffle_inds, 0:]
-    return cca[:n_train], rcst[:n_train], cca[n_train:], rcst[n_train:]
-
+    return cca, rcst
 
 # def load_processed_speech_dataset(path=os.getcwd() + "/data/dataspeech/processed/",
 #                                   pad_width=None, pad_mode="symmetric", normalize_output=True):

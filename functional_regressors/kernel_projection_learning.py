@@ -82,12 +82,12 @@ class SeperableKPL(FunctionalRegressor):
         if self.center_output:
             self.Ymean_func = Ywrapped.mean_func()
         # Extends the signal if relevant
-        Ywrapped = Ywrapped.extended_version(self.signal_ext[0], self.signal_ext[1])
+        Ywrapped_extended = Ywrapped.extended_version(self.signal_ext[0], self.signal_ext[1])
         # Center with extended signal if relevant
         if self.center_output:
-            Ycentered = Ywrapped.centered_discrete_general()
+            Ycentered = Ywrapped_extended.centered_discrete_general()
         else:
-            Ycentered = Ywrapped.discrete_general()
+            Ycentered = Ywrapped_extended.discrete_general()
         # end_center = perf_counter()
         # print("Centering of the data perf :" + str(end_center - start_center))
         # Memorize training input data

@@ -24,7 +24,7 @@ class DiscreteSamelocsRegular1D:
     def extend_signal(ylocs, Yobs, mode, repeats):
         n_obs = len(ylocs)
         pace = ylocs[1] - ylocs[0]
-        ylocs_extended = [ylocs + i * n_obs for i in range(repeats[0] + repeats[1] + 1)]
+        ylocs_extended = [ylocs + i * (ylocs[-1] - ylocs[0] + pace) for i in range(repeats[0] + repeats[1] + 1)]
         Yobs_extended = np.pad(Yobs, mode=mode, pad_width=((0, 0), (repeats[0] * n_obs, repeats[1] * n_obs)))
         return np.concatenate(ylocs_extended) - repeats[0] * (ylocs[-1] - ylocs[0] + pace), Yobs_extended
 
@@ -92,15 +92,15 @@ class DiscreteSamelocsRegular1D:
         Yobs_centered = list()
         for i in range(self.n_samples):
             Yobs_centered.append(Yobs[i] - Ymean(Ylocs[i]))
-        return Ylocs, Yobs
+        return Ylocs, Yobs_centered
 
 
-MODES = {'discrete_samelocs_regular_1d': DiscreteSamelocsRegular1D}
+DATA_TYPES = {'discrete_samelocs_regular_1d': DiscreteSamelocsRegular1D}
 
 
-def wrap_functional_data(Y, mode):
-    print(MODES.keys())
-    return MODES[mode](Y[0], Y[1])
+def wrap_functional_data(Y, key):
+    print(DATA_TYPES.keys())
+    return DATA_TYPES[key](Y[0], Y[1])
 
 
 
