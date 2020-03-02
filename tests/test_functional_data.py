@@ -11,8 +11,8 @@ cca, rcst = loading.load_dti(os.getcwd() + "/data/dataDTI/")
 
 rcst_test = discrete_functional_data.DiscreteRegular1D(np.arange(0, 55, 1), rcst)
 
-Ylocs, Yobs = rcst_test.to_discrete_general()
+Ylocs, Yobs = rcst_test.discrete_general()
 
-rcst_test_ext = rcst_test.get_extended_version(repeats=(2, 2))
+rcst_test_ext = rcst_test.extended_version(repeats=(2, 2))
 
-Ylocs, Yobs = rcst_test_ext.to_discrete_general()
+Ylocs, Yobs = rcst_test_ext.discrete_general()

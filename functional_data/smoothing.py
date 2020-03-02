@@ -22,7 +22,7 @@ class ExpandedRidge:
         set of basis functions
     lamb : float
         regularization parameter
-    w : numpy.ndarray
+    w : array_like
         regression weights
     """
     def __init__(self, lamb, basis):
@@ -61,7 +61,7 @@ class ExpandedLasso:
         set of basis functions
     lamb : float
         regularization parameter
-    w : numpy.ndarray
+    w : array_like
         regression weights
     """
     def __init__(self, lamb, basis):
@@ -101,9 +101,9 @@ class Smoother(ABC):
 
         Parameters
         ----------
-        Xlocs: iterable of array-like
+        Xlocs : iterable of array_like
             The input locations, len = n_samples and for the i-th sample, Ylocs[i] has shape = [n_observations_i, 1]
-        Xobs: iterable of array-like
+        Xobs : iterable of array_like
             The observations len = n_samples and for the i-th sample, Yobs[i] has shape = [n_observations_i, ]
         """
         pass
@@ -127,12 +127,12 @@ class Smoother(ABC):
 
         Parameters
         ----------
-        locs: array-like
+        locs : array_like
             The locations where to evaluate
 
         Returns
         -------
-        array-like
+        array_like
             Array of evaluations
         """
         pass
@@ -174,6 +174,8 @@ class RegressionSmoother(Smoother):
     def predict(self, locs):
         return np.array([reg.predict(locs) for reg in self.regressors])
 
+
+# TODO: Beware, extrapolation is performed using the last value, not linearily
 
 class LinearInterpSmoother(Smoother):
     """

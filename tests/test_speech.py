@@ -1,10 +1,6 @@
 import os
 import numpy as np
 import importlib
-import sys
-import pathlib
-import matplotlib.pyplot as plt
-from time import perf_counter
 
 # Execution path
 # exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
@@ -14,10 +10,9 @@ path = os.getcwd()
 
 from data import loading
 from functional_regressors import kernels
-from functional_regressors import kernel_projection_learning as kproj
+from functional_regressors.DEPRECATED import kernel_projection_learning as kproj
 from functional_regressors import regularization
 from functional_data import fpca
-from functional_data import smoothing
 from misc import model_eval
 
 importlib.reload(fpca)

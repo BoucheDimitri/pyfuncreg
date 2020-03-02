@@ -4,7 +4,7 @@ import importlib
 
 from data import loading
 from data import processing
-from functional_regressors import kernel_projection_learning as kproj
+from functional_regressors.DEPRECATED import kernel_projection_learning as kproj
 from functional_regressors import kernels
 from functional_regressors import regularization
 from functional_data import basis

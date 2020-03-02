@@ -6,6 +6,7 @@ class ScalarKernel(ABC):
     """
     Abstract class for scalar valued kernels
     """
+
     def __init__(self, normalize=False):
         super().__init__()
         self.normalize = normalize
@@ -33,7 +34,9 @@ class GaussianScalarKernel(ScalarKernel):
     """
     Gaussian Kernel:
     .. math::
-        k(x_0, x_1) = \exp \left ( \frac { \|x_1 - x_0 \|^2 }{ \sigma^2} \right )
+
+        k(x_0, x_1) = \\exp \\left ( \\frac { \\|x_1 - x_0 \\|^2 }{ \\sigma^2} \\right )
+
 
     Parameters
     ----------
@@ -45,6 +48,7 @@ class GaussianScalarKernel(ScalarKernel):
     stdev : float
         the standard deviation parameter
     """
+
     def __init__(self, stdev, normalize, normalize_dist=False):
         super().__init__(normalize=normalize)
         self.normalize_dist = normalize_dist
@@ -142,6 +146,7 @@ class LaplaceScalarKernel(ScalarKernel):
     stdev : float
         the standard deviation parameter
     """
+
     def __init__(self, band, normalize):
         super().__init__(normalize=normalize)
         self.band = band

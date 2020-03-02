@@ -6,7 +6,7 @@ from functional_regressors import kernels
 from functional_regressors import kernel_additive
 from functional_regressors import kernel_estimator
 from functional_regressors import ovkernel_ridge
-from functional_regressors import kernel_projection_learning as kproj_learning
+from functional_regressors.DEPRECATED import kernel_projection_learning as kproj_learning
 from functional_regressors import triple_basis
 from functional_regressors import regularization
 from functional_data import basis

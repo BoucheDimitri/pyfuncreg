@@ -15,7 +15,7 @@ from functional_data import basis
 from functional_regressors import kernels
 from data import toy_data_spline
 from solvers import first_order
-from functional_regressors import kernel_projection_learning as kproj_learning
+from functional_regressors.DEPRECATED import kernel_projection_learning as kproj_learning
 from misc import model_eval
 
 # ############################### Config ###############################################################################

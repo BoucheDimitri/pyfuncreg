@@ -4,46 +4,104 @@ from functional_data import smoothing
 from functional_data import functional_algebra
 
 
-class DiscreteRegular1D:
+class DiscreteSamelocsRegular1D:
 
-    def __init__(self, ylocs, Yobs):
+    def __init__(self, ylocs, Yobs, extend_mode="symmetric", repeats=(0, 0)):
         """
+        Discretely sampled functional data with 1D inputs on a regular grid possibly with missing data
 
         Parameters
         ----------
-        ylocs: array_like, shape = [n_locations_full, ]
-        Yobs: array_like, shape = [n_samples, n_locations_full]
+        ylocs : array_like, shape = [n_locations_full, ]
+        Yobs : array_like, shape = [n_samples, n_locations_full]
         """
-        self.ylocs_full = ylocs
+        self.ylocs, self.Yobs = ylocs, Yobs
         self.pace = ylocs[1] - ylocs[0]
-        self.Yobs_full = Yobs
         self.n_samples = len(Yobs)
         self.n_obs = len(ylocs)
 
-    def to_discrete_general(self):
-        Ylocs, Yobs = list(), list()
-        for i in range(len(self.Yobs_full)):
-            Ylocs.append(self.ylocs_full[np.argwhere(~ np.isnan(self.Yobs_full[i])).squeeze()])
-        return Ylocs, [self.Yobs_full[i] for i in range(len(self.Yobs_full))]
+    @staticmethod
+    def extend_signal(ylocs, Yobs, mode, repeats):
+        n_obs = len(ylocs)
+        pace = ylocs[1] - ylocs[0]
+        ylocs_extended = [ylocs + i * n_obs for i in range(repeats[0] + repeats[1] + 1)]
+        Yobs_extended = np.pad(Yobs, mode=mode, pad_width=((0, 0), (repeats[0] * n_obs, repeats[1] * n_obs)))
+        return np.concatenate(ylocs_extended) - repeats[0] * (ylocs[-1] - ylocs[0] + pace), Yobs_extended
 
-    def get_extended_version(self, mode="symmetric", repeats=(0, 0)):
-        padded_locs = [self.ylocs_full + i * len(self.ylocs_full) for i in range(repeats[0] + repeats[1] + 1)]
-        Yobs_full_extended = np.pad(self.Yobs_full, mode=mode,
-                                    pad_width=((0, 0), (repeats[0] * self.n_obs, repeats[1] * self.n_obs)))
-        return DiscreteRegular1D(
-            np.concatenate(padded_locs) - repeats[0] * (self.ylocs_full[-1] - self.ylocs_full[0] + self.pace),
-            Yobs_full_extended)
+    def discrete_general(self):
+        """
+        Put data in general discretized function form
+
+        Returns
+        -------
+        tuple
+            (Ylocs, Yobs) both with len = n_samples and for  1 <= i <= n_samples,
+            Ylocs[i] and Yobs[i] are array-like both of shape = [n_observations_i, ]
+        """
+        Ylocs, Yobs = list(), list()
+        for i in range(self.n_samples):
+            Ylocs.append(self.ylocs[np.argwhere(~ np.isnan(self.Yobs[i])).squeeze()])
+            Yobs.append(self.Yobs[i][np.argwhere(~ np.isnan(self.Yobs[i])).squeeze()])
+        return Ylocs, Yobs
+
+    def extended_version(self, mode="symmetric", repeats=(0, 0)):
+        """
+        Extends signal and return a corresponding new class instance
+
+        Parameters
+        ----------
+        mode : {"symmetric"}
+            Extension mode
+        repeats : tuple of int, len = 2
+            Number of time to repeat the whole signal before (first tuple component) and after (second tuple component)
+
+        Returns
+        -------
+        DiscreteRegular1D
+            A new class instance with extended signal
+        """
+        ylocs_extended, Yobs_extended = DiscreteSamelocsRegular1D.extend_signal(self.ylocs, self.Yobs, mode, repeats)
+        return DiscreteSamelocsRegular1D(ylocs_extended, Yobs_extended)
 
     def mean_discrete(self):
-        return self.ylocs_full, np.nanmean(self.Yobs_full, axis=0)
+        """
+        Compute means of discretized functions ignoring NaNs
 
-    def get_mean_func(self):
+        Returns
+        -------
+        array_like
+            The mean, has shape = [n_observations, ]
+        """
+        return self.ylocs, np.nanmean(self.Yobs, axis=0)
+
+    def mean_func(self):
+        """
+        Return mean function using linear interpolation (and extrapolation)
+
+        Returns
+        -------
+        function
+            The mean function
+        """
         ylocs_full, yobs_mean = self.mean_discrete()
         return smoothing.LinearInterpSmoother.interp_function(ylocs_full, yobs_mean)
 
+    def centered_discrete_general(self):
+        Ylocs, Yobs = self.discrete_general()
+        Ymean = self.mean_func()
+        Yobs_centered = list()
+        for i in range(self.n_samples):
+            Yobs_centered.append(Yobs[i] - Ymean(Ylocs[i]))
+        return Ylocs, Yobs
 
 
 
+
+MODES = {"discrete_samelocs_regular_1d": DiscreteSamelocsRegular1D}
+
+
+def wrap_functional_data(Y, mode):
+    return MODES[mode](Y[0], Y[1])
 
 
 
