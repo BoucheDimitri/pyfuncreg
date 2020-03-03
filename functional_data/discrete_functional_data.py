@@ -3,6 +3,27 @@ import numpy as np
 from functional_data import smoothing
 from functional_data import functional_algebra
 
+# # Modes correspondances:
+# # "mode1" is short for "discrete_samelocs_regular_1d"
+#
+#
+# def extend_mode1(ylocs, Yobs, mode, repeats):
+#     n_obs = len(ylocs)
+#     pace = ylocs[1] - ylocs[0]
+#     ylocs_extended = [ylocs + i * (ylocs[-1] - ylocs[0] + pace) for i in range(repeats[0] + repeats[1] + 1)]
+#     Yobs_extended = np.pad(Yobs, mode=mode, pad_width=((0, 0), (repeats[0] * n_obs, repeats[1] * n_obs)))
+#     return np.concatenate(ylocs_extended) - repeats[0] * (ylocs[-1] - ylocs[0] + pace), Yobs_extended
+#
+#
+# def to_discrete_general_mode1(ylocs, Yobs):
+#     Ylocs_dg, Yobs_dg = list(), list()
+#     n_samples = len(Yobs)
+#     for i in range(n_samples):
+#         Ylocs_dg.append(ylocs[np.argwhere(~ np.isnan(Yobs[i])).squeeze()])
+#         Yobs.append(Yobs[i][np.argwhere(~ np.isnan(Yobs[i])).squeeze()])
+#     return Ylocs_dg, Yobs_dg
+#
+
 
 class DiscreteSamelocsRegular1D:
 
@@ -28,6 +49,24 @@ class DiscreteSamelocsRegular1D:
         Yobs_extended = np.pad(Yobs, mode=mode, pad_width=((0, 0), (repeats[0] * n_obs, repeats[1] * n_obs)))
         return np.concatenate(ylocs_extended) - repeats[0] * (ylocs[-1] - ylocs[0] + pace), Yobs_extended
 
+    @staticmethod
+    def to_discrete_general(ylocs, Yobs):
+        """
+        Put data in general discretized function form
+
+        Returns
+        -------
+        tuple
+            (Ylocs, Yobs) both with len = n_samples and for  1 <= i <= n_samples,
+            Ylocs[i] and Yobs[i] are array-like both of shape = [n_observations_i, ]
+        """
+        Ylocs_dg, Yobs_dg = list(), list()
+        n_samples = len(Yobs)
+        for i in range(n_samples):
+            Ylocs_dg.append(ylocs[np.argwhere(~ np.isnan(Yobs[i])).squeeze()])
+            Yobs_dg.append(Yobs[i][np.argwhere(~ np.isnan(Yobs[i])).squeeze()])
+        return Ylocs_dg, Yobs_dg
+
     def discrete_general(self):
         """
         Put data in general discretized function form
@@ -38,11 +77,7 @@ class DiscreteSamelocsRegular1D:
             (Ylocs, Yobs) both with len = n_samples and for  1 <= i <= n_samples,
             Ylocs[i] and Yobs[i] are array-like both of shape = [n_observations_i, ]
         """
-        Ylocs, Yobs = list(), list()
-        for i in range(self.n_samples):
-            Ylocs.append(self.ylocs[np.argwhere(~ np.isnan(self.Yobs[i])).squeeze()])
-            Yobs.append(self.Yobs[i][np.argwhere(~ np.isnan(self.Yobs[i])).squeeze()])
-        return Ylocs, Yobs
+        return DiscreteSamelocsRegular1D.to_discrete_general(self.ylocs, self.Yobs)
 
     def extended_version(self, mode="symmetric", repeats=(0, 0)):
         """
@@ -101,6 +136,14 @@ DATA_TYPES = {'discrete_samelocs_regular_1d': DiscreteSamelocsRegular1D}
 def wrap_functional_data(Y, key):
     print(DATA_TYPES.keys())
     return DATA_TYPES[key](Y[0], Y[1])
+
+
+def to_discrete_general(Y, data_format):
+    return DATA_TYPES[data_format].to_discrete_general(Y[0], Y[1])
+
+
+
+
 
 
 

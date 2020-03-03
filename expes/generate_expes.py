@@ -7,15 +7,15 @@ from functional_regressors import kernel_projection_learning as kproj_learning
 
 # ############################### KPL ##################################################################################
 def dti_wavs_kpl(ker_sigma, regus, center_output=True, signal_ext=("symmetric", (1, 1)),
-                 decrease_base=1, pywt_name="db", moments=2, init_dilat=1.0, translat=1.0,
+                 decrease_base=1, pywt_name="db", moments=2, init_dilat=1.0, translat=1.0, dilat=2,
                  approx_level=5, add_constant=True, domain=np.array([[0, 1]]), locs_bounds=np.array([[0, 1]])):
-    # FPCA output basis
+    # Wavelets output basses
     output_basis_params = {"pywt_name": pywt_name, "moments": moments, "init_dilat": init_dilat, "translat": translat,
-                           "approx_level": approx_level, "add_constant": add_constant,
+                           "dilat": dilat, "approx_level": approx_level, "add_constant": add_constant,
                            "locs_bounds": locs_bounds, "domain": domain}
     output_bases = configs_generation.subconfigs_combinations("wavelets", output_basis_params,
                                                               exclude_list=["domain", "locs_bounds"])
-    # Sum of Gaussian kernels
+    # Gaussian kernel
     ker = kernels.GaussianScalarKernel(ker_sigma, normalize=False)
     # Penalize power
     output_matrix_params = {"decrease_base": decrease_base}

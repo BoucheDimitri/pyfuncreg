@@ -3,19 +3,21 @@ import numpy as np
 import importlib
 
 from data import loading
-from data.DEPRECATED import processing
+from data import processing
 from functional_data import discrete_functional_data as disc_fd
 from functional_regressors import kernel_projection_learning as kproj
 from functional_regressors import kernels
 from functional_regressors import regularization
 from misc import model_eval
 from functional_data import fpca
+from model_eval import cross_validation
 
 importlib.reload(kproj)
 importlib.reload(fpca)
 importlib.reload(loading)
 importlib.reload(disc_fd)
 importlib.reload(processing)
+importlib.reload(cross_validation)
 
 shuffle_seed = 784
 path = os.getcwd()
@@ -51,6 +53,10 @@ regu = 1e-3
 # Create regressor
 test_kpl = kproj.SeperableKPL(kernel_scalar=gauss_ker, B=output_matrix, output_basis=output_basis, regu=regu,
                               center_output=center_output, signal_ext=signal_ext)
+
+cv = cross_validation.KfoldsCrossVal()
+
+cv_score = cv(test_kpl, Xtrain, Ytrain)
 
 # Fit regressor
 test_kpl.fit(Xtrain, Ytrain)
