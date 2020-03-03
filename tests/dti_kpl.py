@@ -9,7 +9,6 @@ path = str(exec_path.parent)
 sys.path.append(path)
 
 # Local imports
-from expes.DEPRECATED import generate_expes
 from model_eval import parallel_tuning
 from data import loading
 from data import processing
@@ -36,7 +35,7 @@ LOCS_BOUNDS = np.array([[0 - SIGNAL_EXT[1][0], 1 + SIGNAL_EXT[1][1]]])
 DECREASE_BASE = [1, 1.2]
 # Dictionary obtained by cross validation for quick run fitting on train and get score on test
 PARAMS_DICT = {'ker_sigma': 0.9, 'center_outputs': True, 'regu': 0.009236708571873866}
-MOMENTS = [2, 3]
+MOMENTS = [2]
 BASIS_DICT = {"pywt_name": "db", "moments": MOMENTS, "init_dilat": 1.0, "translat": 1.0, "dilat": 2, "approx_level": 6,
               "add_constant": True, "domain": DOMAIN_OUT, "locs_bounds": LOCS_BOUNDS}
 # Standard deviation parameter for the input kernel
@@ -72,12 +71,7 @@ if __name__ == '__main__':
                                                 decrease_base=DECREASE_BASE,
                                                 **BASIS_DICT)
 
-    best_config, best_result, score_test = parallel_tuning.parallel_tuning(regs, Xtrain, Ytrain, Xtest, Ytest,
-                                                                           rec_path=rec_path, configs=configs,
-                    cv_mode="vector", n_folds=5, n_procs=None, min_nprocs=4, timeout_sleep=3,
-                    n_timeout=0, cpu_avail_thresh=30)
-    # Evaluate it on test set
-    preds = best_regressor.predict_evaluate_diff_locs(Xtest, Ytest[0])
-    score_test = model_eval.mean_squared_error(preds, Ytest[1])
-    # Print the result
+    best_config, best_result, score_test = parallel_tuning.parallel_tuning(
+        regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=rec_path, configs=configs, input_data_format="vector",
+        output_data_format='discrete_samelocs_regular_1d', n_folds=5, n_procs=4)
     print("Score on test set: " + str(score_test))

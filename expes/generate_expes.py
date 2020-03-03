@@ -23,7 +23,7 @@ def dti_wavs_kpl(ker_sigma, regus, center_output=True, signal_ext=("symmetric", 
     # Generate full configs
     params = {"kernel_scalar": ker, "B": output_matrices, "output_basis": output_bases,
               "regu": regus, "center_output": center_output, "signal_ext": signal_ext}
-    configs = configs_generation.configs_combinations(params)
+    configs = configs_generation.configs_combinations(params, exclude_list=["signal_ext"])
     # Create list of regressors from that config
     regs = [kproj_learning.SeperableKPL(**config) for config in configs]
     return configs, regs

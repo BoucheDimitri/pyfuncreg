@@ -134,7 +134,6 @@ DATA_TYPES = {'discrete_samelocs_regular_1d': DiscreteSamelocsRegular1D}
 
 
 def wrap_functional_data(Y, key):
-    print(DATA_TYPES.keys())
     return DATA_TYPES[key](Y[0], Y[1])
 
 

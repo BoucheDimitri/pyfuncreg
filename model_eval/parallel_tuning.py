@@ -6,6 +6,7 @@ import psutil
 
 from model_eval import cross_validation
 from model_eval import metrics
+from functional_data import discrete_functional_data as disc_fd
 
 
 def check_cpu_availability(min_nprocs=4, timeout_sleep=3, n_timeout=0, cpu_avail_thresh=30):
@@ -50,15 +51,19 @@ def run_cross_vals_batch(regs_split, Xtrain, Ytrain, cross_val):
 
 
 def record_up_to_current_batch(rec_path, key, results, configs, batch_no, n_batches, n_procs):
+    if key is None or "":
+        key_addup = ""
+    else:
+        key_addup = "_" + key
     if rec_path is not None:
         if configs is not None:
             with open(rec_path + "/batch_no" + str(batch_no)
-                      + "out_of" + str(n_batches) + "_" + key + ".pkl", "wb") as outp:
+                      + "out_of" + str(n_batches) + key_addup + ".pkl", "wb") as outp:
                 pickle.dump((configs[:(batch_no + 1) * n_procs], results[:(batch_no + 1) * n_procs]), outp,
                             pickle.HIGHEST_PROTOCOL)
         else:
             with open(rec_path + "/batch_no" + str(batch_no)
-                      + "out_of" + str(n_batches) + "_" + key + ".pkl", "wb") as outp:
+                      + "out_of" + str(n_batches) + key_addup + ".pkl", "wb") as outp:
                 pickle.dump(results[:(batch_no + 1) * n_procs], outp, pickle.HIGHEST_PROTOCOL)
 
 
@@ -182,8 +187,10 @@ def parallel_tuning(regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=None, key=None,
     # Fit best regressor on full training data
     best_reg.fit(Xtrain, Ytrain)
     # Evaluate its performance on test set
-    preds = best_reg.predict_evaluate_diff_locs(Xtest, Ytest[0])
-    score_test = metrics.mse(preds, Ytest[1])
+    # Put in discrete_general form for testing
+    Ytest_dg = disc_fd.to_discrete_general(Ytest, output_data_format)
+    preds = best_reg.predict_evaluate_diff_locs(Xtest, Ytest_dg[0])
+    score_test = metrics.mse(preds, Ytest_dg[1])
     # Return the results
     if configs is not None:
         return configs[best_ind], results[best_ind], score_test
