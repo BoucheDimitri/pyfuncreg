@@ -54,9 +54,9 @@ regu = 1e-3
 test_kpl = kproj.SeperableKPL(kernel_scalar=gauss_ker, B=output_matrix, output_basis=output_basis, regu=regu,
                               center_output=center_output, signal_ext=signal_ext)
 
-cv = cross_validation.KfoldsCrossVal()
-
-cv_score = cv(test_kpl, Xtrain, Ytrain)
+# cv = cross_validation.KfoldsCrossVal()
+#
+# cv_score = cv(test_kpl, Xtrain, Ytrain)
 
 # Fit regressor
 test_kpl.fit(Xtrain, Ytrain)

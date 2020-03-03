@@ -116,8 +116,8 @@ def parallel_cross_vals(regs, Xtrain, Ytrain, cross_val, n_procs, rec_path=None,
 
 
 def parallel_tuning(regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=None, key=None, configs=None,
-                    cv_mode="vector", n_folds=5, n_procs=None, min_nprocs=4, timeout_sleep=3,
-                    n_timeout=0, cpu_avail_thresh=30):
+                    input_data_format="vector", output_data_format='discrete_samelocs_regular_1d',
+                    n_folds=5, n_procs=None, min_nprocs=4, timeout_sleep=3, n_timeout=0, cpu_avail_thresh=30):
     """
     Tuning of the regressors in parallel by cross-validation, selecting the best and fitting it on the train set,
     its score on test set is then computed.
@@ -143,8 +143,10 @@ def parallel_tuning(regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=None, key=None,
     configs: dict, optional
         The dictionaries of configuration corresponding to the regressors in `regs`, if `rec_path` is not None,
         the corresponding dictionaries are saved along with the results
-    cv_mode: {"discrete_func", "vector", "smooth_func"}
-        The form of the input data
+    input_data_format: {"vector", "discrete_general", discrete_samelocs_regular_1d"}
+        The format of the input data
+    output_data_format: {"vector", "discrete_general", discrete_samelocs_regular_1d"}
+        The format of the output data
     n_folds: int
         Number of folds for cross-validation
     n_procs: int
@@ -169,7 +171,9 @@ def parallel_tuning(regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=None, key=None,
         n_procs = check_cpu_availability(min_nprocs=min_nprocs, timeout_sleep=timeout_sleep,
                                          n_timeout=n_timeout, cpu_avail_thresh=cpu_avail_thresh)
     # Instantiate cross validation
-    cross_val = cross_validation.KfoldsCrossVal(n_folds=n_folds, mode=cv_mode)
+    cross_val = cross_validation.KfoldsCrossVal(n_folds=n_folds,
+                                                input_data_format=input_data_format,
+                                                output_data_format=output_data_format)
     # Run cross-validations in parallel for the regressors in regs
     results = parallel_cross_vals(regs, Xtrain, Ytrain, cross_val, n_procs, rec_path=rec_path, key=key, configs=configs)
     # Select regressor corresponding to best cross-validation score
