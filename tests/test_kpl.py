@@ -3,15 +3,13 @@ import numpy as np
 import importlib
 
 from data import loading
-from data import processing
+from data.DEPRECATED import processing
 from functional_data import discrete_functional_data as disc_fd
 from functional_regressors import kernel_projection_learning as kproj
 from functional_regressors import kernels
 from functional_regressors import regularization
-from functional_data import basis
 from misc import model_eval
 from functional_data import fpca
-from functional_regressors.DEPRECATED import kernel_projection_learning as kproj_dp
 
 importlib.reload(kproj)
 importlib.reload(fpca)
