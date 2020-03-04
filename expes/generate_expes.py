@@ -6,7 +6,7 @@ from functional_regressors import kernel_projection_learning as kproj_learning
 
 
 # ############################### KPL ##################################################################################
-def dti_wavs_kpl(ker_sigma, regus, center_output=True, signal_ext=("symmetric", (1, 1)),
+def dti_wavs_kpl(ker_sigma, regu, center_output=True, signal_ext=("symmetric", (1, 1)),
                  decrease_base=1, pywt_name="db", moments=2, init_dilat=1.0, translat=1.0, dilat=2,
                  approx_level=5, add_constant=True, domain=np.array([[0, 1]]), locs_bounds=np.array([[0, 1]])):
     # Wavelets output basses
@@ -22,14 +22,14 @@ def dti_wavs_kpl(ker_sigma, regus, center_output=True, signal_ext=("symmetric", 
     output_matrices = configs_generation.subconfigs_combinations("wavelets_pow", output_matrix_params)
     # Generate full configs
     params = {"kernel_scalar": ker, "B": output_matrices, "output_basis": output_bases,
-              "regu": regus, "center_output": center_output, "signal_ext": signal_ext}
+              "regu": regu, "center_output": center_output, "signal_ext": signal_ext}
     configs = configs_generation.configs_combinations(params, exclude_list=["signal_ext"])
     # Create list of regressors from that config
     regs = [kproj_learning.SeperableKPL(**config) for config in configs]
     return configs, regs
 
 
-def speech_fpca_penpow_kpl(ker_sigma, regus, n_fpca, n_evals_fpca, decrease_base, domain=np.array([[0, 1]])):
+def speech_fpca_penpow_kpl(ker_sigma, regu, n_fpca, n_evals_fpca, decrease_base, domain=np.array([[0, 1]])):
     # FPCA output basis
     output_basis_params = {"n_basis": n_fpca, "input_dim": 1, "domain": domain, "n_evals": n_evals_fpca}
     output_bases = configs_generation.subconfigs_combinations("functional_pca",
@@ -44,7 +44,7 @@ def speech_fpca_penpow_kpl(ker_sigma, regus, n_fpca, n_evals_fpca, decrease_base
     output_matrices = configs_generation.subconfigs_combinations("pow", output_matrix_params)
     # Generate full configs
     params = {"kernel_scalar": multi_ker, "B": output_matrices, "output_basis": output_bases,
-              "regu": regus, "center_output": True}
+              "regu": regu, "center_output": True}
     configs = configs_generation.configs_combinations(params)
     # Create list of regressors from that config
     regs = [kproj_learning.SeperableKPL(**config) for config in configs]
