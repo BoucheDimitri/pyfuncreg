@@ -4,7 +4,7 @@ from sklearn import kernel_ridge
 from functional_data import fpca
 from functional_data import basis
 from functional_data import functional_algebra
-from functional_data import sparsely_observed
+from functional_data import discrete_functional_data as disc_fd
 from functional_data import smoothing
 
 
@@ -33,29 +33,45 @@ class TripleBasisEstimator:
 
     Parameters
     ----------
-    basis_in: functional_data.basis.Basis
+    basis_in:
         The input orthonormal basis
-    basis_rffs: functional_data.basis.RandomFourierFeatures
+    basis_rffs:
         Random Fourier Features used for the approximation
-    basis_out: functional_data.basis.Basis
+    basis_out:
         The output orthonormal basis
     regu: float
         Regularization parameter
     center_output: bool, optional
-        Should outputs be centered ?
-    non_padded_index: array-like, optional
-        The full set of locations of observations, only needed if center_output is True
+        Should outputs be centered
     """
-    def __init__(self, basis_in, basis_rffs, basis_out, regu, non_padded_index=None, center_output=True):
+    def __init__(self, basis_in, basis_rffs, basis_out, regu, center_output=False,
+                 signal_ext_input=None, signal_ext_output=None):
         self.basis_in = basis_in
-        self.basis_rffs = basis_rffs
-        self.basis_out = basis_out
+        # If a basis is given (both for input and outpu) else it is generated from the passed config upon fitting
+        if isinstance(basis_in, basis.Basis):
+            self.basis_in = basis_in
+            self.basis_in_config = None
+        else:
+            self.basis_in_config = basis_in
+            self.basis_in = None
+        if isinstance(basis_out, basis.Basis):
+            self.basis_out = basis_out
+            self.basis_out_config = None
+        else:
+            self.basis_out_config = basis_out
+            self.basis_out = None
+        if isinstance(basis_rffs, basis.Basis):
+            self.basis_rffs = basis_rffs
+            self.basis_rffs_config = None
+        else:
+            self.basis_rffs_config = basis_rffs
+            self.basis_rffs = None
         self.regu = regu
         self.regressors = None
         self.center_output = center_output
-        self.non_padded_index = non_padded_index
-        self.full_output_locs = None
         self.Ymean = None
+        self.signal_ext_input = signal_ext_input
+        self.signal_ext_output = signal_ext_output
 
     @staticmethod
     def projection_coefs(X, func_basis):
@@ -64,15 +80,42 @@ class TripleBasisEstimator:
         scalar_prods = np.array([eval_mats[i].T.dot((1/X[1][i].shape[0]) * X[1][i]) for i in range(n_samples)])
         return scalar_prods
 
-    def fit(self, X, Y):
-        if self.center_output:
-            full_output_locs, Ymean = sparsely_observed.mean_missing(Y[0], Y[1])
-            self.Ymean = Ymean[self.non_padded_index[0]:self.non_padded_index[1]]
-            self.full_output_locs = full_output_locs[self.non_padded_index[0]:self.non_padded_index[1]]
-            Ycentered = sparsely_observed.substract_missing(full_output_locs, Ymean, Y[0], Y[1])
+    @staticmethod
+    def wrap_data(data, signal_ext, center=False, data_format="discete_samelocs_regular_1d"):
+        data_wrapped = disc_fd.wrap_functional_data(data, data_format)
+        # Memorize mean function before signal extension
+        if center:
+            data_mean = data_wrapped.mean_func()
         else:
-            Ycentered = Y
-        coefsX = TripleBasisEstimator.projection_coefs(X, self.basis_in)
+            data_mean = None
+        # Extends the signal if relevant
+        data_wrapped_extended = data_wrapped.extended_version(signal_ext[0], signal_ext[1])
+        # Center with extended signal if relevant
+        if center:
+            return data_mean, data_wrapped_extended.centered_discrete_general()
+        else:
+            return data_mean, data_wrapped_extended.discrete_general()
+
+    def generate_bases(self, X, Y):
+        if self.basis_in is None:
+            self.basis_in = basis.generate_basis(self.basis_in_config[0], self.basis_in_config[1])
+        if isinstance(self.basis_in, basis.DataDependantBasis):
+            self.basis_in.fit(X[0], X[1])
+        if self.basis_out is None:
+            self.basis_out = basis.generate_basis(self.basis_out_config[0], self.basis_out_config[1])
+        if isinstance(self.basis_out, basis.DataDependantBasis):
+            self.basis_in.fit(Y[0], Y[1])
+        if self.basis_rffs is None:
+            self.basis_rffs_config[1]["input_dim"] = self.basis_in.n_basis
+            self.basis_rffs = basis.generate_basis(self.basis_rffs_config[0], self.basis_rffs_config[1])
+
+    def fit(self, X, Y, input_data_format="discete_samelocs_regular_1d",
+            output_data_format="discete_samelocs_regular_1d"):
+        _, X_dg = TripleBasisEstimator.wrap_data(X, self.signal_ext_input, False, input_data_format)
+        self.Ymean, Ycentered = TripleBasisEstimator.wrap_data(
+            Y, self.signal_ext_output, self.center_output, output_data_format)
+        self.generate_bases(X, Y)
+        coefsX = TripleBasisEstimator.projection_coefs(X_dg, self.basis_in)
         coefsY = TripleBasisEstimator.projection_coefs(Ycentered, self.basis_out)
         n_probs = coefsY.shape[1]
         regressors = []
@@ -83,16 +126,17 @@ class TripleBasisEstimator:
         self.regressors = regressors
 
     def predict(self, Xnew):
+        # Put input data in discrete general form
         coefsXnew = TripleBasisEstimator.projection_coefs(Xnew, self.basis_in)
         preds = np.array([reg(coefsXnew) for reg in self.regressors]).T
         return preds
 
-    def predict_evaluate(self, Xnew, yin_new):
+    def predict_evaluate(self, Xnew, yin_new, input_data_format="discrete_samelocs_regular_1d"):
         pred_coefs = self.predict(Xnew)
         basis_evals = self.basis_out.compute_matrix(yin_new)
         if self.center_output:
-            extrapolate_mean = np.expand_dims(np.interp(yin_new.squeeze(), self.full_output_locs, self.Ymean), axis=0)
-            return pred_coefs.dot(basis_evals.T) + extrapolate_mean
+            mean_eval = np.expand_dims(self.Ymean(yin_new), axis=0)
+            return pred_coefs.dot(basis_evals.T) + mean_eval
         else:
             return pred_coefs.dot(basis_evals.T)
 
