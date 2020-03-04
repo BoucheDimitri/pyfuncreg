@@ -21,6 +21,7 @@ from expes import generate_expes
 from functional_data import discrete_functional_data as disc_fd
 
 importlib.reload(triple_basis)
+importlib.reload(generate_expes)
 
 # ############################### Config ###############################################################################
 # Path to the data
@@ -39,24 +40,27 @@ OUTPUT_DATA_FORMAT = 'discrete_samelocs_regular_1d'
 # ############################### Regressor config #####################################################################
 # Dictionary obtained by cross validation for quick run fitting on train and get score on test
 CV_DICT = {'center_outputs': True, 'regu': 1.0, 'ker_sigma': 20, 'max_freq_in': 25, 'max_freq_out': 5}
-SIGNAL_EXT_INPUT = ("symmetric", (1, 1))
-SIGNAL_EXT_OUTPUT = ("symmetric", (1, 1))
+SIGNAL_EXT_INPUT = ("symmetric", (0, 0))
+SIGNAL_EXT_OUTPUT = ("symmetric", (0, 0))
 # Output domain
 DOMAIN = np.array([[0, 1]])
-# Padding of the output
-PAD_WIDTH = ((0, 0), (0, 0))
 # Number of random fourier features
 N_RFFS = 300
 # Seed for the random fourier features
 RFFS_SEED = 567
 # Regularization grid
-REGU_GRID = list(np.geomspace(1e-8, 1, 100))
+# REGU_GRID = list(np.geomspace(1e-8, 1, 100))
+REGU_GRID = 1
 # Standard deviation grid for input kernel
-# KER_SIGMA = [20, 25, 30, 35, 40]
+# TODO: PASS RFFS CONFIG TO CONFIG GENERATOR FOR LIST HANDLING
 KER_SIGMA = 20
+# KER_SIGMA = 20
 # Maximum frequency to include for input and output
-FREQS_IN_GRID = [5, 10, 15, 20, 25, 30, 35, 40]
-FREQS_OUT_GRID = [5, 10, 15, 20, 25, 30, 35, 40]
+# FREQS_IN_GRID = [5, 10, 15, 20, 25, 30, 35, 40]
+# FREQS_OUT_GRID = [5, 10, 15, 20, 25, 30, 35, 40]
+FREQS_IN_GRID = 25
+FREQS_OUT_GRID = 5
+CENTER_OUTPUT = True
 
 
 if __name__ == '__main__':
@@ -84,13 +88,17 @@ if __name__ == '__main__':
     basis_out = ("fourier", output_basis_dict)
     rffs_basis_dict = {"n_basis": N_RFFS, "domain": DOMAIN, "bandwidth": KER_SIGMA, "seed": RFFS_SEED}
     rffs_basis = ("random_fourier", rffs_basis_dict)
+    configs, regs = generate_expes.dti_3be_fourier(KER_SIGMA, REGU_GRID, CENTER_OUTPUT, MAX_FREQ_IN, MAX_FREQ_OUT,
+                                                   N_RFFS, RFFS_SEED, DOMAIN, DOMAIN,
+                                                   SIGNAL_EXT_INPUT, SIGNAL_EXT_OUTPUT)
 
-    regu = 1
-
-    reg = triple_basis.TripleBasisEstimator(basis_in, rffs_basis, basis_out, regu,
-                                            center_output=True,
-                                            signal_ext_input=SIGNAL_EXT_INPUT,
-                                            signal_ext_output=SIGNAL_EXT_OUTPUT)
+    # regu = 1
+    #
+    # reg = triple_basis.TripleBasisEstimator(basis_in, rffs_basis, basis_out, regu,
+    #                                         center_output=True,
+    #                                         signal_ext_input=SIGNAL_EXT_INPUT,
+    #                                         signal_ext_output=SIGNAL_EXT_OUTPUT)
+    reg = regs[0]
 
     reg.fit(Xtrain, Ytrain, INPUT_DATA_FORMAT, OUTPUT_DATA_FORMAT)
     Xtest = disc_fd.to_discrete_general(Xtest, INPUT_DATA_FORMAT)

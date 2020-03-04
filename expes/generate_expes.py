@@ -3,6 +3,7 @@ import numpy as np
 from model_eval import configs_generation
 from functional_regressors import kernels
 from functional_regressors import kernel_projection_learning as kproj_learning
+from functional_regressors import triple_basis
 from functional_regressors import kernel_additive
 
 
@@ -66,4 +67,26 @@ def dti_kam(kx_sigma, ky_sigma, keval_sigma, regu, n_fpca, n_evals_fpca, n_evals
     configs = configs_generation.configs_combinations(params, exclude_list=("domain_in", "domain_out"))
     # Create list of regressors from that config
     regs = [kernel_additive.KernelAdditiveModel(**config) for config in configs]
+    return configs, regs
+
+
+# ############################### 3BE ##################################################################################
+
+def dti_3be_fourier(ker_sigma, regu, center_output, max_freq_in, max_freq_out,
+                    n_rffs, rffs_seed, domain_in, domain_out, signal_ext_input=None, signal_ext_output=None):
+    input_basis_dict = {"lower_freq": 0, "upper_freq": max_freq_in, "domain": domain_in}
+    output_basis_dict = {"lower_freq": 0, "upper_freq": max_freq_out, "domain": domain_out}
+    rffs_basis_dict = {"n_basis": n_rffs, "domain": domain_out, "bandwidth": ker_sigma, "seed": rffs_seed}
+    rffs_basis = ("random_fourier", rffs_basis_dict)
+    bases_in = configs_generation.subconfigs_combinations("fourier", input_basis_dict, exclude_list=["domain"])
+    bases_out = configs_generation.subconfigs_combinations("fourier", output_basis_dict, exclude_list=["domain"])
+    # Generate full configs
+    params = {"basis_in": bases_in, "basis_out": bases_out, 'basis_rffs': rffs_basis, "regu": regu,
+              "center_output": center_output, "signal_ext_input": signal_ext_input,
+              "signal_ext_output": signal_ext_output}
+    configs = configs_generation.configs_combinations(params, exclude_list=["signal_ext_input",
+                                                                            "signal_ext_output",
+                                                                            'basis_rffs'])
+    # Create list of regressors from that config
+    regs = [triple_basis.TripleBasisEstimator(**config) for config in configs]
     return configs, regs
