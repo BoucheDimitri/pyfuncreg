@@ -130,7 +130,48 @@ class DiscreteSamelocsRegular1D:
         return Ylocs, Yobs_centered
 
 
-DATA_TYPES = {'discrete_samelocs_regular_1d': DiscreteSamelocsRegular1D}
+class DiscreteGeneral:
+
+    def __init__(self, Ylocs, Yobs):
+        self.Ylocs = Ylocs
+        self.Yobs = Yobs
+        self.n_samples = len(Yobs)
+        self.n_obs = [len(Yobs[i]) for i in range(self.n_samples)]
+
+    @staticmethod
+    def to_func_linearinterp(Ylocs, Yobs):
+        smoother = smoothing.LinearInterpSmoother()
+        smoother.fit(Ylocs, Yobs)
+        Yfunc = smoother.get_functions()
+        return Yfunc
+
+    def func_linearinterp(self):
+        return DiscreteGeneral.to_func_linearinterp(self.Ylocs, self.Yobs)
+
+    def mean_func(self):
+        """
+        Return mean function using linear interpolation (and extrapolation)
+
+        Returns
+        -------
+        function
+            The mean function
+        """
+        return functional_algebra.mean_function(self.func_linearinterp())
+
+    def centered_func_linearinterp(self):
+        return functional_algebra.diff_function_list(self.func_linearinterp(), self.mean_func())
+
+    @staticmethod
+    def to_discrete_general(Ylocs, Yobs):
+        return Ylocs, Yobs
+
+    def discrete_general(self):
+        return self.Ylocs, self.Yobs
+
+
+DATA_TYPES = {'discrete_samelocs_regular_1d': DiscreteSamelocsRegular1D,
+              'discrete_general': DiscreteGeneral}
 
 
 def wrap_functional_data(Y, key):

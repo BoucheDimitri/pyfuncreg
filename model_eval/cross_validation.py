@@ -32,36 +32,36 @@ class KfoldsCrossVal:
         self.input_data_format = input_data_format
         self.output_data_format = output_data_format
 
-    def discrete_func_call(self, reg, X, Y):
-        """
-        Cross validation score when mode is set to "discrete_func"
-
-        Parameters
-        ----------
-        reg: functional_regressors.functional_regressor.FunctionalRegressor
-            The regressors
-        X: tuple or list, len = 2
-            The input data, with X = (Xlocs, Xobs), with Xlocs and Xobs of len = n_samples
-            and for 1 <= i <= n_samples, Xlocs[i] and Xobs[i] have shape = [n_observations_i, 1]
-        Y: tuple or list, len = 2
-            The output data, with Y = (Ylocs, Yobs), with Ylocs and Yobs of len = n_samples
-            and for 1 <= i <= n_samples, Ylocs[i] and Yobs[i] have shape = [n_observations_i, 1]
-
-        Returns
-        -------
-        float
-            Cross-validation score
-        """
-        scores = []
-        n = len(X[0])
-        inds_split = self.cross_val.split(np.zeros((n, 1)))
-        for train_index, test_index in inds_split:
-            reg.fit(([X[0][i] for i in train_index], [X[1][i] for i in train_index]),
-                    ([Y[0][i] for i in train_index], [Y[1][i] for i in train_index]))
-            preds = reg.predict_evaluate_diff_locs(([X[0][i] for i in test_index], [X[1][i] for i in test_index]),
-                                                    [Y[0][i] for i in test_index])
-            scores.append(self.score_func(preds, [Y[1][i] for i in test_index]))
-        return np.mean(scores)
+    # def discrete_func_call(self, reg, X, Y):
+    #     """
+    #     Cross validation score when mode is set to "discrete_func"
+    #
+    #     Parameters
+    #     ----------
+    #     reg: functional_regressors.functional_regressor.FunctionalRegressor
+    #         The regressors
+    #     X: tuple or list, len = 2
+    #         The input data, with X = (Xlocs, Xobs), with Xlocs and Xobs of len = n_samples
+    #         and for 1 <= i <= n_samples, Xlocs[i] and Xobs[i] have shape = [n_observations_i, 1]
+    #     Y: tuple or list, len = 2
+    #         The output data, with Y = (Ylocs, Yobs), with Ylocs and Yobs of len = n_samples
+    #         and for 1 <= i <= n_samples, Ylocs[i] and Yobs[i] have shape = [n_observations_i, 1]
+    #
+    #     Returns
+    #     -------
+    #     float
+    #         Cross-validation score
+    #     """
+    #     scores = []
+    #     n = len(X[0])
+    #     inds_split = self.cross_val.split(np.zeros((n, 1)))
+    #     for train_index, test_index in inds_split:
+    #         reg.fit(([X[0][i] for i in train_index], [X[1][i] for i in train_index]),
+    #                 ([Y[0][i] for i in train_index], [Y[1][i] for i in train_index]))
+    #         preds = reg.predict_evaluate_diff_locs(([X[0][i] for i in test_index], [X[1][i] for i in test_index]),
+    #                                                 [Y[0][i] for i in test_index])
+    #         scores.append(self.score_func(preds, [Y[1][i] for i in test_index]))
+    #     return np.mean(scores)
 
     @staticmethod
     def get_subset(data, index, data_format="vector"):

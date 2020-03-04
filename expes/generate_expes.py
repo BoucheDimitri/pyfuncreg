@@ -3,6 +3,7 @@ import numpy as np
 from model_eval import configs_generation
 from functional_regressors import kernels
 from functional_regressors import kernel_projection_learning as kproj_learning
+from functional_regressors import kernel_additive
 
 
 # ############################### KPL ##################################################################################
@@ -51,3 +52,18 @@ def speech_fpca_penpow_kpl(ker_sigma, regu, n_fpca, n_evals_fpca, decrease_base,
     return configs, regs
 
 
+# ############################### KAM ##################################################################################
+
+def dti_kam(kx_sigma, ky_sigma, keval_sigma, regu, n_fpca, n_evals_fpca, n_evals_in,
+            n_evals_out, domain_in=np.array([[0, 1]]), domain_out=np.array([[0, 1]])):
+    kx = kernels.GaussianScalarKernel(kx_sigma, normalize=False)
+    ky = kernels.GaussianScalarKernel(ky_sigma, normalize=False)
+    keval = kernels.GaussianScalarKernel(keval_sigma, normalize=False)
+    params = {"regu": regu, "kerlocs_in": kx, "kerlocs_out": ky, "kerevals": keval,
+              "n_fpca": n_fpca, "n_evals_fpca": n_evals_fpca,
+              "n_evals_in": n_evals_in, "n_evals_out": n_evals_out,
+              "domain_in": domain_in, "domain_out": domain_out}
+    configs = configs_generation.configs_combinations(params, exclude_list=("domain_in", "domain_out"))
+    # Create list of regressors from that config
+    regs = [kernel_additive.KernelAdditiveModel(**config) for config in configs]
+    return configs, regs

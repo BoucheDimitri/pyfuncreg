@@ -3,6 +3,7 @@ import numpy as np
 from functional_data import smoothing
 from functional_data import functional_algebra
 from functional_data import fpca
+from functional_data import discrete_functional_data as disc_fd
 
 
 class KernelAdditiveModel:
@@ -93,15 +94,12 @@ class KernelAdditiveModel:
         inter_const = domain[0, 1] - domain[0, 0]
         return inter_const * (1 / approx_space.shape[0]) * Y_evals.dot(Yfpca_evals.T)
 
-    def fit(self, X, Y):
-        smoother_in = smoothing.LinearInterpSmoother()
-        smoother_out = smoothing.LinearInterpSmoother()
-        smoother_in.fit(X[0], X[1])
-        smoother_out.fit(Y[0], Y[1])
-        Xfunc = smoother_in.get_functions()
-        Yfunc = smoother_out.get_functions()
-        self.Ymean = functional_algebra.mean_function(Yfunc)
-        Ycentered = functional_algebra.diff_function_list(Yfunc, self.Ymean)
+    def fit(self, X, Y, input_data_format="discrete_general", output_data_format="discrete_general"):
+        Ywrapped = disc_fd.wrap_functional_data(Y, output_data_format)
+        Xwrapped = disc_fd.wrap_functional_data(X, input_data_format)
+        Xfunc = Xwrapped.func_linearinterp()
+        self.Ymean = Ywrapped.mean_func()
+        Ycentered = Ywrapped.centered_func_linearinterp()
         self.fpca.fit(Ycentered)
         Yfpca = self.fpca.get_regressors(self.n_fpca)
         A_evals_in = self.compute_Aevals(Xfunc, Xfunc, self.kerlocs_in, self.kerevals, self.space_in, self.domain_in)
@@ -113,10 +111,9 @@ class KernelAdditiveModel:
         self.alpha = np.linalg.inv(A.T.dot(A) + self.regu * A).dot(A).dot(Y.flatten())
         self.alpha = self.alpha.reshape((len(Xfunc), len(Yfpca)))
 
-    def predict_evaluate(self, Xnew, locs):
-        smoother_in = smoothing.LinearInterpSmoother()
-        smoother_in.fit(Xnew[0], Xnew[1])
-        Xfunc_new = smoother_in.get_functions()
+    def predict_evaluate(self, Xnew, locs, input_data_format="discrete_general"):
+        Xnew_wrapped = disc_fd.wrap_functional_data(Xnew, input_data_format)
+        Xfunc_new = Xnew_wrapped.func_linearinterp()
         A_evals_in = self.compute_Aevals(self.Xfunc, Xfunc_new, self.kerlocs_in,
                                          self.kerevals, self.space_in, self.domain_in)
         A_evals_out = self.compute_Aout_pred(self.Yfpca, self.kerlocs_out,
