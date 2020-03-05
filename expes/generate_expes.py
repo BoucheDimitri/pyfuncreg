@@ -90,3 +90,21 @@ def dti_3be_fourier(ker_sigma, regu, center_output, max_freq_in, max_freq_out,
     # Create list of regressors from that config
     regs = [triple_basis.TripleBasisEstimator(**config) for config in configs]
     return configs, regs
+
+
+def speech_fpca_3be(ker_sigma, regu, n_fpca, n_evals_fpca, domain=np.array([[0, 1]])):
+    # FPCA output basis
+    output_basis_params = {"n_basis": n_fpca, "input_dim": 1, "domain": domain, "n_evals": n_evals_fpca}
+    output_bases = configs_generation.subconfigs_combinations("functional_pca",
+                                                              output_basis_params,
+                                                              exclude_list=["domain"])
+    # Sum of Gaussian kernels
+    ker_sigmas = ker_sigma * np.ones(13)
+    gauss_kers = [kernels.GaussianScalarKernel(sig, normalize=False, normalize_dist=True) for sig in ker_sigmas]
+    multi_ker = kernels.SumOfScalarKernel(gauss_kers, normalize=False)
+    # Generate full configs
+    params = {"kernel": multi_ker, "output_basis": output_bases, "regu": regu, "center_output": True}
+    configs = configs_generation.configs_combinations(params)
+    # Create list of regressors from that config
+    regs = [triple_basis.BiBasisEstimator(**config) for config in configs]
+    return configs, regs
