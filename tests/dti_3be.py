@@ -98,7 +98,12 @@ if __name__ == '__main__':
     #
     regs[0].fit(Xtrain, Ytrain, input_data_format=INPUT_DATA_FORMAT, output_data_format=OUTPUT_DATA_FORMAT)
     Ytest = disc_fd.to_discrete_general(Ytest, OUTPUT_DATA_FORMAT)
-    Xtest = disc_fd.to_discrete_general(Xtest, INPUT_DATA_FORMAT)
+    # Xtest_dg = disc_fd.to_discrete_general(Xtest, INPUT_DATA_FORMAT)
+    # preds = regs[0].predict_evaluate_diff_locs(Xtest, Ytest[0], INPUT_DATA_FORMAT)
+    preds = regs[0].predict_evaluate_diff_locs(Xtest, Ytest[0], INPUT_DATA_FORMAT)
+    score_test = metrics.mse(preds, Ytest[1])
+
+
     # preds = regs[0].predict_evaluate_diff_locs(Xtest, Ytest[0], INPUT_DATA_FORMAT)
     preds = regs[0].predict_evaluate_diff_locs(Xtest, Ytest[0])
     score_test = metrics.mse(preds, Ytest[1])

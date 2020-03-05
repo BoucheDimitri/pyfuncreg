@@ -94,42 +94,15 @@ class TripleBasisEstimator:
             regressors.append(reg)
         self.regressors = regressors
 
-    # TODO: WHY THE FUCK ARE THOSE TWO SETS OF FUNCTIONS DO NOT YIELD THE SAME RESULT
-    # def predict(self, Xnew, input_data_format="discrete_samelocs_regular_1d"):
-    #     Xnew_dg = disc_fd.to_discrete_general(Xnew, input_data_format)
-    #     coefsXnew = TripleBasisEstimator.projection_coefs(Xnew_dg, self.basis_in)
-    #     preds = np.array([reg(coefsXnew) for reg in self.regressors]).T
-    #     return preds
-    #
-    # def predict_from_coefs(self, pred_coefs, yin_new):
-    #     basis_evals = self.basis_out.compute_matrix(yin_new)
-    #     if self.center_output:
-    #         mean_eval = np.expand_dims(self.Ymean(yin_new), axis=0)
-    #         return pred_coefs.dot(basis_evals.T) + mean_eval
-    #     else:
-    #         return pred_coefs.dot(basis_evals.T)
-    #
-    # def predict_evaluate(self, Xnew, yin_new, input_data_format):
-    #     pred_coefs = self.predict(Xnew, input_data_format)
-    #     return self.predict_from_coefs(pred_coefs, yin_new)
-    #
-    # def predict_evaluate_diff_locs(self, Xnew, Yins_new, input_data_format):
-    #     n_preds = len(Xnew)
-    #     preds = []
-    #     pred_coefs = self.predict(Xnew, input_data_format)
-    #     for i in range(n_preds):
-    #         preds.append(np.squeeze(self.predict_from_coefs(pred_coefs[i], Yins_new[i])))
-    #     return preds
-
-    def predict(self, Xnew):
-        # Put input data in discrete general form
-        # Xnew_dg = disc_fd.to_discrete_general(Xnew, input_data_format)
-        coefsXnew = TripleBasisEstimator.projection_coefs(Xnew, self.basis_in)
+    def predict(self, Xnew, input_data_format="discrete_samelocs_regular_1d"):
+        Xnew_dg = disc_fd.to_discrete_general(Xnew, input_data_format)
+        coefsXnew = TripleBasisEstimator.projection_coefs(Xnew_dg, self.basis_in)
         preds = np.array([reg(coefsXnew) for reg in self.regressors]).T
         return preds
 
-    def predict_evaluate(self, Xnew, yin_new):
-        pred_coefs = self.predict(Xnew)
+    def predict_from_coefs(self, pred_coefs, yin_new):
+        if pred_coefs.ndim == 1:
+            pred_coefs = np.expand_dims(pred_coefs, axis=0)
         basis_evals = self.basis_out.compute_matrix(yin_new)
         if self.center_output:
             mean_eval = np.expand_dims(self.Ymean(yin_new), axis=0)
@@ -137,13 +110,16 @@ class TripleBasisEstimator:
         else:
             return pred_coefs.dot(basis_evals.T)
 
-    def predict_evaluate_diff_locs(self, Xnew, Yins_new):
-        n_preds = len(Xnew[0])
+    def predict_evaluate(self, Xnew, yin_new, input_data_format):
+        pred_coefs = self.predict(Xnew, input_data_format)
+        return self.predict_from_coefs(pred_coefs, yin_new)
+
+    def predict_evaluate_diff_locs(self, Xnew, Yins_new, input_data_format):
+        n_preds = len(Xnew[1])
         preds = []
+        pred_coefs = self.predict(Xnew, input_data_format)
         for i in range(n_preds):
-            preds.append(np.squeeze(self.predict_evaluate(
-                (np.expand_dims(Xnew[0][i], axis=0), np.expand_dims(Xnew[1][i], axis=0)),
-                Yins_new[i])))
+            preds.append(np.squeeze(self.predict_from_coefs(pred_coefs[i], Yins_new[i])))
         return preds
 
 
