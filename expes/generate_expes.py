@@ -77,16 +77,16 @@ def dti_3be_fourier(ker_sigma, regu, center_output, max_freq_in, max_freq_out,
     input_basis_dict = {"lower_freq": 0, "upper_freq": max_freq_in, "domain": domain_in}
     output_basis_dict = {"lower_freq": 0, "upper_freq": max_freq_out, "domain": domain_out}
     rffs_basis_dict = {"n_basis": n_rffs, "domain": domain_out, "bandwidth": ker_sigma, "seed": rffs_seed}
-    rffs_basis = ("random_fourier", rffs_basis_dict)
     bases_in = configs_generation.subconfigs_combinations("fourier", input_basis_dict, exclude_list=["domain"])
     bases_out = configs_generation.subconfigs_combinations("fourier", output_basis_dict, exclude_list=["domain"])
+    bases_rffs = configs_generation.subconfigs_combinations("random_fourier",
+                                                            rffs_basis_dict, exclude_list=["domain"])
     # Generate full configs
-    params = {"basis_in": bases_in, "basis_out": bases_out, 'basis_rffs': rffs_basis, "regu": regu,
+    params = {"basis_in": bases_in, "basis_out": bases_out, 'basis_rffs': bases_rffs, "regu": regu,
               "center_output": center_output, "signal_ext_input": signal_ext_input,
               "signal_ext_output": signal_ext_output}
     configs = configs_generation.configs_combinations(params, exclude_list=["signal_ext_input",
-                                                                            "signal_ext_output",
-                                                                            'basis_rffs'])
+                                                                            "signal_ext_output"])
     # Create list of regressors from that config
     regs = [triple_basis.TripleBasisEstimator(**config) for config in configs]
     return configs, regs

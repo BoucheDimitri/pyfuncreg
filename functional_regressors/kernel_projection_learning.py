@@ -36,21 +36,10 @@ class SeperableKPL(FunctionalRegressor):
         self.X = None
         self.Ymean_func = None
         # If a basis is given, the output dictionary is fixed, else it is generated from the passed config upon fitting
-        if isinstance(output_basis, basis.Basis):
-            self.output_basis = output_basis
-            self.output_basis_config = None
-        else:
-            self.output_basis_config = output_basis
-            self.output_basis = None
+        self.output_basis_config, self.output_basis = basis.set_basis_config(output_basis)
         # If a numpy array is explicitly it remains fixed, else it is generated with the output_basis
         # upon fitting using the passed config
-        if isinstance(B, np.ndarray):
-            self.B = B
-            self.B_abstract = None
-        # elif isinstance(B, regularization.OutputMatrix):
-        else:
-            self.B = None
-            self.B_abstract = B
+        self.B_abstract, self.B = regularization.set_output_matrix_config(B)
         # else:
         #     raise ValueError("B must be either numpy.ndarray or functional_regressors.regularization.OutputMatrix")
         # Attributes used for centering
@@ -74,20 +63,12 @@ class SeperableKPL(FunctionalRegressor):
                 self.B = regularization.generate_output_matrix(
                     self.B_abstract[0], self.B_abstract[1]).get_matrix(self.output_basis)
 
-    def fit(self, X, Y, K=None, output_data_format='discrete_samelocs_regular_1d'):
+    def fit(self, X, Y, K=None, input_data_format="vector", output_data_format='discrete_samelocs_regular_1d'):
         # Center output functions if relevant
         # start_center = perf_counter()
-        Ywrapped = discrete_functional_data.wrap_functional_data(Y, output_data_format)
-        # Memorize mean function before signal extension
-        if self.center_output:
-            self.Ymean_func = Ywrapped.mean_func()
-        # Extends the signal if relevant
-        Ywrapped_extended = Ywrapped.extended_version(self.signal_ext[0], self.signal_ext[1])
-        # Center with extended signal if relevant
-        if self.center_output:
-            Ycentered = Ywrapped_extended.centered_discrete_general()
-        else:
-            Ycentered = Ywrapped_extended.discrete_general()
+        self.Ymean, Ycentered = discrete_functional_data.preprocess_data(Y, self.signal_ext,
+                                                                         self.center_output,
+                                                                         output_data_format)
         # end_center = perf_counter()
         # print("Centering of the data perf :" + str(end_center - start_center))
         # Memorize training input data
@@ -128,11 +109,11 @@ class SeperableKPL(FunctionalRegressor):
         # end_fitovk = perf_counter()
         # print("Fitting the OVK Ridge: " + str(end_fitovk - start_fitovk))
 
-    def predict(self, Xnew):
+    def predict(self, Xnew, input_data_format="vector"):
         return self.ovkridge.predict(Xnew)
 
-    def predict_evaluate(self, Xnew, yin_new):
-        pred_coefs = self.predict(Xnew)
+    def predict_evaluate(self, Xnew, yin_new, input_data_format="vector"):
+        pred_coefs = self.predict(Xnew, input_data_format)
         basis_evals = self.output_basis.compute_matrix(yin_new)
         if self.center_output is not False:
             mean_eval = np.expand_dims(self.Ymean_func(yin_new), axis=0)
@@ -140,9 +121,9 @@ class SeperableKPL(FunctionalRegressor):
         else:
             return pred_coefs.dot(basis_evals.T)
 
-    def predict_evaluate_diff_locs(self, Xnew, Yins_new):
+    def predict_evaluate_diff_locs(self, Xnew, Yins_new, input_data_format="vector"):
         n_preds = len(Xnew)
         preds = []
         for i in range(n_preds):
-            preds.append(np.squeeze(self.predict_evaluate([Xnew[i]], Yins_new[i])))
+            preds.append(np.squeeze(self.predict_evaluate([Xnew[i]], Yins_new[i], input_data_format)))
         return preds

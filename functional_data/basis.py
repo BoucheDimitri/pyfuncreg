@@ -592,3 +592,25 @@ def generate_basis(key, kwargs):
     return SUPPORTED_DICT[key](**kwargs)
 
 
+def set_basis_config(passed_basis):
+    """
+    Make the difference between what is passed as basis, can be either a Basis instance or a configuration tuple
+
+    Parameters
+    ----------
+    passed_basis: Basis or tuple
+        If tuple is given, must be of the form (basis_key, basis_config) with basis_key in `SUPPORTED_DICT` and
+        basis_config a dictionary of basis parameters with the right keys
+
+    Returns
+    -------
+    tuple,
+        a config and a basis, one of them is None
+    """
+    if isinstance(passed_basis, Basis):
+        actual_basis = passed_basis
+        config_basis = None
+    else:
+        config_basis = passed_basis
+        actual_basis = None
+    return config_basis, actual_basis

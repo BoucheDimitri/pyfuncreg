@@ -189,7 +189,7 @@ def parallel_tuning(regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=None, key=None,
     # Evaluate its performance on test set
     # Put in discrete_general form for testing
     Ytest_dg = disc_fd.to_discrete_general(Ytest, output_data_format)
-    preds = best_reg.predict_evaluate_diff_locs(Xtest, Ytest_dg[0])
+    preds = best_reg.predict_evaluate_diff_locs(Xtest, Ytest_dg[0], input_data_format)
     score_test = metrics.mse(preds, Ytest_dg[1])
     # Return the results
     if configs is not None:

@@ -182,7 +182,20 @@ def to_discrete_general(Y, data_format):
     return DATA_TYPES[data_format].to_discrete_general(Y[0], Y[1])
 
 
-
+def preprocess_data(data, signal_ext, center=False, data_format="discrete_samelocs_regular_1d"):
+    data_wrapped = wrap_functional_data(data, data_format)
+    # Memorize mean function before signal extension
+    if center:
+        data_mean = data_wrapped.mean_func()
+    else:
+        data_mean = None
+    # Extends the signal if relevant
+    data_wrapped_extended = data_wrapped.extended_version(signal_ext[0], signal_ext[1])
+    # Center with extended signal if relevant
+    if center:
+        return data_mean, data_wrapped_extended.centered_discrete_general()
+    else:
+        return data_mean, data_wrapped_extended.discrete_general()
 
 
 

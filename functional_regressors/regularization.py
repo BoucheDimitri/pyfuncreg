@@ -153,3 +153,14 @@ def generate_output_matrix(key, kwargs):
         Generated output matrix
     """
     return SUPPORTED_DICT[key](**kwargs)
+
+
+def set_output_matrix_config(passed_B):
+    if isinstance(passed_B, np.ndarray):
+        B = passed_B
+        config_B = None
+    # elif isinstance(B, regularization.OutputMatrix):
+    else:
+        B = None
+        config_B = B
+    return config_B, B
