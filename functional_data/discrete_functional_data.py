@@ -53,3 +53,23 @@ def set_locs(ylocs, Yobs):
     return [ylocs for i in range(len(Yobs))], Yobs
 
 
+def extend_locs_if_samelocs(Ylocs, Yobs):
+    if np.squeeze(Ylocs[0]).shape == ():
+        return set_locs(Ylocs, Yobs)
+    else:
+        return Ylocs, Yobs
+
+
+def to_discrete_general(Ylocs, Yobs):
+    # Remove NaNs
+    Ylocs_dg, Yobs_dg = list(), list()
+    n_samples = len(Yobs)
+    for i in range(n_samples):
+        Ylocs_dg.append(Ylocs[i][np.argwhere(~ np.isnan(Yobs[i])).squeeze()])
+        Yobs_dg.append(Yobs[i][np.argwhere(~ np.isnan(Yobs[i])).squeeze()])
+    return Ylocs_dg, Yobs_dg
+
+
+
+
+

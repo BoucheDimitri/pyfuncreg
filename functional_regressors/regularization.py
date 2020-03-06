@@ -162,5 +162,5 @@ def set_output_matrix_config(passed_B):
     # elif isinstance(B, regularization.OutputMatrix):
     else:
         B = None
-        config_B = B
+        config_B = passed_B
     return config_B, B

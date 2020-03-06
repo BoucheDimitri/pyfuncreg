@@ -176,7 +176,11 @@ class SeperableKPLBis(FunctionalRegressor):
         # Center output functions if relevant
         # start_center = perf_counter()
         self.Ymean_func = disc_fd1.mean_func(Y[0], Y[1])
-        Ycentered = disc_fd1.center_discrete(Y[0], Y[1], self.Ymean_func)
+        if self.center_output:
+            Ycentered = disc_fd1.center_discrete(Y[0], Y[1], self.Ymean_func)
+            Ycentered = disc_fd1.to_discrete_general(Ycentered[0], Ycentered[1])
+        else:
+            Ycentered = disc_fd1.to_discrete_general(Y[0], Y[1])
         # end_center = perf_counter()
         # print("Centering of the data perf :" + str(end_center - start_center))
         # Memorize training input data
