@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 import pickle
+from scipy.io import wavfile
 
 
 def load_dti(path, shuffle_seed=0):
@@ -23,7 +24,30 @@ def load_dti(path, shuffle_seed=0):
     return cca, rcst
 
 
-def load_speech_dataset(path=os.getcwd() + "/data/dataspeech/processed/"):
+VOCAL_TRACTS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
+RATE = 10000
+OUTPUT_PACE = 0.005
+
+
+def load_raw_speech_dataset(path):
+    words = list(set([word.split(".")[0] for word in os.listdir(path)]))
+    words.sort()
+    X = []
+    Y = {vt: list() for vt in VOCAL_TRACTS}
+    for word in words:
+        rate, signal = wavfile.read(path + word + ".wav")
+        output_func_mat = pd.read_csv(path + word + ".csv", header=None)
+        X.append(signal)
+        try:
+            output_func_mat = output_func_mat.to_numpy()
+        except AttributeError:
+            output_func_mat = output_func_mat.values
+        for i in range(len(VOCAL_TRACTS)):
+            Y[VOCAL_TRACTS[i]].append(output_func_mat[i])
+    return X, Y
+
+
+def load_preprocessed_speech_dataset(path=os.getcwd() + "/data/dataspeech/processed/"):
     with open(path + "Xtrain.pkl", "rb") as inp:
         Xtrain = pickle.load(inp)
     with open(path + "Ytrain.pkl", "rb") as inp:
