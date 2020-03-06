@@ -6,7 +6,7 @@ import psutil
 
 from model_eval import cross_validation
 from model_eval import metrics
-from functional_data import discrete_functional_data as disc_fd
+from functional_data.DEPRECATED import discrete_functional_data as disc_fd
 
 
 def check_cpu_availability(min_nprocs=4, timeout_sleep=3, n_timeout=0, cpu_avail_thresh=30):

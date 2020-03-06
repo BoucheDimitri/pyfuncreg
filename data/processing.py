@@ -47,7 +47,7 @@ def extend_max_duration_outputs(y, length, max_length):
     return ylocs, ypad[:locs_size]
 
 
-def append_processed_data_point(X, Y, Xout, Yout, i, normalize_domain, extend=False):
+def append_processed_data_point(X, Y, Xout, Yout, i, normalize_domain, extend):
     # Signal length
     length = X[i].shape[0] / RATE
     # Maximum duration of signals
@@ -116,7 +116,7 @@ def process_speech(X, Y, shuffle_seed=784, n_train=300, normalize_domain=True, n
         return Xtrain, Ytrain, Xtest, Ytest
 
 
-
-
-X, Y = loading.load_raw_speech_dataset(path)
-Xtrain, Ytrain, Xtest, Ytest = process_speech(X, Y, shuffle_seed=784, n_train=300, normalize_domain=True, normalize_values=True, extend=True)
+#
+#
+# X, Y = loading.load_raw_speech_dataset(path)
+# Xtrain, Ytrain, Xtest, Ytest = process_speech(X, Y, shuffle_seed=784, n_train=300, normalize_domain=True, normalize_values=True, extend=True)

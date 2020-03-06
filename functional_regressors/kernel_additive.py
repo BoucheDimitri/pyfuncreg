@@ -1,9 +1,8 @@
 import numpy as np
 
 from functional_data import smoothing
-from functional_data import functional_algebra
 from functional_data import fpca
-from functional_data import discrete_functional_data as disc_fd
+from functional_data.DEPRECATED import discrete_functional_data as disc_fd
 
 
 class KernelAdditiveModel:

@@ -16,8 +16,7 @@ from data import loading
 from functional_regressors import triple_basis
 from data import processing
 from expes import generate_expes
-from functional_data import discrete_functional_data as disc_fd
-
+from functional_data.DEPRECATED import discrete_functional_data as disc_fd
 
 # ############################### Config ###############################################################################
 # Path to the data

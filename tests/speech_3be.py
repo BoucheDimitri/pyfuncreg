@@ -1,7 +1,5 @@
 import numpy as np
 import os
-import sys
-import pathlib
 
 # Execution path
 # exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
@@ -10,17 +8,12 @@ import pathlib
 path = os.getcwd()
 
 # Local imports
-from model_eval import parallel_tuning
 from model_eval import metrics
 from data import loading
 from functional_regressors import kernels
 from functional_regressors import triple_basis
 from data import processing
-from expes import generate_expes
-from functional_data import discrete_functional_data as disc_fd
-
-
-
+from functional_data.DEPRECATED import discrete_functional_data as disc_fd
 
 # ############################### Execution config #####################################################################
 # Path to the data

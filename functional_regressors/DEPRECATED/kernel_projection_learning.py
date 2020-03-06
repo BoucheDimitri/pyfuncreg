@@ -1,6 +1,5 @@
 import numpy as np
 import functools
-from time import perf_counter
 
 from functional_regressors import ovkernel_ridge
 from functional_data import basis
@@ -9,7 +8,7 @@ from functional_data import smoothing
 from functional_data import sparsely_observed
 from functional_data import functional_algebra
 from functional_regressors import regularization
-from functional_data import discrete_functional_data
+from functional_data.DEPRECATED import discrete_functional_data
 from functional_regressors.functional_regressor import FunctionalRegressor
 
 # TODO: IL est pertinent de mettre le padding des sorties comme un paramètre du classifier, simplifie pas mal de chose

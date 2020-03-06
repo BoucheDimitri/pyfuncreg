@@ -3,7 +3,7 @@ import numpy as np
 import importlib
 
 from data import loading
-from functional_data import discrete_functional_data
+from functional_data.DEPRECATED import discrete_functional_data
 
 importlib.reload(discrete_functional_data)
 

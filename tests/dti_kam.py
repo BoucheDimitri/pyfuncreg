@@ -17,7 +17,7 @@ from model_eval import cross_validation
 from data import loading
 from data import processing
 from expes import generate_expes
-from functional_data import discrete_functional_data as disc_fd
+from functional_data.DEPRECATED import discrete_functional_data as disc_fd
 
 importlib.reload(cross_validation)
 importlib.reload(parallel_tuning)

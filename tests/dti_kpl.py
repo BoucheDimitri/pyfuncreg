@@ -14,7 +14,7 @@ from model_eval import metrics
 from data import loading
 from data import processing
 from expes import generate_expes
-from functional_data import discrete_functional_data as disc_fd
+from functional_data.DEPRECATED import discrete_functional_data as disc_fd
 
 # ############################### Execution config #####################################################################
 # Path to the data

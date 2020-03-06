@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.model_selection import KFold
 
-from functional_data import discrete_functional_data
+from functional_data.DEPRECATED import discrete_functional_data
 
 from model_eval import metrics
 
