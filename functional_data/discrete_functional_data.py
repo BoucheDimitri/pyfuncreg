@@ -190,7 +190,10 @@ def preprocess_data(data, signal_ext, center=False, data_format="discrete_samelo
     else:
         data_mean = None
     # Extends the signal if relevant
-    data_wrapped_extended = data_wrapped.extended_version(signal_ext[0], signal_ext[1])
+    if signal_ext is not None:
+        data_wrapped_extended = data_wrapped.extended_version(signal_ext[0], signal_ext[1])
+    else:
+        data_wrapped_extended = data_wrapped
     # Center with extended signal if relevant
     if center:
         return data_mean, data_wrapped_extended.centered_discrete_general()
