@@ -85,8 +85,10 @@ if __name__ == '__main__':
     cca, rcst = loading.load_dti(path + "/data/dataDTI/", shuffle_seed=SHUFFLE_SEED)
     Xtrain, Ytrain, Xtest, Ytest = processing.process_dti(cca, rcst)
     # Extend data
-    Xtrain_extended = disc_fd1.extend_signal_samelocs(Xtrain[0][0], Xtrain[1], mode="symmetric", repeats=(1, 1))
-    Ytrain_extended = disc_fd1.extend_signal_samelocs(Ytrain[0][0], Ytrain[1], mode="symmetric", repeats=(1, 1))
+    Xtrain_extended = disc_fd1.extend_signal_samelocs(
+        Xtrain[0][0], Xtrain[1], mode=SIGNAL_EXT_INPUT[0], repeats=SIGNAL_EXT_INPUT[1])
+    Ytrain_extended = disc_fd1.extend_signal_samelocs(
+        Ytrain[0][0], Ytrain[1], mode=SIGNAL_EXT_OUTPUT[0], repeats=SIGNAL_EXT_OUTPUT[1])
     # Convert testing output data to discrete general form
     Ytest = disc_fd1.to_discrete_general(*Ytest)
 
