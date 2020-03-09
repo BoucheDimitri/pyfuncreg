@@ -18,7 +18,6 @@ from model_eval import cross_validation
 from data import loading
 from data import processing
 from expes import generate_expes
-from functional_data.DEPRECATED import discrete_functional_data as disc_fd
 from functional_regressors import kernels
 from functional_data import discrete_functional_data as disc_fd1
 from functional_regressors import kernel_additive
@@ -38,8 +37,6 @@ N_PROCS = 8
 SHUFFLE_SEED = 784
 N_TRAIN = 70
 N_FOLDS = 5
-INPUT_DATA_FORMAT = "discrete_general"
-OUTPUT_DATA_FORMAT = 'discrete_general'
 
 # ############################### Regressor config #####################################################################
 # REGU_GRID = np.geomspace(1e-8, 1, 100)
@@ -78,19 +75,15 @@ if __name__ == '__main__':
         pass
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
     #
-    # # Define execution mode
-    # try:
-    #     argv = sys.argv[1]
-    # except IndexError:
-    #     argv = ""
+    # Define execution mode
+    try:
+        argv = sys.argv[1]
+    except IndexError:
+        argv = ""
 
     # ############################# Load the data ######################################################################
     cca, rcst = loading.load_dti(path + "/data/dataDTI/", shuffle_seed=SHUFFLE_SEED)
     Xtrain, Ytrain, Xtest, Ytest = processing.process_dti(cca, rcst)
-
-    # Put data in discrete general form
-    Xtrain, Xtest = disc_fd1.set_locs(*Xtrain), disc_fd1.set_locs(*Xtest)
-    Ytrain, Ytest = disc_fd1.set_locs(*Ytrain), disc_fd1.set_locs(*Ytest)
 
     Ytest = disc_fd1.to_discrete_general(*Ytest)
 
@@ -111,22 +104,20 @@ if __name__ == '__main__':
     score_test = metrics.mse(Ytest[1], preds)
 
     # ############################# Full cross-validation experiment ###################################################
-    # if argv == "full":
-    #     # Generate configurations and regressors
-    #     configs, regs = generate_expes.dti_kam(**PARAMS)
-    #     # Run tuning in parallel
-    #     best_config, best_result, score_test = parallel_tuning.parallel_tuning(
-    #         regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=rec_path, configs=configs, input_data_format=INPUT_DATA_FORMAT,
-    #         output_data_format=OUTPUT_DATA_FORMAT, n_folds=N_FOLDS, n_procs=N_PROCS)
-    #     print("Score on test set: " + str(score_test))
-    #
-    # # ############################# Use pre cross-validated dictionary #################################################
-    # else:
-    #     # Generate regressor from cross-validation dictionaries
-    #     configs, regs = generate_expes.dti_kam(**PARAMS_CV)
-    #     regs[0].fit(Xtrain, Ytrain, output_data_format=OUTPUT_DATA_FORMAT)
-    #     Ytest_dg = disc_fd.to_discrete_general(Ytest, OUTPUT_DATA_FORMAT)
-    #     preds = regs[0].predict_evaluate_diff_locs(Xtest, Ytest_dg[0])
-    #     score_test = metrics.mse(Ytest_dg[1], preds)
-    #     print("Score on test set: " + str(score_test))
-    #
+    if argv == "full":
+        # Generate configurations and regressors
+        configs, regs = generate_expes.dti_kam(**PARAMS)
+        # Run tuning in parallel
+        best_config, best_result, score_test = parallel_tuning.parallel_tuning(
+            regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=rec_path, configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS)
+        print("Score on test set: " + str(score_test))
+
+    # ############################# Use pre cross-validated dictionary #################################################
+    else:
+        # Generate regressor from cross-validation dictionaries
+        configs, regs = generate_expes.dti_kam(**PARAMS_CV)
+        regs[0].fit(Xtrain, Ytrain)
+        preds = regs[0].predict_evaluate_diff_locs(Xtest, Ytest[0])
+        score_test = metrics.mse(Ytest[1], preds)
+        print("Score on test set: " + str(score_test))
+

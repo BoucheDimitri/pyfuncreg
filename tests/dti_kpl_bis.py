@@ -4,22 +4,18 @@ import sys
 import pathlib
 
 # Execution path
-# exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
-# path = str(exec_path.parent)
-# sys.path.append(path)
-path = os.getcwd()
+exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
+path = str(exec_path.parent)
+sys.path.append(path)
+# path = os.getcwd()
 
 # Local imports
 from model_eval import parallel_tuning
 from model_eval import metrics
 from data import loading
 from data import processing
-from functional_regressors import kernels
 from expes import generate_expes
-from functional_data.DEPRECATED import discrete_functional_data as disc_fd
 from functional_data import discrete_functional_data as disc_fd1
-from functional_regressors import kernel_projection_learning as kproj_learning
-from model_eval import cross_validation
 
 # ############################### Execution config #####################################################################
 # Path to the data
@@ -73,11 +69,11 @@ if __name__ == '__main__':
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
     # Define execution mode
-    # try:
-    #     argv = sys.argv[1]
-    # except IndexError:
-    #     argv = ""
-    argv = "full"
+    try:
+        argv = sys.argv[1]
+    except IndexError:
+        argv = ""
+    # argv = "full"
     # ############################# Load the data ######################################################################
     cca, rcst = loading.load_dti(path + "/data/dataDTI/", shuffle_seed=SHUFFLE_SEED)
     Xtrain, Ytrain, Xtest, Ytest = processing.process_dti(cca, rcst)
@@ -97,7 +93,7 @@ if __name__ == '__main__':
                                                     decrease_base=DECREASE_BASE, **BASIS_DICT)
 
         best_config, best_result, score_test = parallel_tuning.parallel_tuning(
-            regs, Xtrain, Ytrain_extended, Xtest, Ytest, None, Ytrain,
+            regs, Xtrain, Ytrain_extended, Xtest, Ytest, Xpred_train=None, Ypred_train=Ytrain,
             input_indexing=INPUT_INDEXING, output_indexing=OUTPUT_INDEXING,
             rec_path=rec_path, configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS)
         print("Score on test set: " + str(score_test))

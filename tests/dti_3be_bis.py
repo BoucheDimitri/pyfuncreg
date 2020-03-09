@@ -11,8 +11,7 @@ sys.path.append(path)
 
 # Local imports
 from model_eval import metrics
-from data import loading
-from data import processing
+from data import loading, processing
 from expes import generate_expes
 from functional_data import discrete_functional_data as disc_fd1
 from functional_regressors import triple_basis
@@ -98,7 +97,7 @@ if __name__ == '__main__':
                                                        FREQS_OUT_GRID,N_RFFS, RFFS_SEED, DOMAIN, DOMAIN)
 
         best_config, best_result, score_test = parallel_tuning.parallel_tuning(
-            regs, Xtrain_extended, Ytrain_extended, Xtest, Ytest, Xtrain, Ytrain,
+            regs, Xtrain_extended, Ytrain_extended, Xtest, Ytest, Xpred_train=Xtrain, Ypred_train=Ytrain,
             rec_path=rec_path, configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS)
         print("Score on test set: " + str(score_test))
 

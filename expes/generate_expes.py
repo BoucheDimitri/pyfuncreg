@@ -49,7 +49,7 @@ def speech_fpca_penpow_kpl(ker_sigma, regu, n_fpca, n_evals_fpca, decrease_base,
               "regu": regu, "center_output": True}
     configs = configs_generation.configs_combinations(params)
     # Create list of regressors from that config
-    regs = [kproj_learning.SeperableKPL(**config) for config in configs]
+    regs = [kproj_learning.SeperableKPLBis(**config) for config in configs]
     return configs, regs
 
 
@@ -66,7 +66,7 @@ def dti_kam(kx_sigma, ky_sigma, keval_sigma, regu, n_fpca, n_evals_fpca, n_evals
               "domain_in": domain_in, "domain_out": domain_out}
     configs = configs_generation.configs_combinations(params, exclude_list=("domain_in", "domain_out"))
     # Create list of regressors from that config
-    regs = [kernel_additive.KernelAdditiveModel(**config) for config in configs]
+    regs = [kernel_additive.KernelAdditiveModelBis(**config) for config in configs]
     return configs, regs
 
 

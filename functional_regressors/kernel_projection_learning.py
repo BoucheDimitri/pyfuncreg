@@ -221,11 +221,11 @@ class SeperableKPLBis(FunctionalRegressor):
         # end_fitovk = perf_counter()
         # print("Fitting the OVK Ridge: " + str(end_fitovk - start_fitovk))
 
-    def predict(self, Xnew, input_data_format="vector"):
+    def predict(self, Xnew):
         return self.ovkridge.predict(Xnew)
 
-    def predict_evaluate(self, Xnew, yin_new, input_data_format="vector"):
-        pred_coefs = self.predict(Xnew, input_data_format)
+    def predict_evaluate(self, Xnew, yin_new):
+        pred_coefs = self.predict(Xnew)
         basis_evals = self.output_basis.compute_matrix(yin_new)
         if self.center_output is not False:
             mean_eval = np.expand_dims(self.Ymean_func(yin_new), axis=0)
@@ -233,9 +233,9 @@ class SeperableKPLBis(FunctionalRegressor):
         else:
             return pred_coefs.dot(basis_evals.T)
 
-    def predict_evaluate_diff_locs(self, Xnew, Yins_new, input_data_format="vector"):
+    def predict_evaluate_diff_locs(self, Xnew, Yins_new):
         n_preds = len(Xnew)
         preds = []
         for i in range(n_preds):
-            preds.append(np.squeeze(self.predict_evaluate([Xnew[i]], Yins_new[i], input_data_format)))
+            preds.append(np.squeeze(self.predict_evaluate([Xnew[i]], Yins_new[i])))
         return preds

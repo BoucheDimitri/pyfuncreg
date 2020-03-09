@@ -9,12 +9,12 @@ from time import perf_counter
 exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
 path = str(exec_path.parent)
 sys.path.append(path)
+# path = os.getcwd()
 
 # Local imports
-from expes.DEPRECATED import generate_expes
-from misc import model_eval
-from data import loading
-from model_eval import parallel_tuning
+from expes import generate_expes
+from data import loading, processing
+from model_eval import parallel_tuning, metrics
 
 # ############################### Execution config #####################################################################
 # Path to the data
@@ -24,31 +24,26 @@ OUTPUT_FOLDER = "speech_kpl"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 EXPE_NAME = "speech_kpl"
 # Number of processors
-NPROCS = 8
+N_PROCS = 8
+# Indexing
+INPUT_INDEXING = "list"
+OUTPUT_INDEXING = "discrete_general"
+# Number of folds
+N_FOLDS = 5
 
 # ############################### Regressor config #####################################################################
 # Output domain
-DOMAIN_OUT = np.array([[0, 1]])
-# Padding parameters
-PAD_WIDTH= ((0, 0), (0, 0))
+DOMAIN = np.array([[0, 1]])
 # Dictionary obtained by cross validation for quick run fitting on train and get score on test
 CV_DICTS = dict()
-CV_DICTS["LP"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
-                  'penalize_eigvals': 0, 'n_fpca': 30, 'penalize_pow': 1}
-CV_DICTS["LA"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
-                  'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
-CV_DICTS["TBCL"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
-                    'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
-CV_DICTS["TBCD"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
-                    'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
-CV_DICTS["VEL"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
-                   'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
-CV_DICTS["GLO"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
-                   'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
-CV_DICTS["TTCL"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
-                    'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
-CV_DICTS["TTCD"] = {'ker_sigma': 1, 'center_output': True, 'regu': 1e-10,
-                    'penalize_eigvals': 0, 'n_fpca': 40, 'penalize_pow': 1}
+CV_DICTS["LP"] = {'ker_sigma': 1, 'regu': 1e-10, 'n_fpca': 30, 'decrease_base': 1}
+CV_DICTS["LA"] = {'ker_sigma': 1, 'regu': 1e-10, 'n_fpca': 40, 'decrease_base': 1}
+CV_DICTS["TBCL"] = {'ker_sigma': 1, 'regu': 1e-10, 'n_fpca': 40, 'decrease_base': 1}
+CV_DICTS["TBCD"] = {'ker_sigma': 1, 'regu': 1e-10, 'n_fpca': 40, 'decrease_base': 1}
+CV_DICTS["VEL"] = {'ker_sigma': 1, 'regu': 1e-10, 'n_fpca': 40, 'decrease_base': 1}
+CV_DICTS["GLO"] = {'ker_sigma': 1, 'regu': 1e-10, 'n_fpca': 40, 'decrease_base': 1}
+CV_DICTS["TTCL"] = {'ker_sigma': 1, 'regu': 1e-10, 'n_fpca': 40, 'decrease_base': 1}
+CV_DICTS["TTCD"] = {'ker_sigma': 1, 'regu': 1e-10, 'n_fpca': 40, 'decrease_base': 1}
 # Regularization parameters grid
 # REGU_GRID = list(np.geomspace(1e-10, 1e-5, 40))
 REGU_GRID = [1e-10, 1e-7]
@@ -56,6 +51,8 @@ REGU_GRID = [1e-10, 1e-7]
 N_FPCA = [20, 30]
 # Standard deviation parameter for the input kernel
 KER_SIGMA = 1
+# Decrease base
+DECREASE_BASE = [1, 1.2]
 # Number of evaluations for FPCA
 NEVALS_FPCA = 300
 
@@ -73,31 +70,34 @@ if __name__ == '__main__':
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
     # ############################# Load the data ######################################################################
-    Xtrain, Ytrain_full, Xtest, Ytest_full = loading.load_processed_speech_dataset(DATA_PATH)
+    X, Y = loading.load_raw_speech_dataset(path + "/data/dataspeech/raw/")
+    Xtrain, Ytrain_full_ext, Ytrain_full, Xtest, Ytest_full_ext, Ytest_full = processing.process_speech(
+        X, Y, shuffle_seed=784, n_train=300, normalize_domain=True, normalize_values=True)
+
     try:
         key = sys.argv[1]
     except IndexError:
         raise IndexError(
             'You need to define a vocal tract subproblem in the set {"LA", "LP", "TBCL", "VEL", "GLO", "TTCL", "TTCD"}')
-    Ytrain, Ytest = Ytrain_full[key], Ytest_full[key]
+    # key = "LA"
+    Ytrain_ext, Ytrain, Ytest_ext, Ytest = Ytrain_full_ext[key], Ytrain_full[key], Ytest_full_ext[key], Ytest_full[key]
 
     # ############################# Full cross-validation experiment ###################################################
     try:
         argv = sys.argv[2]
     except IndexError:
         argv = ""
+    # argv = "full"
     if argv == "full":
-        # Generate config dictionaries
-        params = {"regu": REGU_GRID, "ker_sigma": KER_SIGMA, "penalize_eigvals": 0, "n_fpca": N_FPCA,
-                  "penalize_pow": 1, "center_output": True}
+        # Generate configs and corresponding regressors
+        configs, regs = generate_expes.speech_fpca_penpow_kpl(KER_SIGMA, REGU_GRID, N_FPCA,
+                                                              NEVALS_FPCA, DECREASE_BASE, DOMAIN)
 
-        expe_dicts = generate_expes.expe_generator(params)
-        # Create a queue of regressor to cross validate
-        regressors = [generate_expes.create_kpl_speech(expdict, NEVALS_FPCA)
-                      for expdict in expe_dicts]
-        # Cross validation of the regressor queue
-        best_dict, best_result, score_test = parallel_tuning.parallel_tuning(regressors, Xtrain, Ytrain, Xtest, Ytest,
-                                                                             rec_path, key, expe_dicts, n_procs=4)
+        # Cross validation of the regressors
+        best_dict, best_result, score_test = parallel_tuning.parallel_tuning(
+            regs, Xtrain, Ytrain_ext, Xtest, Ytest, Xpred_train=None, Ypred_train=Ytrain,
+            input_indexing=INPUT_INDEXING, output_indexing=OUTPUT_INDEXING,
+            rec_path=rec_path, configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS)
         # Save the results
         with open(rec_path + "/" + EXPE_NAME + "_" + key + ".pkl", "wb") as inp:
             pickle.dump((best_dict, best_result, score_test), inp,
@@ -108,15 +108,10 @@ if __name__ == '__main__':
     # ############################# Reduced experiment with the pre cross validated configuration ######################
     else:
         # Use directly the regressor stemming from the cross validation
-        best_regressor = generate_expes.create_kpl_speech(CV_DICTS[key], NEVALS_FPCA)
-        start = perf_counter()
-        best_regressor.fit(Xtrain, Ytrain)
-        end = perf_counter()
-        print(end - start)
+        configs, regs = generate_expes.speech_fpca_penpow_kpl(**CV_DICTS[key], n_evals_fpca=NEVALS_FPCA, domain=DOMAIN)
+        regs[0].fit(Xtrain, Ytrain_ext)
         # Evaluate it on test set
-        len_test = len(Xtest)
-        preds = [best_regressor.predict_evaluate(np.expand_dims(Xtest[i], axis=0), Ytest[0][i])
-                 for i in range(len_test)]
-        score_test = model_eval.mean_squared_error(preds, Ytest[1])
+        preds = regs[0].predict_evaluate_diff_locs(Xtest, Ytest[0])
+        score_test = metrics.mse(Ytest[1], preds)
         # Print the result
         print("Score on test set: " + str(score_test))

@@ -38,8 +38,10 @@ class KfoldsCrossVal:
             return data[index]
         elif input_indexing == "discrete_general":
             return [data[0][i] for i in index], [data[1][i] for i in index]
+        elif input_indexing == 'list':
+            return [data[i] for i in index]
         else:
-            raise ValueError("Must chose mode in {'array', 'discrete_general'}")
+            raise ValueError("Must chose mode in {'array', 'list', 'discrete_general'}")
 
     def __call__(self, reg, Xfit, Yfit, Xpred=None, Ypred=None):
         scores = []

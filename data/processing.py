@@ -101,10 +101,12 @@ def normalize_output_values(Ytrain, Ytest):
     return Ytrain_norm, Ytest_norm
 
 
-def process_speech(X, Y, shuffle_seed=784, n_train=300, normalize_domain=True, normalize_values=True, extend=True):
+def process_speech(X, Y, shuffle_seed=784, n_train=300, normalize_domain=True, normalize_values=True):
     # Initialize containers
-    Xtrain, Xtest = list(), list()
+    Xtrain_ext, Xtrain, Xtest_ext, Xtest = list(), list(), list(), list()
+    Ytrain_ext = {vt: [list(), list()] for vt in loading.VOCAL_TRACTS}
     Ytrain = {vt: [list(), list()] for vt in loading.VOCAL_TRACTS}
+    Ytest_ext = {vt: [list(), list()] for vt in loading.VOCAL_TRACTS}
     Ytest = {vt: [list(), list()] for vt in loading.VOCAL_TRACTS}
     # Shuffle index
     n_samples = len(X)
@@ -113,15 +115,19 @@ def process_speech(X, Y, shuffle_seed=784, n_train=300, normalize_domain=True, n
     np.random.shuffle(inds)
     # Fill data
     for i in inds[:n_train]:
-        append_processed_data_point(X, Y, Xtrain, Ytrain, i, normalize_domain, extend)
+        append_processed_data_point(X, Y, Xtrain_ext, Ytrain_ext, i, normalize_domain, extend=True)
+        append_processed_data_point(X, Y, Xtrain, Ytrain, i, normalize_domain, extend=False)
     for i in inds[n_train:]:
-        append_processed_data_point(X, Y, Xtest, Ytest, i, normalize_domain, extend)
+        append_processed_data_point(X, Y, Xtest_ext, Ytest_ext, i, normalize_domain, extend=True)
+        append_processed_data_point(X, Y, Xtest, Ytest, i, normalize_domain, extend=False)
     # Normalize output values if necessary
     if normalize_values:
+        # Extended or not, this results in the same normalization because of extended is a repetition of the same signal
+        Ytrain_ext_norm, Ytest_ext_norm = normalize_output_values(Ytrain_ext, Ytest_ext)
         Ytrain_norm, Ytest_norm = normalize_output_values(Ytrain, Ytest)
-        return Xtrain, Ytrain_norm, Xtest, Ytest_norm
+        return Xtrain_ext, Ytrain_ext_norm, Ytrain_norm, Xtest_ext, Ytest_ext_norm, Ytest_norm
     else:
-        return Xtrain, Ytrain, Xtest, Ytest
+        return Xtrain_ext, Ytrain_ext, Ytrain, Xtest_ext, Ytest_ext, Ytest
 
 
 #
