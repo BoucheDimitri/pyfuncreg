@@ -74,7 +74,7 @@ def dti_kam(kx_sigma, ky_sigma, keval_sigma, regu, n_fpca, n_evals_fpca, n_evals
 # ############################### 3BE ##################################################################################
 
 def dti_3be_fourier(ker_sigma, regu, center_output, max_freq_in, max_freq_out,
-                    n_rffs, rffs_seed, domain_in, domain_out, signal_ext_input=None, signal_ext_output=None):
+                    n_rffs, rffs_seed, domain_in, domain_out):
     input_basis_dict = {"lower_freq": 0, "upper_freq": max_freq_in, "domain": domain_in}
     output_basis_dict = {"lower_freq": 0, "upper_freq": max_freq_out, "domain": domain_out}
     rffs_basis_dict = {"n_basis": n_rffs, "domain": domain_out, "bandwidth": ker_sigma, "seed": rffs_seed}
@@ -84,10 +84,8 @@ def dti_3be_fourier(ker_sigma, regu, center_output, max_freq_in, max_freq_out,
                                                             rffs_basis_dict, exclude_list=["domain"])
     # Generate full configs
     params = {"basis_in": bases_in, "basis_out": bases_out, 'basis_rffs': bases_rffs, "regu": regu,
-              "center_output": center_output, "signal_ext_input": signal_ext_input,
-              "signal_ext_output": signal_ext_output}
-    configs = configs_generation.configs_combinations(params, exclude_list=["signal_ext_input",
-                                                                            "signal_ext_output"])
+              "center_output": center_output}
+    configs = configs_generation.configs_combinations(params)
     # Create list of regressors from that config
     regs = [triple_basis.TripleBasisEstimator(**config) for config in configs]
     return configs, regs

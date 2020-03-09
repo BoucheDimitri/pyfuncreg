@@ -20,6 +20,7 @@ from functional_data.DEPRECATED import discrete_functional_data as disc_fd
 from functional_data import discrete_functional_data as disc_fd1
 from functional_regressors import triple_basis
 from functional_data import smoothing
+from model_eval import cross_validation
 
 # ############################### Config ###############################################################################
 # Path to the data
@@ -91,11 +92,13 @@ if __name__ == '__main__':
     Ytrain_extended = disc_fd1.extend_signal_samelocs(Ytrain[0], Ytrain[1], mode="symmetric", repeats=(1, 1))
 
     # Put data in discrete general form
-    Ytrain_extended = disc_fd1.set_locs(Ytrain_extended[0], Ytrain_extended[1])
-    Xtrain_extended = disc_fd1.set_locs(Xtrain_extended[0], Xtrain_extended[1])
+    Ytrain_extended = disc_fd1.set_locs(*Ytrain_extended)
+    Xtrain_extended = disc_fd1.set_locs(*Xtrain_extended)
+    Xtrain = disc_fd1.set_locs(*Xtrain)
+    Ytrain = disc_fd1.set_locs(*Ytrain)
     Xtest = disc_fd1.set_locs(*Xtest)
-    Ytest = disc_fd1.set_locs(Ytest[0], Ytest[1])
-    Ytest = disc_fd1.to_discrete_general(Ytest[0], Ytest[1])
+    Ytest = disc_fd1.set_locs(*Ytest)
+    Ytest = disc_fd1.to_discrete_general(*Ytest)
 
     #
     input_basis_dict = {"lower_freq": 0, "upper_freq": 25, "domain": DOMAIN}
@@ -113,34 +116,26 @@ if __name__ == '__main__':
     preds = test_3be.predict_evaluate_diff_locs(Xtest, Ytest[0])
     score_test = metrics.mse(Ytest[1], preds)
 
-    # reg = smoothing.ExpandedRidge(1, test_3be.basis_rffs)
-    # Z = test_3be.basis_rffs.compute_matrix(coefsX)
-    # reg.fit(coefsX, coefsY[:, 0])
-    #
-    # regressors = []
-    # for prob in range(n_probs):
-    #     reg = smoothing.ExpandedRidge(self.regu, self.basis_rffs)
-    #     reg.fit(coefsX, coefsY[:, prob])
-    #     regressors.append(reg)
-    # self.regressors = regressors
+    cv_test = cross_validation.KfoldsCrossVal()
 
-    # # ############################# Full cross-validation experiment ###################################################
-    # if argv == "full":
-    #     configs, regs = generate_expes.dti_3be_fourier(KER_SIGMA, REGU_GRID, CENTER_OUTPUT, FREQS_IN_GRID,
-    #                                                    FREQS_OUT_GRID,N_RFFS, RFFS_SEED, DOMAIN, DOMAIN,
-    #                                                    SIGNAL_EXT_INPUT, SIGNAL_EXT_OUTPUT)
-    #
-    #     best_config, best_result, score_test = parallel_tuning.parallel_tuning(
-    #         regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=rec_path, configs=configs, input_data_format=INPUT_DATA_FORMAT,
-    #         output_data_format=OUTPUT_DATA_FORMAT, n_folds=N_FOLDS, n_procs=N_PROCS)
-    #     print("Score on test set: " + str(score_test))
-    #
-    # # ############################## Reduced experiment with the pre cross validated configuration #####################
-    # else:
-    #     # Use directly the regressor stemming from the cross validation
-    #     best_reg = triple_basis.TripleBasisEstimator(**CV_PARAMS)
-    #     best_reg.fit(Xtrain, Ytrain, INPUT_DATA_FORMAT, OUTPUT_DATA_FORMAT)
-    #     Ytest_dg = disc_fd.to_discrete_general(Ytest, OUTPUT_DATA_FORMAT)
-    #     preds = best_reg.predict_evaluate_diff_locs(Xtest, Ytest_dg[0], INPUT_DATA_FORMAT)
-    #     score_test = metrics.mse(preds, Ytest_dg[1])
-    #     print("Score on test set: " + str(score_test))
+    cv_score = cv_test(test_3be, Xtrain_extended, Ytrain_extended, Xtrain, Ytrain)
+
+    # ############################# Full cross-validation experiment ###################################################
+    if argv == "full":
+        configs, regs = generate_expes.dti_3be_fourier(KER_SIGMA, REGU_GRID, CENTER_OUTPUT, FREQS_IN_GRID,
+                                                       FREQS_OUT_GRID,N_RFFS, RFFS_SEED, DOMAIN, DOMAIN)
+
+        best_config, best_result, score_test = parallel_tuning.parallel_tuning(
+            regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=rec_path, configs=configs, input_data_format=INPUT_DATA_FORMAT,
+            output_data_format=OUTPUT_DATA_FORMAT, n_folds=N_FOLDS, n_procs=N_PROCS)
+        print("Score on test set: " + str(score_test))
+
+    # ############################## Reduced experiment with the pre cross validated configuration #####################
+    else:
+        # Use directly the regressor stemming from the cross validation
+        best_reg = triple_basis.TripleBasisEstimator(**CV_PARAMS)
+        best_reg.fit(Xtrain, Ytrain, INPUT_DATA_FORMAT, OUTPUT_DATA_FORMAT)
+        Ytest_dg = disc_fd.to_discrete_general(Ytest, OUTPUT_DATA_FORMAT)
+        preds = best_reg.predict_evaluate_diff_locs(Xtest, Ytest_dg[0], INPUT_DATA_FORMAT)
+        score_test = metrics.mse(preds, Ytest_dg[1])
+        print("Score on test set: " + str(score_test))
