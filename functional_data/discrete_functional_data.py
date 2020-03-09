@@ -5,11 +5,13 @@ import numpy as np
 
 
 def test_samelocs(Ylocs):
-    samelocs = True
+    for i in range(len(Ylocs) - 1):
+        if len(Ylocs[i]) != len(Ylocs[i]):
+            return False
     for i in range(len(Ylocs) - 1):
         if not np.all(np.equal(Ylocs[i], Ylocs[i + 1])):
-            samelocs = False
-    return samelocs
+            return False
+    return True
 
 
 def discrete_to_func_lininterp(Ylocs, Yobs):
@@ -70,6 +72,9 @@ def to_discrete_general(Ylocs, Yobs):
     return Ylocs_dg, Yobs_dg
 
 
-
+def to_function_linearinterp(Ylocs, Yobs):
+    smoother = smoothing.LinearInterpSmoother()
+    smoother.fit(Ylocs, Yobs)
+    return smoother.get_functions()
 
 
