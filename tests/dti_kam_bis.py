@@ -92,7 +92,6 @@ if __name__ == '__main__':
     Xtrain, Xtest = disc_fd1.set_locs(*Xtrain), disc_fd1.set_locs(*Xtest)
     Ytrain, Ytest = disc_fd1.set_locs(*Ytrain), disc_fd1.set_locs(*Ytest)
 
-
     Ytest = disc_fd1.to_discrete_general(*Ytest)
 
     kx = kernels.GaussianScalarKernel(KX_GRID, normalize=False)
