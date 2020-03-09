@@ -48,7 +48,7 @@ class SeparableOVKRidge:
         preds = (self.B.dot(self.alpha.T.dot(Knew.T))).T
         return preds
 
-
+# TODO: FINIR ADAPTATION DE CA
 class SeparableOVKRidgeFunctional:
     """
     Discrete approximation of FKRR Ovk ridge with separable kernel using Sylvester solver
@@ -63,10 +63,10 @@ class SeparableOVKRidgeFunctional:
         The output scalar kernel
     approx_locs: array-like
         The discretization space to use
-    center_outputs: bool
+    center_output : bool
         Should the outputs be centered upon training
     """
-    def __init__(self, regu, input_kernel, output_kernel, approx_locs, center_outputs=False):
+    def __init__(self, regu, input_kernel, output_kernel, approx_locs, center_output=False):
         self.input_kernel = input_kernel
         self.output_kernel = output_kernel
         self.regu = regu
@@ -77,25 +77,27 @@ class SeparableOVKRidgeFunctional:
         self.alpha = None
         self.X = None
         self.Ymean = None
-        self.center_outputs = center_outputs
+        self.center_output = center_output
 
     def fit(self, X, Y):
         self.X = X
         smoother_out = smoothing.LinearInterpSmoother()
         smoother_out.fit(Y[0], Y[1])
         Yfunc = smoother_out.get_functions()
-        if self.center_outputs:
+        if self.center_output:
             self.Ymean = functional_algebra.mean_function(Yfunc)
             Yfunc = functional_algebra.diff_function_list(Yfunc, self.Ymean)
         Yeval = np.array([f(self.approx_locs) for f in Yfunc])
         Kin = self.input_kernel(X, X)
         n = len(X)
-        self.alpha = np.array(dlyap(-Kin/(self.regu * n), self.Kout.T, Yeval/(self.regu * n)))
+        m = self.Kout.shape[0]
+        # self.alpha = np.array(dlyap(-Kin/(self.regu * n), self.Kout.T, Yeval/(self.regu * n)))
+        self.alpha = sb04qd(n, m, Kin / (self.regu * n), self.Kout, Y / (self.regu * n))
 
     def predict(self, Xnew):
         Knew = self.input_kernel(self.X, Xnew)
         Ypred = (self.Kout.dot(self.alpha.T.dot(Knew.T))).T
-        if self.center_outputs:
+        if self.center_output:
             Ymean_evals = self.Ymean(self.approx_locs)
             return Ypred.reshape((len(Xnew), len(self.approx_locs))) + Ymean_evals.reshape((1, len(self.approx_locs)))
         else:

@@ -4,11 +4,12 @@ import sys
 import pathlib
 import importlib
 
-# Execution path
-exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
-path = str(exec_path.parent)
-# path = os.getcwd()
-sys.path.append(path)
+# # Execution path
+# exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
+# path = str(exec_path.parent)
+# # path = os.getcwd()
+# sys.path.append(path)
+path = os.getcwd()
 
 # Local imports
 from model_eval import parallel_tuning
@@ -17,7 +18,9 @@ from model_eval import cross_validation
 from data import loading
 from data import processing
 from expes import generate_expes
-from functional_data.DEPRECATED import discrete_functional_data as disc_fd
+from functional_regressors import kernels
+from functional_data import discrete_functional_data as disc_fd1
+from functional_regressors import kernel_additive
 
 importlib.reload(cross_validation)
 importlib.reload(parallel_tuning)
@@ -34,8 +37,6 @@ N_PROCS = 8
 SHUFFLE_SEED = 784
 N_TRAIN = 70
 N_FOLDS = 5
-INPUT_DATA_FORMAT = "discrete_general"
-OUTPUT_DATA_FORMAT = 'discrete_general'
 
 # ############################### Regressor config #####################################################################
 # REGU_GRID = np.geomspace(1e-8, 1, 100)
@@ -73,7 +74,7 @@ if __name__ == '__main__':
     except FileExistsError:
         pass
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
-
+    #
     # Define execution mode
     try:
         argv = sys.argv[1]
@@ -83,11 +84,24 @@ if __name__ == '__main__':
     # ############################# Load the data ######################################################################
     cca, rcst = loading.load_dti(path + "/data/dataDTI/", shuffle_seed=SHUFFLE_SEED)
     Xtrain, Ytrain, Xtest, Ytest = processing.process_dti(cca, rcst)
-    # Put data in discrete general format
-    format = "discrete_samelocs_regular_1d"
-    Xtrain, Ytrain, Xtest, Ytest = disc_fd.to_discrete_general(Xtrain, format), \
-        disc_fd.to_discrete_general(Ytrain, format), disc_fd.to_discrete_general(Xtest, format), \
-        disc_fd.to_discrete_general(Ytest, format)
+
+    Ytest = disc_fd1.to_discrete_general(*Ytest)
+
+    kx = kernels.GaussianScalarKernel(KX_GRID, normalize=False)
+    ky = kernels.GaussianScalarKernel(KY_GRID, normalize=False)
+    keval = kernels.GaussianScalarKernel(KEV_GRID, normalize=False)
+
+    params = {"regu": 1e-4, "kerlocs_in": kx, "kerlocs_out": ky, "kerevals": keval,
+              "n_fpca": 20, "n_evals_fpca": N_EVALS_FPCA,
+              "n_evals_in": N_EVALS_IN, "n_evals_out": N_EVALS_OUT,
+              "domain_in": DOMAIN, "domain_out": DOMAIN}
+
+    test_kam = kernel_additive.KernelAdditiveModelBis(**params)
+
+    test_kam.fit(Xtrain, Ytrain)
+
+    preds = test_kam.predict_evaluate_diff_locs(Xtest, Ytest[0])
+    score_test = metrics.mse(Ytest[1], preds)
 
     # ############################# Full cross-validation experiment ###################################################
     if argv == "full":
@@ -95,17 +109,15 @@ if __name__ == '__main__':
         configs, regs = generate_expes.dti_kam(**PARAMS)
         # Run tuning in parallel
         best_config, best_result, score_test = parallel_tuning.parallel_tuning(
-            regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=rec_path, configs=configs, input_data_format=INPUT_DATA_FORMAT,
-            output_data_format=OUTPUT_DATA_FORMAT, n_folds=N_FOLDS, n_procs=N_PROCS)
+            regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=rec_path, configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS)
         print("Score on test set: " + str(score_test))
 
     # ############################# Use pre cross-validated dictionary #################################################
     else:
         # Generate regressor from cross-validation dictionaries
         configs, regs = generate_expes.dti_kam(**PARAMS_CV)
-        regs[0].fit(Xtrain, Ytrain, output_data_format=OUTPUT_DATA_FORMAT)
-        Ytest_dg = disc_fd.to_discrete_general(Ytest, OUTPUT_DATA_FORMAT)
-        preds = regs[0].predict_evaluate_diff_locs(Xtest, Ytest_dg[0])
-        score_test = metrics.mse(Ytest_dg[1], preds)
+        regs[0].fit(Xtrain, Ytrain)
+        preds = regs[0].predict_evaluate_diff_locs(Xtest, Ytest[0])
+        score_test = metrics.mse(Ytest[1], preds)
         print("Score on test set: " + str(score_test))
 
