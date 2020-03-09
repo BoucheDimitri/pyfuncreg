@@ -87,7 +87,7 @@ def dti_3be_fourier(ker_sigma, regu, center_output, max_freq_in, max_freq_out,
               "center_output": center_output}
     configs = configs_generation.configs_combinations(params)
     # Create list of regressors from that config
-    regs = [triple_basis.TripleBasisEstimator(**config) for config in configs]
+    regs = [triple_basis.TripleBasisEstimatorBis(**config) for config in configs]
     return configs, regs
 
 

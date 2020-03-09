@@ -7,7 +7,7 @@ import psutil
 from model_eval import cross_validation
 from model_eval import metrics
 from functional_data.DEPRECATED import discrete_functional_data as disc_fd
-
+from functional_data import discrete_functional_data as disc_fd1
 
 def check_cpu_availability(min_nprocs=4, timeout_sleep=3, n_timeout=0, cpu_avail_thresh=30):
     """
@@ -43,9 +43,9 @@ def check_cpu_availability(min_nprocs=4, timeout_sleep=3, n_timeout=0, cpu_avail
     return n_procs
 
 
-def run_cross_vals_batch(regs_split, Xtrain, Ytrain, cross_val):
+def run_cross_vals_batch(regs_split, cross_val, Xfit, Yfit, Xpred=None, Ypred=None):
     with multiprocessing.Pool(processes=len(regs_split)) as pool:
-        multiple_results = [pool.apply_async(cross_val, (regs_split[j], Xtrain, Ytrain,))
+        multiple_results = [pool.apply_async(cross_val, (regs_split[j], Xfit, Yfit, Xpred, Ypred,))
                             for j in range(len(regs_split))]
         return [res.get() for res in multiple_results]
 
@@ -67,7 +67,7 @@ def record_up_to_current_batch(rec_path, key, results, configs, batch_no, n_batc
                 pickle.dump(results[:(batch_no + 1) * n_procs], outp, pickle.HIGHEST_PROTOCOL)
 
 
-def parallel_cross_vals(regs, Xtrain, Ytrain, cross_val, n_procs, rec_path=None, key=None, configs=None):
+def parallel_cross_vals(regs, cross_val, Xfit, Yfit, Xpred, Ypred, n_procs, rec_path=None, key=None, configs=None):
     """
     Cross validate the regressors in reg in parallel.
 
@@ -100,7 +100,7 @@ def parallel_cross_vals(regs, Xtrain, Ytrain, cross_val, n_procs, rec_path=None,
     n_batches = len(regs) // n_procs
     results = []
     if n_batches == 0:
-        results += run_cross_vals_batch(regs, Xtrain, Ytrain, cross_val)
+        results += run_cross_vals_batch(regs, cross_val, Xfit, Yfit, Xpred, Ypred)
     else:
         # Execute batches sequentially
         for i in range(n_batches + 1):
@@ -108,7 +108,7 @@ def parallel_cross_vals(regs, Xtrain, Ytrain, cross_val, n_procs, rec_path=None,
                 # Create batch
                 regs_split = regs[i * n_procs: (i + 1) * n_procs]
                 # Execute batch
-                results += run_cross_vals_batch(regs_split, Xtrain, Ytrain, cross_val)
+                results += run_cross_vals_batch(regs_split, cross_val, Xfit, Yfit, Xpred, Ypred)
                 # Print progress
                 print("Process batch number " + str(i) + " finished. Remaining: " + str(n_batches - i - 1))
                 # Record results up to current batch
@@ -116,13 +116,14 @@ def parallel_cross_vals(regs, Xtrain, Ytrain, cross_val, n_procs, rec_path=None,
             else:
                 regs_split = regs[i * n_procs:]
                 if len(regs_split) > 0:
-                    results += run_cross_vals_batch(regs_split, Xtrain, Ytrain, cross_val)
+                    results += run_cross_vals_batch(regs_split, cross_val, Xfit, Yfit, Xpred, Ypred)
     return results
 
 
-def parallel_tuning(regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=None, key=None, configs=None,
-                    input_data_format="vector", output_data_format='discrete_samelocs_regular_1d',
-                    n_folds=5, n_procs=None, min_nprocs=4, timeout_sleep=3, n_timeout=0, cpu_avail_thresh=30):
+def parallel_tuning(regs, Xfit_train, Yfit_train, Xtest, Ytest, Xpred_train=None, Ypred_train=None,
+                    rec_path=None, key=None, configs=None, input_indexing="discrete_general",
+                    output_indexing="discrete_general", n_folds=5, n_procs=None, min_nprocs=4,
+                    timeout_sleep=3, n_timeout=0, cpu_avail_thresh=30):
     """
     Tuning of the regressors in parallel by cross-validation, selecting the best and fitting it on the train set,
     its score on test set is then computed.
@@ -176,20 +177,20 @@ def parallel_tuning(regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=None, key=None,
         n_procs = check_cpu_availability(min_nprocs=min_nprocs, timeout_sleep=timeout_sleep,
                                          n_timeout=n_timeout, cpu_avail_thresh=cpu_avail_thresh)
     # Instantiate cross validation
-    cross_val = cross_validation.KfoldsCrossVal(n_folds=n_folds,
-                                                input_data_format=input_data_format,
-                                                output_data_format=output_data_format)
+    cross_val = cross_validation.KfoldsCrossVal(n_folds=n_folds, input_indexing=input_indexing,
+                                                output_indexing=output_indexing)
     # Run cross-validations in parallel for the regressors in regs
-    results = parallel_cross_vals(regs, Xtrain, Ytrain, cross_val, n_procs, rec_path=rec_path, key=key, configs=configs)
+    results = parallel_cross_vals(regs, cross_val, Xfit_train, Yfit_train, Xpred_train, Ypred_train,
+                                  n_procs, rec_path, key, configs)
     # Select regressor corresponding to best cross-validation score
     best_ind = int(np.argmin(results))
     best_reg = regs[best_ind]
     # Fit best regressor on full training data
-    best_reg.fit(Xtrain, Ytrain)
+    best_reg.fit(Xfit_train, Yfit_train)
     # Evaluate its performance on test set
     # Put in discrete_general form for testing
-    Ytest_dg = disc_fd.to_discrete_general(Ytest, output_data_format)
-    preds = best_reg.predict_evaluate_diff_locs(Xtest, Ytest_dg[0], input_data_format)
+    Ytest_dg = disc_fd1.to_discrete_general(*Ytest)
+    preds = best_reg.predict_evaluate_diff_locs(Xtest, Ytest_dg[0])
     score_test = metrics.mse(preds, Ytest_dg[1])
     # Return the results
     if configs is not None:

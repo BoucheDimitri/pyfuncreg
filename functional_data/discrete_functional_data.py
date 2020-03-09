@@ -43,12 +43,15 @@ def center_discrete(Ylocs, Yobs, mean_func):
     return Ylocs, Yobs_centered
 
 
-def extend_signal_samelocs(ylocs, Yobs, mode, repeats):
+def extend_signal_samelocs(ylocs, Yobs, mode, repeats, add_locs=True):
     n_obs = len(ylocs)
     pace = ylocs[1] - ylocs[0]
     ylocs_extended = [ylocs + i * (ylocs[-1] - ylocs[0] + pace) for i in range(repeats[0] + repeats[1] + 1)]
     Yobs_extended = np.pad(Yobs, mode=mode, pad_width=((0, 0), (repeats[0] * n_obs, repeats[1] * n_obs)))
-    return np.concatenate(ylocs_extended) - repeats[0] * (ylocs[-1] - ylocs[0] + pace), Yobs_extended
+    if add_locs:
+        return set_locs(np.concatenate(ylocs_extended) - repeats[0] * (ylocs[-1] - ylocs[0] + pace), Yobs_extended)
+    else:
+        return np.concatenate(ylocs_extended) - repeats[0] * (ylocs[-1] - ylocs[0] + pace), Yobs_extended
 
 
 def set_locs(ylocs, Yobs):

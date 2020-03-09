@@ -2,7 +2,10 @@ import numpy as np
 import python_speech_features
 
 from data import loading
+from functional_data import discrete_functional_data as disc_fd
 
+
+# #########################  DTI Dataset ###############################################################################
 
 def process_dti(cca, rcst, n_train=70, normalize01=True, interp_input=True):
     # Add sampling locations
@@ -18,9 +21,14 @@ def process_dti(cca, rcst, n_train=70, normalize01=True, interp_input=True):
     if normalize01:
         locs_cca = (1 / cca.shape[1]) * np.arange(0, cca.shape[1])
         locs_rcst = (1 / rcst.shape[1]) * np.arange(0, rcst.shape[1])
-    return (locs_cca, cca[:n_train]), (locs_rcst, rcst[:n_train]), \
-           (locs_cca, cca[n_train:]), (locs_rcst, rcst[n_train:])
+    Xtrain, Ytrain, Xtest, Ytest = (locs_cca, cca[:n_train]), (locs_rcst, rcst[:n_train]), \
+                                   (locs_cca, cca[n_train:]), (locs_rcst, rcst[n_train:])
+    Xtrain, Ytrain = disc_fd.set_locs(*Xtrain), disc_fd.set_locs(*Ytrain)
+    Xtest, Ytest = disc_fd.set_locs(*Xtest), disc_fd.set_locs(*Ytest)
+    return Xtrain, Ytrain, Xtest, Ytest
 
+
+# #########################  Speech dataset ############################################################################
 
 RATE = 10000
 OUTPUT_PACE = 0.005
