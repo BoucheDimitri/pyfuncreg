@@ -2,9 +2,8 @@ import numpy as np
 import os
 import sys
 import pathlib
-import importlib
 
-# # Execution path
+# Execution path
 exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
 path = str(exec_path.parent.parent.parent)
 sys.path.append(path)
@@ -13,16 +12,10 @@ sys.path.append(path)
 # Local imports
 from model_eval import parallel_tuning
 from model_eval import metrics
-from model_eval import cross_validation
 from data import loading
 from data import processing
 from expes import generate_expes
-from functional_regressors import kernels
 from functional_data import discrete_functional_data as disc_fd1
-from functional_regressors import kernel_additive
-
-importlib.reload(cross_validation)
-importlib.reload(parallel_tuning)
 
 # ############################### Execution config #####################################################################
 # Path to the data
@@ -38,26 +31,26 @@ N_TRAIN = 70
 N_FOLDS = 5
 
 # ############################### Regressor config #####################################################################
-# REGU_GRID = np.geomspace(1e-8, 1, 100)
-# KX_GRID = [0.01, 0.025, 0.05, 0.1]
-# KY_GRID = [0.01, 0.025, 0.05, 0.1]
-# KEV_GRID = [0.03, 0.06, 0.1]
-# NFPCA_GRID = [10, 15, 20, 30]
+# REGU = np.geomspace(1e-8, 1, 100)
+# KIN_SIGMA = [0.01, 0.025, 0.05, 0.1]
+# KOUT_SIGMA = [0.01, 0.025, 0.05, 0.1]
+# KEVAL_SIGMA = [0.03, 0.06, 0.1]
+# N_FPCA = [10, 15, 20, 30]
 REGU_GRID = [1e-4, 1e-5]
-KX_GRID = 0.01
-KY_GRID = 0.01
-KEV_GRID = 0.03
-NFPCA_GRID = [10, 15]
+KIN_SIGMA = 0.01
+KOUT_SIGMA = 0.01
+KEV_SIGMA = 0.03
+N_FPCA = [10, 15]
 DOMAIN = np.array([[0, 1]])
 N_EVALS_IN = 100
 N_EVALS_OUT = 100
 N_EVALS_FPCA = 100
-PARAMS = {"regu": REGU_GRID, "kx_sigma": KX_GRID, "ky_sigma": KY_GRID, "keval_sigma": KEV_GRID,
-          "n_fpca": NFPCA_GRID, "n_evals_fpca": N_EVALS_FPCA, "n_evals_in": N_EVALS_IN, "n_evals_out": N_EVALS_OUT,
+PARAMS = {"regu": REGU_GRID, "kin_sigma": KIN_SIGMA, "kout_sigma": KOUT_SIGMA, "keval_sigma": KEV_SIGMA,
+          "n_fpca": N_FPCA, "n_evals_fpca": N_EVALS_FPCA, "n_evals_in": N_EVALS_IN, "n_evals_out": N_EVALS_OUT,
           "domain_in": DOMAIN, "domain_out": DOMAIN}
 
 # ############################### Pre cross-validated config ###########################################################
-PARAMS_CV = {"regu": 0.007564633275546291, "kx_sigma": 0.1, "ky_sigma": 0.05, "keval_sigma": 0.1,
+PARAMS_CV = {"regu": 0.007564633275546291, "kin_sigma": 0.1, "kout_sigma": 0.05, "keval_sigma": 0.1,
              "n_fpca": 30, "n_evals_fpca": N_EVALS_FPCA, "n_evals_in": N_EVALS_IN, "n_evals_out": N_EVALS_OUT,
              "domain_in": DOMAIN, "domain_out": DOMAIN}
 
