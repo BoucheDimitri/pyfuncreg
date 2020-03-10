@@ -87,7 +87,7 @@ if __name__ == '__main__':
         argv = sys.argv[2]
     except IndexError:
         argv = ""
-    # argv = "full"
+    # argv = "con"
     if argv == "full":
         # Generate configs and corresponding regressors
         configs, regs = generate_expes.speech_fpca_penpow_kpl(KER_SIGMA, REGU_GRID, N_FPCA,

@@ -114,7 +114,7 @@ def speech_fpca_3be(ker_sigma, regu, n_fpca, n_evals_fpca, domain=np.array([[0, 
     gauss_kers = [kernels.GaussianScalarKernel(sig, normalize=False, normalize_dist=True) for sig in ker_sigmas]
     multi_ker = kernels.SumOfScalarKernel(gauss_kers, normalize=False)
     # Generate full configs
-    params = {"kernel": multi_ker, "output_basis": output_bases, "regu": regu, "center_output": True}
+    params = {"kernel": multi_ker, "basis_out": output_bases, "regu": regu, "center_output": True}
     configs = configs_generation.configs_combinations(params)
     # Create list of regressors from that config
     regs = [triple_basis.BiBasisEstimator(**config) for config in configs]
