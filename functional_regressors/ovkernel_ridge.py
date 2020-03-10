@@ -7,6 +7,7 @@ import numpy as np
 
 from functional_data import smoothing
 from functional_data import functional_algebra
+from functional_data import discrete_functional_data as disc_fd
 
 
 class SeparableOVKRidge:
@@ -48,7 +49,7 @@ class SeparableOVKRidge:
         preds = (self.B.dot(self.alpha.T.dot(Knew.T))).T
         return preds
 
-# TODO: FINIR ADAPTATION DE CA
+
 class SeparableOVKRidgeFunctional:
     """
     Discrete approximation of FKRR Ovk ridge with separable kernel using Sylvester solver
@@ -79,20 +80,31 @@ class SeparableOVKRidgeFunctional:
         self.Ymean = None
         self.center_output = center_output
 
-    def fit(self, X, Y):
+    def fit(self, X, Y, Kin=None):
+        # Memorize training input data
         self.X = X
-        smoother_out = smoothing.LinearInterpSmoother()
-        smoother_out.fit(Y[0], Y[1])
-        Yfunc = smoother_out.get_functions()
+        # Compute mean func from output data
+        self.Ymean = disc_fd.mean_func(*Y)
+        # Center discrete output data if relevant and put it in discrete general form
         if self.center_output:
-            self.Ymean = functional_algebra.mean_function(Yfunc)
-            Yfunc = functional_algebra.diff_function_list(Yfunc, self.Ymean)
+            Ycentered = disc_fd.center_discrete(*Y, self.Ymean)
+            Ycentered = disc_fd.to_discrete_general(*Ycentered)
+        else:
+            Ycentered = disc_fd.to_discrete_general(*Y)
+        # Extract functions from centered output data using linear interpolation
+        smoother_out = smoothing.LinearInterpSmoother()
+        smoother_out.fit(*Ycentered)
+        Yfunc = smoother_out.get_functions()
+        # Evaluate those functions on the discretization grid
         Yeval = np.array([f(self.approx_locs) for f in Yfunc])
-        Kin = self.input_kernel(X, X)
+        # Compute input kernel matrix
+        if Kin is None:
+            Kin = self.input_kernel(X, X)
+        # Compute representer coefficients
         n = len(X)
         m = self.Kout.shape[0]
         # self.alpha = np.array(dlyap(-Kin/(self.regu * n), self.Kout.T, Yeval/(self.regu * n)))
-        self.alpha = sb04qd(n, m, Kin / (self.regu * n), self.Kout, Y / (self.regu * n))
+        self.alpha = sb04qd(n, m, Kin / (self.regu * n), self.Kout, Yeval / (self.regu * n))
 
     def predict(self, Xnew):
         Knew = self.input_kernel(self.X, Xnew)

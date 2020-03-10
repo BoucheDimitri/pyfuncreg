@@ -172,15 +172,15 @@ class SeperableKPLBis(FunctionalRegressor):
                 self.B = regularization.generate_output_matrix(
                     self.B_abstract[0], self.B_abstract[1]).get_matrix(self.output_basis)
 
-    def fit(self, X, Y, K=None, input_data_format="vector"):
+    def fit(self, X, Y, K=None):
         # Center output functions if relevant
         # start_center = perf_counter()
-        self.Ymean_func = disc_fd1.mean_func(Y[0], Y[1])
+        self.Ymean_func = disc_fd1.mean_func(*Y)
         if self.center_output:
-            Ycentered = disc_fd1.center_discrete(Y[0], Y[1], self.Ymean_func)
-            Ycentered = disc_fd1.to_discrete_general(Ycentered[0], Ycentered[1])
+            Ycentered = disc_fd1.center_discrete(*Y, self.Ymean_func)
+            Ycentered = disc_fd1.to_discrete_general(*Ycentered)
         else:
-            Ycentered = disc_fd1.to_discrete_general(Y[0], Y[1])
+            Ycentered = disc_fd1.to_discrete_general(*Y)
         # end_center = perf_counter()
         # print("Centering of the data perf :" + str(end_center - start_center))
         # Memorize training input data

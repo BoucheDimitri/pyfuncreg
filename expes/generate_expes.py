@@ -1,10 +1,9 @@
 import numpy as np
+from collections.abc import Iterable
 
 from model_eval import configs_generation
-from functional_regressors import kernels
-from functional_regressors import kernel_projection_learning as kproj_learning
-from functional_regressors import triple_basis
-from functional_regressors import kernel_additive
+from functional_regressors import kernels, kernel_projection_learning as kproj_learning, \
+    triple_basis, kernel_additive, ovkernel_ridge
 
 
 # ############################### KPL ##################################################################################
@@ -55,12 +54,26 @@ def speech_fpca_penpow_kpl(ker_sigma, regu, n_fpca, n_evals_fpca, decrease_base,
 
 # ############################### KAM ##################################################################################
 
+def kernels_generator_kam(kx_sigma, ky_sigma, keval_sigma):
+    if isinstance(kx_sigma, Iterable):
+        kxs = [kernels.GaussianScalarKernel(sig, normalize=False) for sig in kx_sigma]
+    else:
+        kxs = kernels.GaussianScalarKernel(kx_sigma, normalize=False)
+    if isinstance(ky_sigma, Iterable):
+        kys = [kernels.GaussianScalarKernel(sig, normalize=False) for sig in ky_sigma]
+    else:
+        kys = kernels.GaussianScalarKernel(ky_sigma, normalize=False)
+    if isinstance(keval_sigma, Iterable):
+        kevals = [kernels.GaussianScalarKernel(sig, normalize=False) for sig in keval_sigma]
+    else:
+        kevals = kernels.GaussianScalarKernel(keval_sigma, normalize=False)
+    return kxs, kys, kevals
+
+
 def dti_kam(kx_sigma, ky_sigma, keval_sigma, regu, n_fpca, n_evals_fpca, n_evals_in,
             n_evals_out, domain_in=np.array([[0, 1]]), domain_out=np.array([[0, 1]])):
-    kx = kernels.GaussianScalarKernel(kx_sigma, normalize=False)
-    ky = kernels.GaussianScalarKernel(ky_sigma, normalize=False)
-    keval = kernels.GaussianScalarKernel(keval_sigma, normalize=False)
-    params = {"regu": regu, "kerlocs_in": kx, "kerlocs_out": ky, "kerevals": keval,
+    kxs, kys, kevals = kernels_generator_kam(kx_sigma, ky_sigma, keval_sigma)
+    params = {"regu": regu, "kerlocs_in": kxs, "kerlocs_out": kys, "kerevals": kevals,
               "n_fpca": n_fpca, "n_evals_fpca": n_evals_fpca,
               "n_evals_in": n_evals_in, "n_evals_out": n_evals_out,
               "domain_in": domain_in, "domain_out": domain_out}
@@ -105,4 +118,27 @@ def speech_fpca_3be(ker_sigma, regu, n_fpca, n_evals_fpca, domain=np.array([[0, 
     configs = configs_generation.configs_combinations(params)
     # Create list of regressors from that config
     regs = [triple_basis.BiBasisEstimator(**config) for config in configs]
+    return configs, regs
+
+
+# ############################### FKRR #################################################################################
+
+def kernels_generator_fkrr(kx_sigma, ky_sigma):
+    if isinstance(kx_sigma, Iterable):
+        kxs = [kernels.GaussianScalarKernel(sig, normalize=False) for sig in kx_sigma]
+    else:
+        kxs = kernels.GaussianScalarKernel(kx_sigma, normalize=False)
+    if isinstance(ky_sigma, Iterable):
+        kys = [kernels.LaplaceScalarKernel(sig, normalize=False) for sig in ky_sigma]
+    else:
+        kys = kernels.LaplaceScalarKernel(ky_sigma, normalize=False)
+    return kxs, kys
+
+
+def dti_fkrr(kx_sigma, ky_sigma, regu, approx_locs, center_output):
+    kxs, kys = kernels_generator_fkrr(kx_sigma, ky_sigma)
+    params = {"regu": regu, "input_kernel": kxs, "output_kernel": kys,
+              "approx_locs": approx_locs, "center_output": center_output}
+    configs = configs_generation.configs_combinations(params, exclude_list=["approx_locs"])
+    regs = [ovkernel_ridge.SeparableOVKRidgeFunctional(**config) for config in configs]
     return configs, regs
