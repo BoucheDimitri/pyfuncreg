@@ -123,41 +123,41 @@ def speech_fpca_3be(ker_sigma, regu, n_fpca, n_evals_fpca, domain=np.array([[0, 
 
 # ############################### FKRR #################################################################################
 
-def kernels_generator_fkrr_dti(kx_sigma, ky_sigma):
-    if isinstance(kx_sigma, Iterable):
-        kxs = [kernels.GaussianScalarKernel(sig, normalize=False) for sig in kx_sigma]
+def kernels_generator_fkrr_dti(kin_sigma, kout_sigma):
+    if isinstance(kin_sigma, Iterable):
+        kernels_in = [kernels.GaussianScalarKernel(sig, normalize=False) for sig in kin_sigma]
     else:
-        kxs = kernels.GaussianScalarKernel(kx_sigma, normalize=False)
-    if isinstance(ky_sigma, Iterable):
-        kys = [kernels.LaplaceScalarKernel(sig, normalize=False) for sig in ky_sigma]
+        kernels_in = kernels.GaussianScalarKernel(kin_sigma, normalize=False)
+    if isinstance(kout_sigma, Iterable):
+        kernels_out = [kernels.LaplaceScalarKernel(sig, normalize=False) for sig in kout_sigma]
     else:
-        kys = kernels.LaplaceScalarKernel(ky_sigma, normalize=False)
-    return kxs, kys
+        kernels_out = kernels.LaplaceScalarKernel(kout_sigma, normalize=False)
+    return kernels_in, kernels_out
 
 
-def dti_fkrr(kx_sigma, ky_sigma, regu, approx_locs, center_output):
-    kxs, kys = kernels_generator_fkrr_dti(kx_sigma, ky_sigma)
-    params = {"regu": regu, "input_kernel": kxs, "output_kernel": kys,
+def dti_fkrr(kin_sigma, kout_sigma, regu, approx_locs, center_output):
+    kernels_in, kernels_out = kernels_generator_fkrr_dti(kin_sigma, kout_sigma)
+    params = {"regu": regu, "kernel_in": kernels_in, "kernel_out": kernels_out,
               "approx_locs": approx_locs, "center_output": center_output}
     configs = configs_generation.configs_combinations(params, exclude_list=["approx_locs"])
     regs = [ovkernel_ridge.SeparableOVKRidgeFunctional(**config) for config in configs]
     return configs, regs
 
 
-def kernels_generator_fkrr_speech(kx_sigma, ky_sigma):
-    ker_sigmas = kx_sigma * np.ones(13)
-    gauss_kers = [kernels.GaussianScalarKernel(sig, normalize=False, normalize_dist=True) for sig in ker_sigmas]
-    kx = kernels.SumOfScalarKernel(gauss_kers, normalize=False)
-    if isinstance(ky_sigma, Iterable):
-        kys = [kernels.LaplaceScalarKernel(sig, normalize=False) for sig in ky_sigma]
+def kernels_generator_fkrr_speech(kin_sigma, kout_sigma):
+    kin_sigmas = kin_sigma * np.ones(13)
+    gauss_kers = [kernels.GaussianScalarKernel(sig, normalize=False, normalize_dist=True) for sig in kin_sigmas]
+    kernels_in = kernels.SumOfScalarKernel(gauss_kers, normalize=False)
+    if isinstance(kout_sigma, Iterable):
+        kernels_out = [kernels.LaplaceScalarKernel(sig, normalize=False) for sig in kout_sigma]
     else:
-        kys = kernels.LaplaceScalarKernel(ky_sigma, normalize=False)
-    return kx, kys
+        kernels_out = kernels.LaplaceScalarKernel(kout_sigma, normalize=False)
+    return kernels_in, kernels_out
 
 
-def speech_fkrr(kx_sigma, ky_sigma, regu, approx_locs, center_output):
-    kx, kys = kernels_generator_fkrr_speech(kx_sigma, ky_sigma)
-    params = {"regu": regu, "input_kernel": kx, "output_kernel": kys,
+def speech_fkrr(kin_sigma, kout_sigma, regu, approx_locs, center_output):
+    kernels_in, kernels_out = kernels_generator_fkrr_speech(kin_sigma, kout_sigma)
+    params = {"regu": regu, "kernel_in": kernels_in, "kernel_out": kernels_out,
               "approx_locs": approx_locs, "center_output": center_output}
     configs = configs_generation.configs_combinations(params, exclude_list=["approx_locs"])
     regs = [ovkernel_ridge.SeparableOVKRidgeFunctional(**config) for config in configs]

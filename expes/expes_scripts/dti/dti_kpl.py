@@ -15,7 +15,7 @@ from model_eval import metrics
 from data import loading
 from data import processing
 from expes import generate_expes
-from functional_data import discrete_functional_data as disc_fd1
+from functional_data import discrete_functional_data as disc_fd
 
 # ############################### Execution config #####################################################################
 # Path to the data
@@ -78,9 +78,9 @@ if __name__ == '__main__':
     cca, rcst = loading.load_dti(path + "/data/dataDTI/", shuffle_seed=SHUFFLE_SEED)
     Xtrain, Ytrain, Xtest, Ytest = processing.process_dti(cca, rcst)
     # Extend data
-    Ytrain_extended = disc_fd1.extend_signal_samelocs(Ytrain[0][0], Ytrain[1], mode=SIGNAL_EXT[0], repeats=SIGNAL_EXT[1])
+    Ytrain_extended = disc_fd.extend_signal_samelocs(Ytrain[0][0], Ytrain[1], mode=SIGNAL_EXT[0], repeats=SIGNAL_EXT[1])
     # Convert testing output data to discrete general form
-    Ytest = disc_fd1.to_discrete_general(*Ytest)
+    Ytest = disc_fd.to_discrete_general(*Ytest)
 
     # Put input data in array form
     Xtrain = np.array(Xtrain[1]).squeeze()

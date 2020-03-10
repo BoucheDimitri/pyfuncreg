@@ -1,12 +1,9 @@
-# IMPORTANT: slycot and then control should installed using the following commands:
+# IMPORTANT: slycot should be installed using the following command:
 # $conda install -c conda-forge slycot
-# $conda install -c conda-forge control
-from control import dlyap
 from slycot import sb04qd
 import numpy as np
 
 from functional_data import smoothing
-from functional_data import functional_algebra
 from functional_data import discrete_functional_data as disc_fd
 
 
@@ -16,17 +13,17 @@ class SeparableOVKRidge:
 
     Parameters
     ----------
-    input_kernel: functional_regressors.kernels.ScalarKernel
-        The input scalar kernel
-    output_mat: array-like, shape = [n_output_features, n_output_features]
-        The matrix encoding the similarity between the outputs
-    lamb: float
+    regu : float
         The regularization parameter
+    kernel_in : functional_regressors.kernels.ScalarKernel
+        The input scalar kernel
+    B : array_like, shape = [n_output_features, n_output_features]
+        The matrix encoding the similarity between the outputs
     """
-    def __init__(self, input_kernel, output_mat, lamb):
-        self.input_kernel = input_kernel
-        self.B = output_mat
-        self.lamb = lamb
+    def __init__(self, regu, kernel_in, B):
+        self.kernel_in = kernel_in
+        self.B = B
+        self.regu = regu
         self.K = None
         self.alpha = None
         self.X = None
@@ -36,16 +33,13 @@ class SeparableOVKRidge:
         if K is not None:
             self.K = K
         else:
-            self.K = self.input_kernel(X, X)
+            self.K = self.kernel_in(X, X)
         n = len(X)
         m = len(self.B)
-        # self.alpha = sb04qd(n, m, -self.K/(self.lamb * n), self.B.T, Y/(self.lamb * n))
-        self.alpha = sb04qd(n, m, self.K / (self.lamb * n), self.B, Y / (self.lamb * n))
-        print(self.alpha.shape)
-        # self.alpha = np.array(dlyap(-self.K/(self.lamb * n), self.B.T, Y/(self.lamb * n)))
+        self.alpha = sb04qd(n, m, self.K / (self.regu * n), self.B, Y / (self.regu * n))
 
     def predict(self, Xnew):
-        Knew = self.input_kernel(self.X, Xnew)
+        Knew = self.kernel_in(self.X, Xnew)
         preds = (self.B.dot(self.alpha.T.dot(Knew.T))).T
         return preds
 
@@ -56,24 +50,24 @@ class SeparableOVKRidgeFunctional:
 
     Parameters
     ----------
-    regu: float
+    regu : float
         The regularization parameter
-    input_kernel: functional_regressors.kernels.ScalarKernel
+    kernel_in : functional_regressors.kernels.ScalarKernel
         The input scalar kernel
-    output_kernel: functional_regressors.kernels.ScalarKernel
+    kernel_out : functional_regressors.kernels.ScalarKernel
         The output scalar kernel
-    approx_locs: array-like
+    approx_locs: array_like
         The discretization space to use
     center_output : bool
         Should the outputs be centered upon training
     """
-    def __init__(self, regu, input_kernel, output_kernel, approx_locs, center_output=False):
-        self.input_kernel = input_kernel
-        self.output_kernel = output_kernel
+    def __init__(self, regu, kernel_in, kernel_out, approx_locs, center_output=False):
+        self.kernel_in = kernel_in
+        self.kernel_out = kernel_out
         self.regu = regu
         self.approx_locs = np.squeeze(approx_locs)
-        self.Kout = (1 / self.approx_locs.shape[0]) * self.output_kernel(np.expand_dims(self.approx_locs, axis=1),
-                                                                         np.expand_dims(self.approx_locs, axis=1))
+        self.Kout = (1 / self.approx_locs.shape[0]) * self.kernel_out(np.expand_dims(self.approx_locs, axis=1),
+                                                                      np.expand_dims(self.approx_locs, axis=1))
         self.smoother = smoothing.LinearInterpSmoother()
         self.alpha = None
         self.X = None
@@ -99,15 +93,14 @@ class SeparableOVKRidgeFunctional:
         Yeval = np.array([f(self.approx_locs) for f in Yfunc])
         # Compute input kernel matrix
         if Kin is None:
-            Kin = self.input_kernel(X, X)
+            Kin = self.kernel_in(X, X)
         # Compute representer coefficients
         n = len(X)
         m = self.Kout.shape[0]
-        # self.alpha = np.array(dlyap(-Kin/(self.regu * n), self.Kout.T, Yeval/(self.regu * n)))
         self.alpha = sb04qd(n, m, Kin / (self.regu * n), self.Kout, Yeval / (self.regu * n))
 
     def predict(self, Xnew):
-        Knew = self.input_kernel(self.X, Xnew)
+        Knew = self.kernel_in(self.X, Xnew)
         Ypred = (self.Kout.dot(self.alpha.T.dot(Knew.T))).T
         if self.center_output:
             Ymean_evals = self.Ymean(self.approx_locs)

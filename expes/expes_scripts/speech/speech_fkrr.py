@@ -36,20 +36,20 @@ N_FOLDS = 5
 DOMAIN = np.array([[0, 1]])
 # Dictionary obtained by cross validation for quick run fitting on train and get score on test
 CV_DICTS = dict()
-CV_DICTS["LP"] = {'kx_sigma': 1, 'regu': 1e-10, 'ky_sigma': 0.08, 'center_output': True}
-CV_DICTS["LA"] = {'kx_sigma': 1, 'regu': 9.426684551178854e-08, 'ky_sigma': 0.15, 'center_output': False}
-CV_DICTS["TBCL"] = {'kx_sigma': 1, 'regu': 1e-10, 'ky_sigma': 0.08, 'center_output': True}
-CV_DICTS["VEL"] = {'kx_sigma': 1, 'regu': 1e-10, 'ky_sigma': 0.15, 'center_output': True}
-CV_DICTS["GLO"] = {'kx_sigma': 1, 'regu': 1e-10, 'ky_sigma': 0.06, 'center_output': True}
-CV_DICTS["TTCL"] = {'kx_sigma': 1, 'regu': 1e-10, 'ky_sigma': 0.03, 'center_output': True}
-CV_DICTS["TTCD"] = {'kx_sigma': 1, 'regu': 1e-10, 'ky_sigma': 0.06, 'center_output': True}
+CV_DICTS["LP"] = {'kin_sigma': 1, 'regu': 1e-10, 'kout_sigma': 0.08, 'center_output': True}
+CV_DICTS["LA"] = {'kin_sigma': 1, 'regu': 9.426684551178854e-08, 'kout_sigma': 0.15, 'center_output': False}
+CV_DICTS["TBCL"] = {'kin_sigma': 1, 'regu': 1e-10, 'kout_sigma': 0.08, 'center_output': True}
+CV_DICTS["VEL"] = {'kin_sigma': 1, 'regu': 1e-10, 'kout_sigma': 0.15, 'center_output': True}
+CV_DICTS["GLO"] = {'kin_sigma': 1, 'regu': 1e-10, 'kout_sigma': 0.06, 'center_output': True}
+CV_DICTS["TTCL"] = {'kin_sigma': 1, 'regu': 1e-10, 'kout_sigma': 0.03, 'center_output': True}
+CV_DICTS["TTCD"] = {'kin_sigma': 1, 'regu': 1e-10, 'kout_sigma': 0.06, 'center_output': True}
 # Regularization parameters grid
 # REGU_GRID = list(np.geomspace(1e-10, 1e-5, 40))
 REGU_GRID = [1e-10, 1e-7]
 # Standard deviation parameter for the input kernel
-KX_SIGMA = 1
+KIN_SIGMA = 1
 #
-KY_SIGMA = [0.02, 0.03]
+KOUT_SIGMA = [0.02, 0.03]
 # Approximation locations
 APPROX_LOCS = np.linspace(0, 1, 300)
 #
@@ -89,7 +89,7 @@ if __name__ == '__main__':
     # argv = "nimp"
     if argv == "full":
         # Generate configs and corresponding regressors
-        configs, regs = generate_expes.speech_fkrr(KX_SIGMA, KY_SIGMA, REGU_GRID, APPROX_LOCS, CENTER_OUTPUT)
+        configs, regs = generate_expes.speech_fkrr(KIN_SIGMA, KOUT_SIGMA, REGU_GRID, APPROX_LOCS, CENTER_OUTPUT)
 
         # Cross validation of the regressors
         best_dict, best_result, score_test = parallel_tuning.parallel_tuning(

@@ -139,7 +139,7 @@ class SeperableKPLBis(FunctionalRegressor):
     center_output : bool
         Should output be centered
     """
-    def __init__(self, kernel, B, output_basis, regu, center_output=False):
+    def __init__(self, regu, kernel, B, output_basis, center_output=False):
         super().__init__()
         self.kernel = kernel
         self.regu = regu
@@ -216,7 +216,7 @@ class SeperableKPLBis(FunctionalRegressor):
         # return Yproj
         # Fit ovk ridge using those approximate projections
         # start_fitovk = perf_counter()
-        self.ovkridge = ovkernel_ridge.SeparableOVKRidge(self.kernel, self.B, self.regu)
+        self.ovkridge = ovkernel_ridge.SeparableOVKRidge(self.regu, self.kernel, self.B)
         self.ovkridge.fit(X, Yproj, K=K)
         # end_fitovk = perf_counter()
         # print("Fitting the OVK Ridge: " + str(end_fitovk - start_fitovk))

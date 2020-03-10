@@ -33,16 +33,16 @@ OUTPUT_INDEXING = "discrete_general"
 # Domain
 DOMAIN_OUT = np.array([[0, 1]])
 # Pre cross validated dict
-CV_DICT = {'kx_sigma': 0.9, 'center_output': True, 'regu': 0.00271858824273294, 'ky_sigma': 0.1}
+CV_DICT = {'kin_sigma': 0.9, 'center_output': True, 'regu': 0.00271858824273294, 'kout_sigma': 0.1}
 # Regularization parameter grid
 # REGU_GRID = np.geomspace(1e-6, 1e-1, 100)
 # REGU_GRID = 0.00271858824273294
-REGU_GRID = [1e-4, 1e-3]
+REGU = [1e-4, 1e-3]
 # Output kernel bandwidth grid
 # KY_GRID = [0.01, 0.025, 0.05, 0.75, 0.1, 0.125, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0]
-KY_GRID = [0.01, 0.1]
+KOUT_SIGMA = [0.01, 0.1]
 # Input kernel standard deviation
-KER_SIGMA = 0.9
+KIN_SIGMA = 0.9
 # Location used for discrete approximation
 APPROX_LOCS = np.linspace(0, 1, 200)
 #
@@ -77,7 +77,7 @@ if __name__ == '__main__':
 
     # ############################# Full cross-validation experiment ###################################################
     if argv == "full":
-        configs, regs = generate_expes.dti_fkrr(KER_SIGMA, KY_GRID, REGU_GRID, APPROX_LOCS, CENTER_OUTPUT)
+        configs, regs = generate_expes.dti_fkrr(KIN_SIGMA, KOUT_SIGMA, REGU, APPROX_LOCS, CENTER_OUTPUT)
 
         best_config, best_result, score_test = parallel_tuning.parallel_tuning(
             regs, Xtrain, Ytrain, Xtest, Ytest, input_indexing=INPUT_INDEXING, output_indexing=OUTPUT_INDEXING,

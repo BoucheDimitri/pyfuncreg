@@ -30,7 +30,6 @@ INPUT_INDEXING = "list"
 OUTPUT_INDEXING = "discrete_general"
 # Number of folds
 N_FOLDS = 5
-
 # ############################### Regressor config #####################################################################
 # Output domain
 DOMAIN = np.array([[0, 1]])
