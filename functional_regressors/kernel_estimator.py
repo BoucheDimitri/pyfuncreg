@@ -13,9 +13,9 @@ class KernelEstimatorFunc:
     """
     Parameters
     ----------
-    kernel: callable
+    kernel : callable
         The window function
-    bandwidth: float
+    bandwidth : float
         The window width parameter
     """
     def __init__(self, kernel, bandwidth):
@@ -49,11 +49,13 @@ class KernelEstimatorFunc:
 class KernelEstimatorStructIn:
     """
     Version of the kernel estimator with kernelized input
+
     Parameters
     ----------
-    kernel: functional_regressors.kernels.ScalarKernel
-        The kernel for the input data
-    center_output: bool
+    kernel : callable
+        Must support being called on two array_like objects X0, X1. If len(X0) = n_samples0 and len(X1) = n_samples1,
+        must returns an array_like object with shape = [n_samples_x1, n_samples_x0].
+    center_output : bool
         Should the output data be centered upon training
     """
     def __init__(self, kernel, center_output=False):

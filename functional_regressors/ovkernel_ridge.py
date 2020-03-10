@@ -15,13 +15,14 @@ class SeparableOVKRidge:
     ----------
     regu : float
         The regularization parameter
-    kernel_in : functional_regressors.kernels.ScalarKernel
-        The input scalar kernel
+    kernel : callable
+        Must support being called on two array_like objects X0, X1. If len(X0) = n_samples0 and len(X1) = n_samples1,
+        must returns an array_like object with shape = [n_samples_x1, n_samples_x0].
     B : array_like, shape = [n_output_features, n_output_features]
         The matrix encoding the similarity between the outputs
     """
-    def __init__(self, regu, kernel_in, B):
-        self.kernel_in = kernel_in
+    def __init__(self, regu, kernel, B):
+        self.kernel = kernel
         self.B = B
         self.regu = regu
         self.K = None
@@ -33,30 +34,32 @@ class SeparableOVKRidge:
         if K is not None:
             self.K = K
         else:
-            self.K = self.kernel_in(X, X)
+            self.K = self.kernel(X, X)
         n = len(X)
         m = len(self.B)
         self.alpha = sb04qd(n, m, self.K / (self.regu * n), self.B, Y / (self.regu * n))
 
     def predict(self, Xnew):
-        Knew = self.kernel_in(self.X, Xnew)
+        Knew = self.kernel(self.X, Xnew)
         preds = (self.B.dot(self.alpha.T.dot(Knew.T))).T
         return preds
 
 
 class SeparableOVKRidgeFunctional:
     """
-    Discrete approximation of FKRR Ovk ridge with separable kernel using Sylvester solver
+    Discrete approximation of FKRR with separable kernel using Sylvester solver
 
     Parameters
     ----------
     regu : float
         The regularization parameter
-    kernel_in : functional_regressors.kernels.ScalarKernel
-        The input scalar kernel
-    kernel_out : functional_regressors.kernels.ScalarKernel
-        The output scalar kernel
-    approx_locs: array_like
+    kernel_in : callable
+        Must support being called on two array_like objects X0, X1. If len(X0) = n_samples0 and len(X1) = n_samples1,
+        must returns an array_like object with shape = [n_samples_x1, n_samples_x0].
+    kernel_out : callable
+        Must support being called on two array_like objects X0, X1. If len(X0) = n_samples0 and len(X1) = n_samples1,
+        must returns an array_like object with shape = [n_samples_x1, n_samples_x0].
+    approx_locs : array_like
         The discretization space to use
     center_output : bool
         Should the outputs be centered upon training

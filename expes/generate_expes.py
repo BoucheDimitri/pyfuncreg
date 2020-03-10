@@ -26,7 +26,7 @@ def dti_wavs_kpl(kernel_sigma, regu, center_output=True, decrease_base=1, pywt_n
               "regu": regu, "center_output": center_output}
     configs = configs_generation.configs_combinations(params)
     # Create list of regressors from that config
-    regs = [kproj_learning.SeperableKPLBis(**config) for config in configs]
+    regs = [kproj_learning.SeperableKPL(**config) for config in configs]
     return configs, regs
 
 
@@ -48,7 +48,7 @@ def speech_fpca_penpow_kpl(kernel_sigma, regu, n_fpca, n_evals_fpca, decrease_ba
               "regu": regu, "center_output": True}
     configs = configs_generation.configs_combinations(params)
     # Create list of regressors from that config
-    regs = [kproj_learning.SeperableKPLBis(**config) for config in configs]
+    regs = [kproj_learning.SeperableKPL(**config) for config in configs]
     return configs, regs
 
 
@@ -99,7 +99,7 @@ def dti_3be_fourier(ker_sigma, regu, center_output, max_freq_in, max_freq_out,
               "center_output": center_output}
     configs = configs_generation.configs_combinations(params)
     # Create list of regressors from that config
-    regs = [triple_basis.TripleBasisEstimatorBis(**config) for config in configs]
+    regs = [triple_basis.TripleBasisEstimator(**config) for config in configs]
     return configs, regs
 
 

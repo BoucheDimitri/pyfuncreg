@@ -104,7 +104,7 @@ if __name__ == '__main__':
     # ############################## Reduced experiment with the pre cross validated configuration #####################
     else:
         # Use directly the regressor stemming from the cross validation
-        best_reg = triple_basis.TripleBasisEstimatorBis(**CV_PARAMS)
+        best_reg = triple_basis.TripleBasisEstimator(**CV_PARAMS)
         best_reg.fit(Xtrain_extended, Ytrain_extended)
         preds = best_reg.predict_evaluate_diff_locs(Xtest, Ytest[0])
         score_test = metrics.mse(preds, Ytest[1])

@@ -73,7 +73,7 @@ class WaveletsPow(OutputMatrix):
 
         Parameters
         ----------
-        decrease_base: float
+        decrease_base : float
             Penalization is done in 1 / decrease_base^j
         """
         self.decrease_base = decrease_base
@@ -83,12 +83,12 @@ class WaveletsPow(OutputMatrix):
         """
         Parameters
         ----------
-        output_basis: functional_data.basis.MultiscaleCompactlySupported
+        output_basis : functional_data.basis.MultiscaleCompactlySupported
             The wavelet dictionary
 
         Returns
         -------
-        array-like, shape = [output_basis.n_basis, output_basis.n_basis]
+        array_like, shape = [output_basis.n_basis, output_basis.n_basis]
             The output matrix
         """
         n_basis_scales = [b.n_basis for b in output_basis.scale_bases]
@@ -113,12 +113,12 @@ class WaveletsLinear(OutputMatrix):
         """
         Parameters
         ----------
-        output_basis: functional_data.basis.MultiscaleCompactlySupported
+        output_basis : functional_data.basis.MultiscaleCompactlySupported
             The wavelet dictionary
 
         Returns
         -------
-        array-like, shape = [output_basis.n_basis, output_basis.n_basis]
+        array_like, shape = [output_basis.n_basis, output_basis.n_basis]
             The output matrix
         """
         n_basis_scales = [b.n_basis for b in output_basis.scale_bases]
@@ -142,9 +142,9 @@ def generate_output_matrix(key, kwargs):
 
     Parameters
     ----------
-    key: {"wavelets_pow", "wavelets_linear"}
+    key : {"wavelets_pow", "wavelets_linear"}
         The output matrix reference name
-    kwargs: dict
+    kwargs : dict
         keywords argument to build the basis in question
 
     Returns

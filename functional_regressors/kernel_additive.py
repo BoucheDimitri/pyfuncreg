@@ -132,33 +132,35 @@ class KernelAdditiveModel:
 
 
 class KernelAdditiveModelBis:
-
+    """
+    Parameters
+    ----------
+    regu : float
+        regularization parameter for the method
+    kernel_in : callable
+        Must support being called on two array_like objects X0, X1. If len(X0) = n_samples0 and len(X1) = n_samples1,
+        must returns an array_like object with shape = [n_samples_x1, n_samples_x0].
+    kernel_out : callable
+        Must support being called on two array_like objects X0, X1. If len(X0) = n_samples0 and len(X1) = n_samples1,
+        must returns an array_like object with shape = [n_samples_x1, n_samples_x0].
+    kernel_eval : callable
+        Must support being called on two array_like objects X0, X1. If len(X0) = n_samples0 and len(X1) = n_samples1,
+        must returns an array_like object with shape = [n_samples_x1, n_samples_x0].
+    n_evals_in : int
+        number of evaluation points to use for scalar product approximation for input locations
+    n_evals_out : int
+        number of evaluation points to use for scalar product approximation for output locations
+    n_fpca : int
+        number of principal functions to use in approximation
+    domain_in : array_like, shape=[1, 2]
+        input domain
+    domain_out : array_like, shape=[1, 2]
+        output_domain
+    n_evals_fpca: int
+        number of evaluations to use in the discretized estimation of the FPCA
+    """
     def __init__(self, regu, kernel_in, kernel_out, kernel_eval, n_evals_in,
                  n_evals_out, n_fpca, domain_in, domain_out, n_evals_fpca):
-        """
-        Parameters
-        ----------
-        regu : float
-            regularization parameter for the metho
-        kernel_in : functional_regressors.kernels.ScalarKernel
-            kernel for input locations comparison
-        kernel_out : functional_regressors.kernels.ScalarKernel
-            kernel for output locations comparison
-        kernel_eval : functional_regressors.kernels.ScalarKernel
-            kernel for input functions evaluation comparison
-        n_evals_in : int
-            number of evaluation points to use for scalar product approximation for input locations
-        n_evals_out : int
-            number of evaluation points to use for scalar product approximation for output locations
-        n_fpca : int
-            number of principal functions to use in approximation
-        domain_in : array_like, shape=[1, 2]
-            input domain
-        domain_out : array_like, shape=[1, 2]
-            output_domain
-        n_evals_fpca: int
-            number of evaluations to use in the discretized estimation of the FPCA
-        """
         self.regu = regu
         self.kernel_in = kernel_in
         self.kernel_out = kernel_out

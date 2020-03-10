@@ -132,8 +132,9 @@ class SumOfScalarKernel(ScalarKernel):
 class LaplaceScalarKernel(ScalarKernel):
     """
     Laplace kernel:
+
     .. math::
-        k(x_0, x_1) = \exp \left ( \frac { \|x_1 - x_0 \| }{ \sigma^2} \right )
+        k(x_0, x_1) = \\exp \\left ( \\frac { \\|x_1 - x_0 \\|}{ \\sigma^2} \\right )
 
     Parameters
     ----------
@@ -163,7 +164,7 @@ class LaplaceScalarKernel(ScalarKernel):
 
         Returns
         -------
-        float or numpy.ndarray
+        float or array_like
             For a single evaluation returns a float, else returns a matrix with shape = [n_samples_x1, n_samples_x0]
         """
         if isinstance(x0, list) or isinstance(x0, tuple):
