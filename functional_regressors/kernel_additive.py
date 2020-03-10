@@ -133,36 +133,36 @@ class KernelAdditiveModel:
 
 class KernelAdditiveModelBis:
 
-    def __init__(self, regu, kerlocs_in, kerlocs_out, kerevals, n_evals_in,
+    def __init__(self, regu, kernel_in, kernel_out, kernel_eval, n_evals_in,
                  n_evals_out, n_fpca, domain_in, domain_out, n_evals_fpca):
         """
         Parameters
         ----------
-        regu: float
+        regu : float
             regularization parameter for the metho
-        kerlocs_in: functional_regressors.kernels.ScalarKernel
+        kernel_in : functional_regressors.kernels.ScalarKernel
             kernel for input locations comparison
-        kerlocs_out: functional_regressors.kernels.ScalarKernel
+        kernel_out : functional_regressors.kernels.ScalarKernel
             kernel for output locations comparison
-        kerevals: functional_regressors.kernels.ScalarKernel
+        kernel_eval : functional_regressors.kernels.ScalarKernel
             kernel for input functions evaluation comparison
-        n_evals_in: int
+        n_evals_in : int
             number of evaluation points to use for scalar product approximation for input locations
-        n_evals_out: int
+        n_evals_out : int
             number of evaluation points to use for scalar product approximation for output locations
-        n_fpca: int
+        n_fpca : int
             number of principal functions to use in approximation
-        domain_in: array-like, shape=[1, 2]
+        domain_in : array_like, shape=[1, 2]
             input domain
-        domain_out: array-like, shape=[1, 2]
+        domain_out : array_like, shape=[1, 2]
             output_domain
         n_evals_fpca: int
             number of evaluations to use in the discretized estimation of the FPCA
         """
         self.regu = regu
-        self.kerlocs_in = kerlocs_in
-        self.kerlocs_out = kerlocs_out
-        self.kerevals = kerevals
+        self.kernel_in = kernel_in
+        self.kernel_out = kernel_out
+        self.kernel_eval = kernel_eval
         self.space_in = np.linspace(domain_in[0, 0], domain_in[0, 1], n_evals_in)
         self.space_out = np.linspace(domain_out[0, 0], domain_out[0, 1], n_evals_out)
         self.n_fpca = n_fpca
@@ -175,8 +175,8 @@ class KernelAdditiveModelBis:
         self.Yfpca = None
 
     @staticmethod
-    def compute_Aevals(Xfunc0, Xfunc1, kerlocs_in, kerevals, approx_space, domain):
-        Klocs_in = kerlocs_in(np.expand_dims(approx_space, axis=1), np.expand_dims(approx_space, axis=1))
+    def compute_Aevals(Xfunc0, Xfunc1, kernel_in, kernel_eval, approx_space, domain):
+        Klocs_in = kernel_in(np.expand_dims(approx_space, axis=1), np.expand_dims(approx_space, axis=1))
         Xevals0 = np.array([f(approx_space) for f in Xfunc0])
         Xevals1 = np.array([f(approx_space) for f in Xfunc1])
         n = len(Xfunc0)
@@ -184,15 +184,15 @@ class KernelAdditiveModelBis:
         Aevals = np.zeros((m, n))
         for i in range(m):
             for j in range(n):
-                Kevals = kerevals(np.expand_dims(Xevals1[i], axis=1), np.expand_dims(Xevals0[j], axis=1))
+                Kevals = kernel_eval(np.expand_dims(Xevals1[i], axis=1), np.expand_dims(Xevals0[j], axis=1))
                 inter_const = domain[0, 1] - domain[0, 0]
                 Aevals[i, j] = inter_const ** 2 * np.mean(Kevals * Klocs_in)
                 # Aevals[i, j] = np.sum(Kevals * Klocs_in)
         return Aevals
 
     @staticmethod
-    def compute_Aout(Yfpca, kerlocs_out, approx_space, domain):
-        Klocs_out = kerlocs_out(np.expand_dims(approx_space, axis=1), np.expand_dims(approx_space, axis=1))
+    def compute_Aout(Yfpca, kernel_out, approx_space, domain):
+        Klocs_out = kernel_out(np.expand_dims(approx_space, axis=1), np.expand_dims(approx_space, axis=1))
         n_fpca = len(Yfpca)
         Yfpca_evals = np.array([f(approx_space) for f in Yfpca])
         Afpca = np.zeros((n_fpca, n_fpca))
@@ -203,8 +203,8 @@ class KernelAdditiveModelBis:
         return Afpca
 
     @staticmethod
-    def compute_Aout_pred(Yfpca, kerlocs_out, approx_space, pred_locs, domain):
-        Klocs_out = kerlocs_out(np.expand_dims(pred_locs, axis=1), np.expand_dims(approx_space, axis=1))
+    def compute_Aout_pred(Yfpca, kernel_out, approx_space, pred_locs, domain):
+        Klocs_out = kernel_out(np.expand_dims(pred_locs, axis=1), np.expand_dims(approx_space, axis=1))
         Aout_pred = np.zeros((pred_locs.shape[0], len(Yfpca)))
         Yfpca_evals = np.array([f(approx_space) for f in Yfpca])
         inter_const = domain[0, 1] - domain[0, 0]
@@ -228,8 +228,8 @@ class KernelAdditiveModelBis:
         Xfunc = disc_fd1.to_function_linearinterp(*X_dg)
         self.fpca.fit(Ycentered_func)
         Yfpca = self.fpca.get_regressors(self.n_fpca)
-        A_evals_in = self.compute_Aevals(Xfunc, Xfunc, self.kerlocs_in, self.kerevals, self.space_in, self.domain_in)
-        A_evals_fpca = self.compute_Aout(Yfpca, self.kerlocs_out, self.space_out, self.domain_out)
+        A_evals_in = self.compute_Aevals(Xfunc, Xfunc, self.kernel_in, self.kernel_eval, self.space_in, self.domain_in)
+        A_evals_fpca = self.compute_Aout(Yfpca, self.kernel_out, self.space_out, self.domain_out)
         self.Yfpca = Yfpca
         Y = self.compute_Y(Ycentered_func, Yfpca, self.space_out, self.domain_out)
         A = np.kron(A_evals_in, A_evals_fpca)
@@ -240,9 +240,9 @@ class KernelAdditiveModelBis:
     def predict_evaluate(self, Xnew, locs):
         Xnew_dg = disc_fd1.to_discrete_general(*Xnew)
         Xfunc_new = disc_fd1.to_function_linearinterp(*Xnew_dg)
-        A_evals_in = self.compute_Aevals(self.Xfunc, Xfunc_new, self.kerlocs_in,
-                                         self.kerevals, self.space_in, self.domain_in)
-        A_evals_out = self.compute_Aout_pred(self.Yfpca, self.kerlocs_out,
+        A_evals_in = self.compute_Aevals(self.Xfunc, Xfunc_new, self.kernel_in,
+                                         self.kernel_eval, self.space_in, self.domain_in)
+        A_evals_out = self.compute_Aout_pred(self.Yfpca, self.kernel_out,
                                              self.space_out, locs, self.domain_out)
         inter_prod = self.alpha.dot(A_evals_out.T)
         inter_prod2 = inter_prod.T.dot(A_evals_in.T)

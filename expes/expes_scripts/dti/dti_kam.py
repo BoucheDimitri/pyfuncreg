@@ -86,22 +86,6 @@ if __name__ == '__main__':
 
     Ytest = disc_fd1.to_discrete_general(*Ytest)
 
-    kx = kernels.GaussianScalarKernel(KX_GRID, normalize=False)
-    ky = kernels.GaussianScalarKernel(KY_GRID, normalize=False)
-    keval = kernels.GaussianScalarKernel(KEV_GRID, normalize=False)
-
-    params = {"regu": 1e-4, "kerlocs_in": kx, "kerlocs_out": ky, "kerevals": keval,
-              "n_fpca": 20, "n_evals_fpca": N_EVALS_FPCA,
-              "n_evals_in": N_EVALS_IN, "n_evals_out": N_EVALS_OUT,
-              "domain_in": DOMAIN, "domain_out": DOMAIN}
-
-    test_kam = kernel_additive.KernelAdditiveModelBis(**params)
-
-    test_kam.fit(Xtrain, Ytrain)
-
-    preds = test_kam.predict_evaluate_diff_locs(Xtest, Ytest[0])
-    score_test = metrics.mse(Ytest[1], preds)
-
     # ############################# Full cross-validation experiment ###################################################
     if argv == "full":
         # Generate configurations and regressors

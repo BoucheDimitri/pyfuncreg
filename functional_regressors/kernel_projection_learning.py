@@ -128,18 +128,18 @@ class SeperableKPLBis(FunctionalRegressor):
     """
     Parameters
     ----------
-    kernel_scalar : functional_regressors.kernels.ScalarKernel
+    kernel : functional_regressors.kernels.ScalarKernel
         The scalar kernel
     B : regularization.OutputMatrix or array_like or tuple
         Matrix encoding the similarities between output tasks
-    output_basis : functional_data.basis.Basis or tuple
+    basis_out : functional_data.basis.Basis or tuple
         The output dictionary of functions
     regu : float
         Regularization parameter
     center_output : bool
         Should output be centered
     """
-    def __init__(self, regu, kernel, B, output_basis, center_output=False):
+    def __init__(self, regu, kernel, B, basis_out, center_output=False):
         super().__init__()
         self.kernel = kernel
         self.regu = regu
@@ -147,7 +147,7 @@ class SeperableKPLBis(FunctionalRegressor):
         self.X = None
         self.Ymean_func = None
         # If a basis is given, the output dictionary is fixed, else it is generated from the passed config upon fitting
-        self.output_basis_config, self.output_basis = basis.set_basis_config(output_basis)
+        self.basis_out_config, self.basis_out = basis.set_basis_config(basis_out)
         # If a numpy array is explicitly it remains fixed, else it is generated with the output_basis
         # upon fitting using the passed config
         self.B_abstract, self.B = regularization.set_output_matrix_config(B)
@@ -159,18 +159,18 @@ class SeperableKPLBis(FunctionalRegressor):
         self.ovkridge = None
 
     def generate_output_basis(self, Y):
-        if self.output_basis is None:
-            self.output_basis = basis.generate_basis(self.output_basis_config[0], self.output_basis_config[1])
-        if isinstance(self.output_basis, basis.DataDependantBasis):
-            self.output_basis.fit(Y[0], Y[1])
+        if self.basis_out is None:
+            self.basis_out = basis.generate_basis(*self.basis_out_config)
+        if isinstance(self.basis_out, basis.DataDependantBasis):
+            self.basis_out.fit(*Y)
 
     def generate_output_matrix(self):
         if self.B is None:
             if isinstance(self.B_abstract, regularization.OutputMatrix):
-                self.B = self.B_abstract.get_matrix(self.output_basis)
+                self.B = self.B_abstract.get_matrix(self.basis_out)
             else:
                 self.B = regularization.generate_output_matrix(
-                    self.B_abstract[0], self.B_abstract[1]).get_matrix(self.output_basis)
+                    self.B_abstract[0], self.B_abstract[1]).get_matrix(self.basis_out)
 
     def fit(self, X, Y, K=None):
         # Center output functions if relevant
@@ -206,7 +206,7 @@ class SeperableKPLBis(FunctionalRegressor):
         # return Ycentered, self.output_basis
         # start_phimats = perf_counter()
         phi_mats = [(1 / len(Ycentered[1][i]))
-                    * self.output_basis.compute_matrix(Ycentered[0][i]).T for i in range(n)]
+                    * self.basis_out.compute_matrix(Ycentered[0][i]).T for i in range(n)]
         # end_phimats = perf_counter()
         # print("Computing phi mats perf: " + str(end_phimats - start_phimats))
         # start_yproj = perf_counter()
@@ -226,7 +226,7 @@ class SeperableKPLBis(FunctionalRegressor):
 
     def predict_evaluate(self, Xnew, yin_new):
         pred_coefs = self.predict(Xnew)
-        basis_evals = self.output_basis.compute_matrix(yin_new)
+        basis_evals = self.basis_out.compute_matrix(yin_new)
         if self.center_output is not False:
             mean_eval = np.expand_dims(self.Ymean_func(yin_new), axis=0)
             return pred_coefs.dot(basis_evals.T) + mean_eval

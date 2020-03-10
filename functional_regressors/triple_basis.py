@@ -128,18 +128,18 @@ class TripleBasisEstimatorBis:
 
     Parameters
     ----------
-    basis_in:
-        The input orthonormal basis
-    basis_rffs:
-        Random Fourier Features used for the approximation
-    basis_out:
-        The output orthonormal basis
-    regu: float
+    regu : float
         Regularization parameter
+    basis_in :
+        The input orthonormal basis
+    basis_rffs :
+        Random Fourier Features used for the approximation
+    basis_out :
+        The output orthonormal basis
     center_output: bool, optional
         Should outputs be centered
     """
-    def __init__(self, basis_in, basis_rffs, basis_out, regu, center_output=False):
+    def __init__(self, regu, basis_in, basis_rffs, basis_out, center_output=False):
         self.basis_in = basis_in
         # If a basis is given (both for input and outpu) else it is generated from the passed config upon fitting
         self.basis_in_config, self.basis_in = basis.set_basis_config(basis_in)
@@ -231,7 +231,7 @@ class BiBasisEstimator:
     center_output: bool, optional
         Should outputs be centered ?
     """
-    def __init__(self, kernel, basis_out, regu, center_output=False):
+    def __init__(self, regu, kernel, basis_out, center_output=False):
         self.basis_out_config, self.basis_out = basis.set_basis_config(basis_out)
         self.kernel = kernel
         self.regu = regu
@@ -291,105 +291,3 @@ class BiBasisEstimator:
         for i in range(n_preds):
             preds.append(np.squeeze(self.predict_from_coefs(pred_coefs[i], Yins_new[i])))
         return preds
-
-
-
-
-
-# class BiBasisEstimatorFpca:
-#     """
-#     Triple basis estimator with structured input and FPCA output basis
-#
-#     Parameters
-#     ----------
-#     kernel: functional_regressors.kernels.ScalarKernel
-#         The input kernel
-#     regu: float
-#         Regularization parameter
-#     nfpca: int
-#         The number of function principal components to include
-#     nevals_fpca: int
-#         The number of evaluations to use for approximation of the FPCA
-#     center_output: bool, optional
-#         Should outputs be centered ?
-#     """
-#     def __init__(self, kernel, regu, nfpca, nevals_fpca=500, center_output=True):
-#         self.kernel = kernel
-#         self.regu = regu
-#         self.nfpca = nfpca
-#         self.fpca = None
-#         self.Ymean_func = None
-#         self.regressors = None
-#         self.X = None
-#         self.basis_out = None
-#         self.Ymean = None
-#         self.center_output = center_output
-#         self.nevals_fpca = nevals_fpca
-#
-#     @staticmethod
-#     def projection_coefs(X, func_basis):
-#         n_samples = len(X[0])
-#         eval_mats = [func_basis.compute_matrix(X[0][i]) for i in range(n_samples)]
-#         # shape = (n_samples, n_basis)
-#         scalar_prods = np.array([eval_mats[i].T.dot((1 / X[1][i].shape[0]) * X[1][i]) for i in range(n_samples)])
-#         return scalar_prods
-#
-#     @staticmethod
-#     def get_func_outputs(Y):
-#         smoother_out = smoothing.LinearInterpSmoother()
-#         smoother_out.fit(Y[0], Y[1])
-#         return smoother_out.get_functions()
-#
-#     def intialize_dict(self, Yfunc, domain):
-#         self.fpca = fpca.FunctionalPCA(domain, self.nevals_fpca, smoothing.LinearInterpSmoother())
-#         self.fpca.fit(Yfunc)
-#         if self.center_output:
-#             self.basis_out = basis.BasisFromSmoothFunctions(self.fpca.get_regressors(self.nfpca), 1, domain)
-#         else:
-#             self.basis_out = basis.BasisFromSmoothFunctions(self.fpca.get_regressors(self.nfpca), 1, domain,
-#                                                             add_constant=True)
-#
-#     def fit(self, X, Y, K=None):
-#         n = len(X)
-#         Yfunc = BiBasisEstimatorFpca.get_func_outputs(Y)
-#         self.Ymean_func = functional_algebra.mean_function(Yfunc)
-#         if self.center_output:
-#             Yfunc_centered = functional_algebra.diff_function_list(Yfunc, self.Ymean_func)
-#         else:
-#             Yfunc_centered = Yfunc
-#         domain = np.array([[Y[0][0][0], Y[0][0][-1]]])
-#         self.intialize_dict(Yfunc_centered, domain)
-#         self.X = X
-#         Ycentered = (Y[0], [Y[1][i] - self.Ymean_func(Y[0][i].squeeze()) for i in range(n)])
-#         coefsY = BiBasisEstimator.projection_coefs(Ycentered, self.basis_out)
-#         n_probs = coefsY.shape[1]
-#         regressors = []
-#         for prob in range(n_probs):
-#             reg = KernelRidge(self.kernel, self.regu)
-#             reg.fit(X, coefsY[:, prob])
-#             regressors.append(reg)
-#         self.regressors = regressors
-#
-#     def predict(self, Xnew):
-#         preds = np.array([reg.predict(Xnew) for reg in self.regressors]).T
-#         return preds
-#
-#     def predict_from_coefs(self, pred_coefs, yin_new):
-#         basis_evals = self.basis_out.compute_matrix(yin_new)
-#         if self.center_output:
-#             return pred_coefs.dot(basis_evals.T) + np.expand_dims(self.Ymean_func(yin_new.squeeze()), axis=0)
-#         else:
-#             return pred_coefs.dot(basis_evals.T)
-#
-#     def predict_evaluate(self, Xnew, yin_new):
-#         pred_coefs = self.predict(Xnew)
-#         return self.predict_from_coefs(pred_coefs, yin_new)
-#
-#     def predict_evaluate_diff_locs(self, Xnew, Yins_new):
-#         n_preds = len(Xnew)
-#         preds = []
-#         pred_coefs = self.predict(Xnew)
-#         for i in range(n_preds):
-#             preds.append(np.squeeze(self.predict_from_coefs(pred_coefs[i], Yins_new[i])))
-#         return preds
-

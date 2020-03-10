@@ -22,7 +22,7 @@ def dti_wavs_kpl(kernel_sigma, regu, center_output=True, decrease_base=1, pywt_n
     output_matrix_params = {"decrease_base": decrease_base}
     output_matrices = configs_generation.subconfigs_combinations("wavelets_pow", output_matrix_params)
     # Generate full configs
-    params = {"kernel": kernel, "B": output_matrices, "output_basis": output_bases,
+    params = {"kernel": kernel, "B": output_matrices, "basis_out": output_bases,
               "regu": regu, "center_output": center_output}
     configs = configs_generation.configs_combinations(params)
     # Create list of regressors from that config
@@ -44,7 +44,7 @@ def speech_fpca_penpow_kpl(kernel_sigma, regu, n_fpca, n_evals_fpca, decrease_ba
     output_matrix_params = {"decrease_base": decrease_base}
     output_matrices = configs_generation.subconfigs_combinations("pow", output_matrix_params)
     # Generate full configs
-    params = {"kernel": multi_ker, "B": output_matrices, "output_basis": output_bases,
+    params = {"kernel": multi_ker, "B": output_matrices, "basis_out": output_bases,
               "regu": regu, "center_output": True}
     configs = configs_generation.configs_combinations(params)
     # Create list of regressors from that config
@@ -54,26 +54,26 @@ def speech_fpca_penpow_kpl(kernel_sigma, regu, n_fpca, n_evals_fpca, decrease_ba
 
 # ############################### KAM ##################################################################################
 
-def kernels_generator_kam(kx_sigma, ky_sigma, keval_sigma):
-    if isinstance(kx_sigma, Iterable):
-        kxs = [kernels.GaussianScalarKernel(sig, normalize=False) for sig in kx_sigma]
+def kernels_generator_kam(kin_sigma, kout_sigma, keval_sigma):
+    if isinstance(kin_sigma, Iterable):
+        kernels_in = [kernels.GaussianScalarKernel(sig, normalize=False) for sig in kin_sigma]
     else:
-        kxs = kernels.GaussianScalarKernel(kx_sigma, normalize=False)
-    if isinstance(ky_sigma, Iterable):
-        kys = [kernels.GaussianScalarKernel(sig, normalize=False) for sig in ky_sigma]
+        kernels_in = kernels.GaussianScalarKernel(kin_sigma, normalize=False)
+    if isinstance(kout_sigma, Iterable):
+        kernels_out = [kernels.GaussianScalarKernel(sig, normalize=False) for sig in kout_sigma]
     else:
-        kys = kernels.GaussianScalarKernel(ky_sigma, normalize=False)
+        kernels_out = kernels.GaussianScalarKernel(kout_sigma, normalize=False)
     if isinstance(keval_sigma, Iterable):
-        kevals = [kernels.GaussianScalarKernel(sig, normalize=False) for sig in keval_sigma]
+        kernels_eval = [kernels.GaussianScalarKernel(sig, normalize=False) for sig in keval_sigma]
     else:
-        kevals = kernels.GaussianScalarKernel(keval_sigma, normalize=False)
-    return kxs, kys, kevals
+        kernels_eval = kernels.GaussianScalarKernel(keval_sigma, normalize=False)
+    return kernels_in, kernels_out, kernels_eval
 
 
-def dti_kam(kx_sigma, ky_sigma, keval_sigma, regu, n_fpca, n_evals_fpca, n_evals_in,
+def dti_kam(kin_sigma, kout_sigma, keval_sigma, regu, n_fpca, n_evals_fpca, n_evals_in,
             n_evals_out, domain_in=np.array([[0, 1]]), domain_out=np.array([[0, 1]])):
-    kxs, kys, kevals = kernels_generator_kam(kx_sigma, ky_sigma, keval_sigma)
-    params = {"regu": regu, "kerlocs_in": kxs, "kerlocs_out": kys, "kerevals": kevals,
+    kernels_in, kernels_out, kernels_eval = kernels_generator_kam(kin_sigma, kout_sigma, keval_sigma)
+    params = {"regu": regu, "kernel_in": kernels_in, "kernel_out": kernels_out, "kernel_eval": kernels_eval,
               "n_fpca": n_fpca, "n_evals_fpca": n_evals_fpca,
               "n_evals_in": n_evals_in, "n_evals_out": n_evals_out,
               "domain_in": domain_in, "domain_out": domain_out}
