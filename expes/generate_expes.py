@@ -123,7 +123,7 @@ def speech_fpca_3be(ker_sigma, regu, n_fpca, n_evals_fpca, domain=np.array([[0, 
 
 # ############################### FKRR #################################################################################
 
-def kernels_generator_fkrr(kx_sigma, ky_sigma):
+def kernels_generator_fkrr_dti(kx_sigma, ky_sigma):
     if isinstance(kx_sigma, Iterable):
         kxs = [kernels.GaussianScalarKernel(sig, normalize=False) for sig in kx_sigma]
     else:
@@ -136,8 +136,28 @@ def kernels_generator_fkrr(kx_sigma, ky_sigma):
 
 
 def dti_fkrr(kx_sigma, ky_sigma, regu, approx_locs, center_output):
-    kxs, kys = kernels_generator_fkrr(kx_sigma, ky_sigma)
+    kxs, kys = kernels_generator_fkrr_dti(kx_sigma, ky_sigma)
     params = {"regu": regu, "input_kernel": kxs, "output_kernel": kys,
+              "approx_locs": approx_locs, "center_output": center_output}
+    configs = configs_generation.configs_combinations(params, exclude_list=["approx_locs"])
+    regs = [ovkernel_ridge.SeparableOVKRidgeFunctional(**config) for config in configs]
+    return configs, regs
+
+
+def kernels_generator_fkrr_speech(kx_sigma, ky_sigma):
+    ker_sigmas = kx_sigma * np.ones(13)
+    gauss_kers = [kernels.GaussianScalarKernel(sig, normalize=False, normalize_dist=True) for sig in ker_sigmas]
+    kx = kernels.SumOfScalarKernel(gauss_kers, normalize=False)
+    if isinstance(ky_sigma, Iterable):
+        kys = [kernels.LaplaceScalarKernel(sig, normalize=False) for sig in ky_sigma]
+    else:
+        kys = kernels.LaplaceScalarKernel(ky_sigma, normalize=False)
+    return kx, kys
+
+
+def speech_fkrr(kx_sigma, ky_sigma, regu, approx_locs, center_output):
+    kx, kys = kernels_generator_fkrr_speech(kx_sigma, ky_sigma)
+    params = {"regu": regu, "input_kernel": kx, "output_kernel": kys,
               "approx_locs": approx_locs, "center_output": center_output}
     configs = configs_generation.configs_combinations(params, exclude_list=["approx_locs"])
     regs = [ovkernel_ridge.SeparableOVKRidgeFunctional(**config) for config in configs]
