@@ -3,7 +3,7 @@ from collections.abc import Iterable
 
 from model_eval import configs_generation
 from functional_regressors import kernels, kernel_projection_learning as kproj_learning, \
-    triple_basis, kernel_additive, ovkernel_ridge
+    triple_basis, kernel_additive, ovkernel_ridge, kernel_estimator
 
 
 # ############################### KPL ##################################################################################
@@ -161,4 +161,27 @@ def speech_fkrr(kx_sigma, ky_sigma, regu, approx_locs, center_output):
               "approx_locs": approx_locs, "center_output": center_output}
     configs = configs_generation.configs_combinations(params, exclude_list=["approx_locs"])
     regs = [ovkernel_ridge.SeparableOVKRidgeFunctional(**config) for config in configs]
+    return configs, regs
+
+
+# ############################### KE ###################################################################################
+
+def kernel_generator_ke_speech(kx_sigma):
+    if isinstance(kx_sigma, Iterable):
+        multi_sigs = [sig * np.ones(13) for sig in kx_sigma]
+        bases_kers = [[kernels.GaussianScalarKernel(sig, normalize=False, normalize_dist=True) for sig in multi_sig]
+                      for multi_sig in multi_sigs]
+        kxs = [kernels.SumOfScalarKernel(base_ker, normalize=False) for base_ker in bases_kers]
+    else:
+        multi_sig = kx_sigma * np.ones(13)
+        base_ker = [kernels.GaussianScalarKernel(sig, normalize=False, normalize_dist=True) for sig in multi_sig]
+        kxs = kernels.SumOfScalarKernel(base_ker, normalize=False)
+    return kxs
+
+
+def speech_ke(kx_sigma, center_output):
+    kxs = kernel_generator_ke_speech(kx_sigma)
+    params = {"kernel": kxs, "center_output": center_output}
+    configs = configs_generation.configs_combinations(params)
+    regs = [kernel_estimator.KernelEstimatorStructIn(**config) for config in configs]
     return configs, regs

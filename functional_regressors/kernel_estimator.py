@@ -2,6 +2,7 @@ import numpy as np
 
 from functional_data import smoothing
 from functional_data import functional_algebra
+from functional_data import discrete_functional_data as disc_fd
 
 
 def gaussian_window(x):
@@ -64,13 +65,14 @@ class KernelEstimatorStructIn:
 
     def fit(self, X, Y):
         self.X = X
+        self.Ymean = disc_fd.mean_func(*Y)
         if self.center_output:
-            self.Ymean = Y[0][0], np.mean(np.array(Y[1]).squeeze(), axis=0)
-            Ycentered = Y[0], [y - self.Ymean[1] for y in Y[1]]
+            Ycentered = disc_fd.center_discrete(*Y, self.Ymean)
+            Ycentered = disc_fd.to_discrete_general(*Ycentered)
         else:
-            Ycentered = Y
+            Ycentered = disc_fd.to_discrete_general(*Y)
         smoother_out = smoothing.LinearInterpSmoother()
-        smoother_out.fit(Ycentered[0], Ycentered[1])
+        smoother_out.fit(*Ycentered)
         self.Yfunc = smoother_out.get_functions()
 
     def predict(self, Xnew):
