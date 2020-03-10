@@ -1,20 +1,21 @@
 import numpy as np
 import os
 import sys
-import pickle
 import pathlib
 
 # Execution path
 exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
 path = str(exec_path.parent.parent.parent)
 sys.path.append(path)
+# path = os.getcwd()
 
 # Local imports
-from expes.DEPRECATED import generate_expes
-from misc import model_eval
+from model_eval import parallel_tuning
+from model_eval import metrics
 from data import loading
-from data.DEPRECATED import processing
-from expes.DEPRECATED.expes_scripts.dti import config as config
+from data import processing
+from expes import generate_expes
+from functional_data import discrete_functional_data as disc_fd1
 
 # ############################### Execution config #####################################################################
 # Path to the data
@@ -24,31 +25,35 @@ OUTPUT_FOLDER = "dti_kpl"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 EXPE_NAME = "dti_kpl"
 # Number of processors
-NPROCS = 8
+N_PROCS = 8
+SHUFFLE_SEED = 784
+N_TRAIN = 70
+N_FOLDS = 5
+INPUT_INDEXING = "array"
+OUTPUT_INDEXING = "discrete_general"
 
 # ############################### Regressor config #####################################################################
-# Output domain
+# Signal extension method
+SIGNAL_EXT = ("symmetric", (1, 1))
+CENTER_OUTPUT = True
 DOMAIN_OUT = np.array([[0, 1]])
-# Padding parameters
-PAD_WIDTH_OUTPUT = ((0, 0), (3*55, 3*55))
-PAD_WIDTH_INPUT = ((0, 0), (0, 0))
-DOMAIN_OUT_PAD = np.array([[-PAD_WIDTH_OUTPUT[1][0] / 55, 1 + PAD_WIDTH_OUTPUT[1][0] / 55]])
-# Dictionary obtained by cross validation for quick run fitting on train and get score on test
-CV_DICT = {'ker_sigma': 0.9,'pywt_name': 'db', 'init_dilat': 1, 'dilat': 2, 'translat': 1,
-           'n_dilat': 5, 'center_outputs': True, 'add_constant': True, 'regu': 0.009236708571873866,
-           'moments': 2, 'penalize_freqs': 1.2}
-# Regularization parameters grid
-REGU_GRID = np.geomspace(1e-8, 1, 100)
-# Wavelet name for the dictionary
-PYWT_NAME = "db"
-# Number of vanishing moments to test
-MOMENTS = (2, 3)
-# Number of dilations to test
-NDILATS = (4, 5)
-# Bases for penalization of smaller scales
-FREQS_PEN = (1.0, 1.2, 1.4, 1.6)
+LOCS_BOUNDS = np.array([[0 - SIGNAL_EXT[1][0], 1 + SIGNAL_EXT[1][1]]])
+DECREASE_BASE = [1, 1.2]
+MOMENTS = [2]
+BASIS_DICT = {"pywt_name": "db", "moments": MOMENTS, "init_dilat": 1.0, "translat": 1.0, "dilat": 2, "approx_level": 6,
+              "add_constant": True, "domain": DOMAIN_OUT, "locs_bounds": LOCS_BOUNDS}
 # Standard deviation parameter for the input kernel
 KER_SIGMA = 0.9
+# Regularization grid
+REGUS = [1e-4, 1e-3]
+
+# ############################### Pre cross-validated config ###########################################################
+# TODO: POUR LA VERSION EXACTE CE N EST PAS LA MIEUX, IL FAUDRAIT REFAIRE LA CROSS VAL
+BASIS_DICT_CV = {"pywt_name": "db", "moments": 2, "init_dilat": 1.0, "translat": 1.0, "dilat": 2, "approx_level": 6,
+                 "add_constant": True, "domain": DOMAIN_OUT, "locs_bounds": LOCS_BOUNDS}
+
+PARAMS_DICT_CV = {'kernel_sigma': 0.9, 'center_output': True, 'regu': 0.009236708571873866, "decrease_base": 1.2}
+
 
 if __name__ == '__main__':
 
@@ -63,48 +68,41 @@ if __name__ == '__main__':
         pass
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
-    # ############################# Load the data ######################################################################
-    cca, rcst = loading.load_dti(DATA_PATH, shuffle_seed=config.SHUFFLE_SEED)
-    Xtrain, Ytrain, Xtest, Ytest = processing.process_dti_dataset(cca.copy(), rcst.copy(),
-                                                                  n_train=config.N_TRAIN, normalize01=True,
-                                                                  pad_width_output=PAD_WIDTH_OUTPUT)
-    Xtrain = np.array(Xtrain[1]).squeeze()
-    Xtest = np.array(Xtest[1]).squeeze()
-
-    # ############################# Full cross-validation experiment ###################################################
+    # Define execution mode
     try:
         argv = sys.argv[1]
     except IndexError:
         argv = ""
+    # argv = "full"
+    # ############################# Load the data ######################################################################
+    cca, rcst = loading.load_dti(path + "/data/dataDTI/", shuffle_seed=SHUFFLE_SEED)
+    Xtrain, Ytrain, Xtest, Ytest = processing.process_dti(cca, rcst)
+    # Extend data
+    Ytrain_extended = disc_fd1.extend_signal_samelocs(Ytrain[0][0], Ytrain[1], mode=SIGNAL_EXT[0], repeats=SIGNAL_EXT[1])
+    # Convert testing output data to discrete general form
+    Ytest = disc_fd1.to_discrete_general(*Ytest)
+
+    # Put input data in array form
+    Xtrain = np.array(Xtrain[1]).squeeze()
+    Xtest = np.array(Xtest[1]).squeeze()
+
+    # ############################# Full cross-validation experiment ###################################################
     if argv == "full":
-        # Generate config dictionaries
-        params = {"regu": REGU_GRID, "ker_sigma": KER_SIGMA, "pywt_name": PYWT_NAME,
-                  "init_dilat": 1, "dilat": 2, "translat": 1,
-                  "moments": MOMENTS, "n_dilat": NDILATS, "center_outputs": True,
-                  "penalize_freqs": FREQS_PEN, "add_constant": True}
+        # Generate configurations and regressors
+        configs, regs = generate_expes.dti_wavs_kpl(KER_SIGMA, REGUS, center_output=CENTER_OUTPUT,
+                                                    decrease_base=DECREASE_BASE, **BASIS_DICT)
 
-        expe_dicts = generate_expes.expe_generator(params)
-        # Create a queue of regressor to cross validate
-        regressors = [generate_expes.create_kpl_dti(expdict, DOMAIN_OUT, DOMAIN_OUT_PAD, PAD_WIDTH_OUTPUT)
-                      for expdict in expe_dicts]
-        # Cross validation of the regressor queue
-        expe_dicts, results, best_ind, best_dict, best_result, score_test \
-            = model_eval.exec_regressors_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest,
-                                               rec_path=rec_path, nprocs=NPROCS)
-        # Save the results
-        with open(rec_path + "/" + EXPE_NAME + ".pkl", "wb") as inp:
-            pickle.dump((best_dict, best_result, score_test), inp,
-                        pickle.HIGHEST_PROTOCOL)
-        # Print the result
+        best_config, best_result, score_test = parallel_tuning.parallel_tuning(
+            regs, Xtrain, Ytrain_extended, Xtest, Ytest, Xpred_train=None, Ypred_train=Ytrain,
+            input_indexing=INPUT_INDEXING, output_indexing=OUTPUT_INDEXING,
+            rec_path=rec_path, configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS)
         print("Score on test set: " + str(score_test))
 
-    # ############################# Reduced experiment with the pre cross validated configuration ######################
     else:
-        # Use directly the regressor stemming from the cross validation
-        best_regressor = generate_expes.create_kpl_dti(CV_DICT, DOMAIN_OUT, DOMAIN_OUT_PAD, PAD_WIDTH_OUTPUT)
-        best_regressor.fit(Xtrain, Ytrain)
-        # Evaluate it on test set
-        preds = best_regressor.predict_evaluate_diff_locs(Xtest, Ytest[0])
-        score_test = model_eval.mean_squared_error(preds, Ytest[1])
-        # Print the result
+        # Generate regressor from cross-validation dictionaries
+        configs, regs = generate_expes.dti_wavs_kpl(**PARAMS_DICT_CV, **BASIS_DICT_CV)
+        regs[0].fit(Xtrain, Ytrain_extended)
+        preds = regs[0].predict_evaluate_diff_locs(Xtest, Ytest[0])
+        score_test = metrics.mse(Ytest[1], preds)
         print("Score on test set: " + str(score_test))
+

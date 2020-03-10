@@ -7,7 +7,7 @@ from functional_regressors import kernels, kernel_projection_learning as kproj_l
 
 
 # ############################### KPL ##################################################################################
-def dti_wavs_kpl(ker_sigma, regu, center_output=True, decrease_base=1, pywt_name="db", moments=2,
+def dti_wavs_kpl(kernel_sigma, regu, center_output=True, decrease_base=1, pywt_name="db", moments=2,
                  init_dilat=1.0, translat=1.0, dilat=2, approx_level=5, add_constant=True,
                  domain=np.array([[0, 1]]), locs_bounds=np.array([[0, 1]])):
     # Wavelets output basses
@@ -17,12 +17,12 @@ def dti_wavs_kpl(ker_sigma, regu, center_output=True, decrease_base=1, pywt_name
     output_bases = configs_generation.subconfigs_combinations("wavelets", output_basis_params,
                                                               exclude_list=["domain", "locs_bounds"])
     # Gaussian kernel
-    ker = kernels.GaussianScalarKernel(ker_sigma, normalize=False)
+    kernel = kernels.GaussianScalarKernel(kernel_sigma, normalize=False)
     # Penalize power
     output_matrix_params = {"decrease_base": decrease_base}
     output_matrices = configs_generation.subconfigs_combinations("wavelets_pow", output_matrix_params)
     # Generate full configs
-    params = {"kernel_scalar": ker, "B": output_matrices, "output_basis": output_bases,
+    params = {"kernel": kernel, "B": output_matrices, "output_basis": output_bases,
               "regu": regu, "center_output": center_output}
     configs = configs_generation.configs_combinations(params)
     # Create list of regressors from that config
@@ -30,21 +30,21 @@ def dti_wavs_kpl(ker_sigma, regu, center_output=True, decrease_base=1, pywt_name
     return configs, regs
 
 
-def speech_fpca_penpow_kpl(ker_sigma, regu, n_fpca, n_evals_fpca, decrease_base, domain=np.array([[0, 1]])):
+def speech_fpca_penpow_kpl(kernel_sigma, regu, n_fpca, n_evals_fpca, decrease_base, domain=np.array([[0, 1]])):
     # FPCA output basis
     output_basis_params = {"n_basis": n_fpca, "input_dim": 1, "domain": domain, "n_evals": n_evals_fpca}
     output_bases = configs_generation.subconfigs_combinations("functional_pca",
                                                               output_basis_params,
                                                               exclude_list=["domain"])
     # Sum of Gaussian kernels
-    ker_sigmas = ker_sigma * np.ones(13)
-    gauss_kers = [kernels.GaussianScalarKernel(sig, normalize=False, normalize_dist=True) for sig in ker_sigmas]
+    kernel_sigmas = kernel_sigma * np.ones(13)
+    gauss_kers = [kernels.GaussianScalarKernel(sig, normalize=False, normalize_dist=True) for sig in kernel_sigmas]
     multi_ker = kernels.SumOfScalarKernel(gauss_kers, normalize=False)
     # Penalize power
     output_matrix_params = {"decrease_base": decrease_base}
     output_matrices = configs_generation.subconfigs_combinations("pow", output_matrix_params)
     # Generate full configs
-    params = {"kernel_scalar": multi_ker, "B": output_matrices, "output_basis": output_bases,
+    params = {"kernel": multi_ker, "B": output_matrices, "output_basis": output_bases,
               "regu": regu, "center_output": True}
     configs = configs_generation.configs_combinations(params)
     # Create list of regressors from that config

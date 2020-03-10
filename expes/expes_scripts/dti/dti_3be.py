@@ -1,20 +1,21 @@
 import numpy as np
 import os
 import sys
-import pickle
 import pathlib
 
 # Execution path
 exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
 path = str(exec_path.parent.parent.parent)
 sys.path.append(path)
+# path = os.getcwd()
 
 # Local imports
-from expes.DEPRECATED import generate_expes
-from misc import model_eval
-from data import loading
-from data.DEPRECATED import processing
-from expes.DEPRECATED.expes_scripts.dti import config as config
+from model_eval import metrics
+from data import loading, processing
+from expes import generate_expes
+from functional_data import discrete_functional_data as disc_fd1
+from functional_regressors import triple_basis
+from model_eval import parallel_tuning
 
 # ############################### Config ###############################################################################
 # Path to the data
@@ -23,27 +24,42 @@ DATA_PATH = path + "/data/dataDTI/"
 OUTPUT_FOLDER = "dti_3be"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 EXPE_NAME = "dti_3be"
-# Number of processors
-NPROCS = 8
+# Shuffle seed
+SHUFFLE_SEED = 784
+INPUT_INDEXING = "discrete_general"
+OUTPUT_INDEXING = "discrete_general"
+N_FOLDS = 5
+N_PROCS = 8
 
 # ############################### Regressor config #####################################################################
 # Dictionary obtained by cross validation for quick run fitting on train and get score on test
-CV_DICT = {'center_outputs': True, 'regu': 1.0, 'ker_sigma': 20, 'max_freq_in': 25, 'max_freq_out': 5}
+SIGNAL_EXT_INPUT = ("symmetric", (0, 0))
+SIGNAL_EXT_OUTPUT = ("symmetric", (0, 0))
 # Output domain
-DOMAIN_OUT = np.array([[0, 1]])
-# Padding of the output
-PAD_WIDTH = ((0, 0), (0, 0))
+DOMAIN = np.array([[0, 1]])
 # Number of random fourier features
 N_RFFS = 300
 # Seed for the random fourier features
 RFFS_SEED = 567
 # Regularization grid
-REGU_GRID = list(np.geomspace(1e-8, 1, 100))
+# REGU_GRID = list(np.geomspace(1e-8, 1, 100))
+REGU_GRID = [1e-1, 1]
 # Standard deviation grid for input kernel
-KER_SIGMA = [20, 25, 30, 35, 40]
+KER_SIGMA = [20, 30, 40]
+# KER_SIGMA = 20
 # Maximum frequency to include for input and output
-FREQS_IN_GRID = [5, 10, 15, 20, 25, 30, 35, 40]
-FREQS_OUT_GRID = [5, 10, 15, 20, 25, 30, 35, 40]
+# FREQS_IN_GRID = [5, 10, 15, 20, 25, 30, 35, 40]
+# FREQS_OUT_GRID = [5, 10, 15, 20, 25, 30, 35, 40]
+FREQS_IN_GRID = [20, 25]
+FREQS_OUT_GRID = [5, 10]
+CENTER_OUTPUT = True
+
+# ############################## Pre cross-validated dict ##############################################################
+CV_PARAMS = {'center_output': True,
+             'basis_in': ('fourier', {'lower_freq': 0, 'upper_freq': 25, 'domain': DOMAIN}),
+             'basis_out': ('fourier', {'lower_freq': 0, 'upper_freq': 5, 'domain': DOMAIN}),
+             'basis_rffs': ('random_fourier', {'n_basis': N_RFFS, 'domain': DOMAIN, 'seed': RFFS_SEED, 'bandwidth': 20}),
+             'regu': 1}
 
 
 if __name__ == '__main__':
@@ -59,43 +75,37 @@ if __name__ == '__main__':
         pass
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
-    # ############################# Load the data ######################################################################
-    cca, rcst = loading.load_dti(DATA_PATH, shuffle_seed=config.SHUFFLE_SEED)
-    Xtrain, Ytrain, Xtest, Ytest = processing.process_dti_dataset(cca.copy(), rcst.copy(),
-                                                                  n_train=config.N_TRAIN, normalize01=True)
-
-    # ############################# Full cross-validation experiment ###################################################
     try:
         argv = sys.argv[1]
     except IndexError:
         argv = ""
+
+    # ############################# Load the data ######################################################################
+    cca, rcst = loading.load_dti(path + "/data/dataDTI/", shuffle_seed=SHUFFLE_SEED)
+    Xtrain, Ytrain, Xtest, Ytest = processing.process_dti(cca, rcst)
+    # Extend data
+    Xtrain_extended = disc_fd1.extend_signal_samelocs(
+        Xtrain[0][0], Xtrain[1], mode=SIGNAL_EXT_INPUT[0], repeats=SIGNAL_EXT_INPUT[1])
+    Ytrain_extended = disc_fd1.extend_signal_samelocs(
+        Ytrain[0][0], Ytrain[1], mode=SIGNAL_EXT_OUTPUT[0], repeats=SIGNAL_EXT_OUTPUT[1])
+    # Convert testing output data to discrete general form
+    Ytest = disc_fd1.to_discrete_general(*Ytest)
+
+    # ############################# Full cross-validation experiment ###################################################
     if argv == "full":
-        # Generate config dictionaries
-        params = {"regu": REGU_GRID, "ker_sigma": KER_SIGMA, "max_freq_in": FREQS_IN_GRID,
-                  "max_freq_out": FREQS_OUT_GRID, "center_outputs": True}
-        expe_dicts = generate_expes.expe_generator(params)
-        # Create a queue of regressor to cross validate
-        regressors = [generate_expes.create_3be_dti(expdict, DOMAIN_OUT, DOMAIN_OUT, N_RFFS, RFFS_SEED, PAD_WIDTH)
-                      for expdict in expe_dicts]
-        # Cross validation of the regressor queue
-        expe_dicts, results, best_ind, best_dict, best_result, score_test \
-            = model_eval.exec_regressors_eval_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest,
-                                                    rec_path=rec_path, nprocs=NPROCS)
-        # Save the results
-        with open(rec_path + "/" + EXPE_NAME + ".pkl", "wb") as inp:
-            pickle.dump((best_dict, best_result, score_test), inp,
-                        pickle.HIGHEST_PROTOCOL)
-        # Print the result
+        configs, regs = generate_expes.dti_3be_fourier(KER_SIGMA, REGU_GRID, CENTER_OUTPUT, FREQS_IN_GRID,
+                                                       FREQS_OUT_GRID,N_RFFS, RFFS_SEED, DOMAIN, DOMAIN)
+
+        best_config, best_result, score_test = parallel_tuning.parallel_tuning(
+            regs, Xtrain_extended, Ytrain_extended, Xtest, Ytest, Xpred_train=Xtrain, Ypred_train=Ytrain,
+            rec_path=rec_path, configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS)
         print("Score on test set: " + str(score_test))
 
-    # ############################# Reduced experiment with the pre cross validated configuration ######################
+    # ############################## Reduced experiment with the pre cross validated configuration #####################
     else:
         # Use directly the regressor stemming from the cross validation
-        best_regressor = generate_expes.create_3be_dti(CV_DICT, DOMAIN_OUT, DOMAIN_OUT, N_RFFS, RFFS_SEED, PAD_WIDTH)
-        best_regressor.fit(Xtrain, Ytrain)
-        # Evaluate it on test set
-        len_test = len(Xtest[0])
-        preds = [best_regressor.predict_evaluate(([Xtest[0][i]], [Xtest[1][i]]), Ytest[0][i]) for i in range(len_test)]
-        score_test = model_eval.mean_squared_error(preds, [Ytest[1][i] for i in range(len_test)])
-        # Print the result
+        best_reg = triple_basis.TripleBasisEstimatorBis(**CV_PARAMS)
+        best_reg.fit(Xtrain_extended, Ytrain_extended)
+        preds = best_reg.predict_evaluate_diff_locs(Xtest, Ytest[0])
+        score_test = metrics.mse(preds, Ytest[1])
         print("Score on test set: " + str(score_test))

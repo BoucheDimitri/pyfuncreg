@@ -3,41 +3,48 @@ import os
 import sys
 import pickle
 import pathlib
+from time import perf_counter
 
 # Execution path
 exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
 path = str(exec_path.parent.parent.parent)
 sys.path.append(path)
+# path = os.getcwd()
 
 # Local imports
-from expes.DEPRECATED import generate_expes
-from misc import model_eval
-from data import loading
+from expes import generate_expes
+from data import loading, processing
+from model_eval import parallel_tuning, metrics
 
-# ############################### Config ###############################################################################
+# ############################### Execution config #####################################################################
 # Path to the data
 DATA_PATH = path + "/data/dataspeech/processed/"
 # Record config
 OUTPUT_FOLDER = "speech_ke"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 EXPE_NAME = "speech_ke"
-# Exec config
-NPROCS = 8
+# Number of processors
+N_PROCS = 8
+# Indexing
+INPUT_INDEXING = "list"
+OUTPUT_INDEXING = "discrete_general"
+# Number of folds
+N_FOLDS = 5
 
 # ############################### Regressor config #####################################################################
 # Pre cross validated dictionaries
 CV_DICTS = dict()
-CV_DICTS["LA"] = {'center_output': False, 'ker_sigma': 0.3}
-CV_DICTS["TBCL"] = {'center_output': False, 'ker_sigma': 0.3}
-CV_DICTS["TBCD"] = {'center_output': False, 'ker_sigma': 0.3}
-CV_DICTS["VEL"] = {'center_output': False, 'ker_sigma': 0.2}
-CV_DICTS["GLO"] = {'center_output': False, 'ker_sigma': 0.2}
-CV_DICTS["TTCL"] = {'center_output': False, 'ker_sigma': 0.2}
-CV_DICTS["TTCD"] = {'center_output': False, 'ker_sigma': 0.3}
+CV_DICTS["LA"] = {'center_output': False, 'kx_sigma': 0.3}
+CV_DICTS["TBCL"] = {'center_output': False, 'kx_sigma': 0.3}
+CV_DICTS["TBCD"] = {'center_output': False, 'kx_sigma': 0.3}
+CV_DICTS["VEL"] = {'center_output': False, 'kx_sigma': 0.2}
+CV_DICTS["GLO"] = {'center_output': False, 'kx_sigma': 0.2}
+CV_DICTS["TTCL"] = {'center_output': False, 'kx_sigma': 0.2}
+CV_DICTS["TTCD"] = {'center_output': False, 'kx_sigma': 0.3}
 # Kernel standard deviation
 # KER_SIGMA = np.arange(0.1, 2.1, 0.1)
 KER_SIGMA = [0.1, 1]
-
+CENTER_OUTPUT = False
 
 if __name__ == '__main__':
 
@@ -53,29 +60,33 @@ if __name__ == '__main__':
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
     # ############################# Load the data ######################################################################
-    Xtrain, Ytrain_full, Xtest, Ytest_full = loading.load_processed_speech_dataset(DATA_PATH)
+    X, Y = loading.load_raw_speech_dataset(path + "/data/dataspeech/raw/")
+    Xtrain, Ytrain_full_ext, Ytrain_full, Xtest, Ytest_full_ext, Ytest_full = processing.process_speech(
+        X, Y, shuffle_seed=784, n_train=300, normalize_domain=True, normalize_values=True)
+
     try:
         key = sys.argv[1]
     except IndexError:
         raise IndexError(
             'You need to define a vocal tract subproblem in the set {"LA", "LP", "TBCL", "VEL", "GLO", "TTCL", "TTCD"}')
-    Ytrain, Ytest = Ytrain_full[key], Ytest_full[key]
+    # key = "LA"
+    Ytrain_ext, Ytrain, Ytest_ext, Ytest = Ytrain_full_ext[key], Ytrain_full[key], Ytest_full_ext[key], Ytest_full[key]
 
     # ############################# Full cross-validation experiment ###################################################
     try:
         argv = sys.argv[2]
     except IndexError:
         argv = ""
+    # argv = "nimp"
     if argv == "full":
-        # Generate config dictionaries
-        params = {"ker_sigma": KER_SIGMA, "center_output": False}
-        expe_dicts = generate_expes.expe_generator(params)
-        # Create a queue of regressor to cross validate
-        regressors = [generate_expes.create_ke_speech(expdict) for expdict in expe_dicts]
-        # Cross validation of the regressor queue
-        expe_dicts, results, best_ind, best_dict, best_result, score_test \
-            = model_eval.exec_regressors_queue(regressors, expe_dicts, Xtrain, Ytrain, Xtest, Ytest,
-                                               rec_path=rec_path, nprocs=NPROCS)
+        # Generate configs and corresponding regressors
+        configs, regs = generate_expes.speech_ke(KER_SIGMA, CENTER_OUTPUT)
+
+        # Cross validation of the regressors
+        best_dict, best_result, score_test = parallel_tuning.parallel_tuning(
+            regs, Xtrain, Ytrain_ext, Xtest, Ytest, Xpred_train=None, Ypred_train=Ytrain,
+            input_indexing=INPUT_INDEXING, output_indexing=OUTPUT_INDEXING,
+            rec_path=rec_path, configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS)
         # Save the results
         with open(rec_path + "/" + EXPE_NAME + "_" + key + ".pkl", "wb") as inp:
             pickle.dump((best_dict, best_result, score_test), inp,
@@ -86,12 +97,10 @@ if __name__ == '__main__':
     # ############################# Reduced experiment with the pre cross validated configuration ######################
     else:
         # Use directly the regressor stemming from the cross validation
-        best_regressor = generate_expes.create_ke_speech(CV_DICTS[key])
-        best_regressor.fit(Xtrain, Ytrain)
+        configs, regs = generate_expes.speech_ke(**CV_DICTS[key])
+        regs[0].fit(Xtrain, Ytrain_ext)
         # Evaluate it on test set
-        len_test = len(Xtest)
-        preds = [best_regressor.predict_evaluate(np.expand_dims(Xtest[i], axis=0), Ytest[0][i])
-                 for i in range(len_test)]
-        score_test = model_eval.mean_squared_error(preds, Ytest[1])
+        preds = regs[0].predict_evaluate_diff_locs(Xtest, Ytest[0])
+        score_test = metrics.mse(Ytest[1], preds)
         # Print the result
         print("Score on test set: " + str(score_test))
