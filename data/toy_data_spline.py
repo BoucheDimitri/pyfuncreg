@@ -36,6 +36,38 @@ def sin_atom(a):
     return funca
 
 
+def correlated_freqs_draws(size, alpha=0.8):
+    n_samples = size[0]
+    n_freqs = size[1]
+    odd_freqs = [2 * i - 1 for i in range(1, BOUNDS_FREQS[-1] // 2 + 1)]
+    even_freqs = [2 * i for i in range(1, BOUNDS_FREQS[-1] // 2 + 1)]
+    n_freqs_odds = n_freqs // 2
+    draws_odd = []
+    for i in range(n_samples):
+        draws_odd.append(np.random.choice(odd_freqs, replace=False, size=n_freqs_odds))
+    draws_even = [[] for i in range(n_samples)]
+    for i in range(n_samples):
+        remaining = set(even_freqs)
+        for j in range(n_freqs_odds):
+            d = np.random.binomial(1, alpha)
+            if d == 1:
+                f = draws_odd[i][j] + 1
+                draws_even[i].append(f)
+                remaining = remaining.difference({f})
+            else:
+                f = np.random.choice(list(remaining))
+                draws_even[i].append(f)
+                remaining = remaining.difference({f})
+    draws_odd, draws_even = np.array(draws_odd), np.array(draws_even)
+    return np.concatenate((draws_odd, draws_even), axis=1)
+
+
+
+
+
+
+
+
 def centered_cubic_spline(a, width):
     pace = width / 4
     knots = np.array([a-2 * pace, a - pace, a, a + pace, a + 2 * pace])
