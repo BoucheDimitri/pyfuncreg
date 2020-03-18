@@ -36,11 +36,11 @@ def sin_atom(a):
     return funca
 
 
-def correlated_freqs_draws(size, alpha=0.8):
+def correlated_freqs_draws(bounds_freqs, size, alpha=0.8):
     n_samples = size[0]
     n_freqs = size[1]
-    odd_freqs = [2 * i - 1 for i in range(1, BOUNDS_FREQS[-1] // 2 + 1)]
-    even_freqs = [2 * i for i in range(1, BOUNDS_FREQS[-1] // 2 + 1)]
+    odd_freqs = [2 * i - 1 for i in range(1, bounds_freqs[-1] // 2 + 1)]
+    even_freqs = [2 * i for i in range(1, bounds_freqs[-1] // 2 + 1)]
     n_freqs_odds = n_freqs // 2
     draws_odd = []
     for i in range(n_samples):
@@ -59,7 +59,24 @@ def correlated_freqs_draws(size, alpha=0.8):
                 draws_even[i].append(f)
                 remaining = remaining.difference({f})
     draws_odd, draws_even = np.array(draws_odd), np.array(draws_even)
-    return np.concatenate((draws_odd, draws_even), axis=1)
+    return np.sort(np.concatenate((draws_odd, draws_even), axis=1), axis=1)
+
+
+def correlated_coefs_draws(sorted_freqs, c_max=1, lamb=0.4):
+    coefs = np.zeros(sorted_freqs.shape)
+    for i in range(sorted_freqs.shape[0]):
+        coefs[i, 0] = np.random.uniform(-c_max, c_max)
+        for j in range(1, sorted_freqs.shape[1]):
+            if sorted_freqs[i, j] % 2 == 0 and sorted_freqs[i, j] - sorted_freqs[i, j-1] == 1:
+                u = np.random.uniform(-c_max, c_max)
+                coefs[i, j] = (1 - lamb) * coefs[i, j-1] + lamb * u
+            else:
+                coefs[i, j] = np.random.uniform(-c_max, c_max)
+    return coefs
+
+
+
+
 
 
 
