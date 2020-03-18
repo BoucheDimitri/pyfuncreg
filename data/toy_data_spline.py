@@ -154,3 +154,19 @@ def get_toy_data_correlated(n_train):
     Ytest = ([np.expand_dims(Y[0][n], axis=1) for n in range(N_SAMPLES, N_SAMPLES + N_TEST)],
              [Y[1][n] for n in range(N_SAMPLES, N_SAMPLES + N_TEST)])
     return Xtrain, Ytrain, Xtest, Ytest
+
+
+def estimate_correlation(n_samples, n_freqs, f_max, c_max, alpha, lamb, seed):
+    freqs = correlated_freqs_draws(f_max, size=(n_samples, n_freqs), alpha=alpha, seed_state=seed)
+    coefs = correlated_coefs_draws(freqs, c_max=c_max, lamb=lamb, seed_state=seed)
+    ind_freqs = np.zeros((freqs.shape[0], (f_max // 2) * 2))
+    for i in range(freqs.shape[0]):
+        ind_freqs[i, freqs[i] - 1] = coefs[i]
+    cases = []
+    # TODO: PROBLEME D INDICE A RESOUDRE
+    for i in range(freqs.shape[0]):
+        for j in range(1, f_max // 2):
+            if ind_freqs[i, 2*j - 1] != 0 or ind_freqs[i, 2*j] != 0:
+                cases.append(ind_freqs[i, 2*j-1:2*j+1])
+    return cases
+
