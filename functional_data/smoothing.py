@@ -1,6 +1,7 @@
 import numpy as np
 from abc import ABC, abstractmethod
 from sklearn.linear_model import Ridge, Lasso
+from scipy import interpolate
 
 
 # ##################### Expanded regressions ###########################################################################
@@ -186,9 +187,7 @@ class LinearInterpSmoother(Smoother):
 
     @staticmethod
     def interp_function(xloc, xeval):
-        def func_interp(x):
-            return np.interp(x.squeeze(), xloc.squeeze(), xeval.squeeze())
-        return func_interp
+        return interpolate.interp1d(xloc.squeeze(), xeval.squeeze(), kind="linear", fill_value="extrapolate")
 
     def fit(self, Xlocs, Xobs):
         self.regressors = [LinearInterpSmoother.interp_function(Xlocs[i], Xobs[i]) for i in range(len(Xlocs))]
