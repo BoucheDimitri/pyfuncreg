@@ -176,8 +176,6 @@ class RegressionSmoother(Smoother):
         return np.array([reg.predict(locs) for reg in self.regressors])
 
 
-# TODO: Beware, extrapolation is performed using the last value, not linearily
-
 class LinearInterpSmoother(Smoother):
     """
     RegressionSmoother using linear interpolation

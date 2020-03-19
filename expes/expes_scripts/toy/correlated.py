@@ -12,14 +12,8 @@ path = os.getcwd()
 # Local imports
 from data import toy_data_spline
 from data import degradation
-from functional_regressors import kernels
-from model_eval import metrics
-from data import loading, processing
 from expes import generate_expes
-from functional_data import discrete_functional_data as disc_fd1
-from functional_regressors import triple_basis
 from model_eval import parallel_tuning
-from functional_data import basis
 
 # ############################### Config ###############################################################################
 # Path to the data
@@ -36,13 +30,12 @@ N_FOLDS = 5
 N_PROCS = 8
 
 # ############################### Regressor config #####################################################################
-# REGU = np.geomspace(1e-7, 1e-1, 100)
-REGU = [1e-4, 1e-3]
-N_SAMPLES = [10, 25, 50, 100, 200]
+REGU = np.geomspace(1e-8, 1, 200)
+N_SAMPLES = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100]
 KER_SIGMA = 20
 
-NOISE_INPUT = 0.07
-NOISE_OUTPUT = 0.02
+NOISE_INPUT = 0.1
+NOISE_OUTPUT = 0.05
 SEED_INPUT = 768
 SEED_OUTPUT = 456
 
@@ -71,11 +64,11 @@ if __name__ == '__main__':
         Xtrain_deg = degradation.add_noise_inputs(Xtrain, NOISE_INPUT, SEED_INPUT)
         Ytrain_deg = degradation.add_noise_outputs(Ytrain, NOISE_OUTPUT, SEED_OUTPUT)
         best_config_corr, best_result_corr, score_test_corr = parallel_tuning.parallel_tuning(
-            regs_corr, Xtrain_deg, Ytrain_deg, Xtest, Ytest, rec_path=rec_path,
+            regs_corr, Xtrain_deg, Ytrain_deg, Xtest, Ytest, rec_path=rec_path, key="corr_" + str(n_samples),
             configs=configs_corr, n_folds=N_FOLDS, n_procs=N_PROCS,
             input_indexing=INPUT_INDEXING, output_indexing=OUTPUT_INDEXING)
         best_config, best_result, score_test = parallel_tuning.parallel_tuning(
-            regs, Xtrain_deg, Ytrain_deg, Xtest, Ytest, rec_path=rec_path,
+            regs, Xtrain_deg, Ytrain_deg, Xtest, Ytest, rec_path=rec_path, key="non_corr_" + str(n_samples),
             configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS,
             input_indexing=INPUT_INDEXING, output_indexing=OUTPUT_INDEXING)
         scores_test_corr.append(score_test_corr)
