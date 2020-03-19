@@ -1,13 +1,14 @@
 import numpy as np
 import os
+import pickle
 import sys
 import pathlib
 
 # Execution path
-# exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
-# path = str(exec_path.parent.parent.parent)
-# sys.path.append(path)
-path = os.getcwd()
+exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
+path = str(exec_path.parent.parent.parent)
+sys.path.append(path)
+# path = os.getcwd()
 
 # Local imports
 from data import toy_data_spline
@@ -16,11 +17,8 @@ from expes import generate_expes
 from model_eval import parallel_tuning
 
 # ############################### Config ###############################################################################
-# Path to the data
-DATA_PATH = path + "/data/dataDTI/"
 # Record config
 OUTPUT_FOLDER = "toy"
-REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 EXPE_NAME = "correlated"
 # Shuffle seed
 SHUFFLE_SEED = 784
@@ -32,13 +30,13 @@ N_PROCS = 8
 # ############################### Regressor config #####################################################################
 REGU = np.geomspace(1e-8, 1, 200)
 N_SAMPLES = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100]
-TASKS_CORREL = [0.1, 0.2]
-# TASKS_CORREL = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
+# TASKS_CORREL = [0.1, 0.2]
+TASKS_CORREL = np.arange(0.1, 1, 0.05)
 # TASKS_CORREL = toy_data_spline.estimate_correlation()
 KER_SIGMA = 20
 
-NOISE_INPUT = 0
-NOISE_OUTPUT = 0
+NOISE_INPUT = 0.07
+NOISE_OUTPUT = 0.02
 SEED_INPUT = 768
 SEED_OUTPUT = 456
 
@@ -76,7 +74,9 @@ if __name__ == '__main__':
             input_indexing=INPUT_INDEXING, output_indexing=OUTPUT_INDEXING)
         scores_test_corr.append(score_test_corr)
         scores_test.append(score_test)
-        print(n_samples)
+
+    with open(rec_path + "/full.pkl", "wb") as out:
+        pickle.dump((N_SAMPLES, scores_test, scores_test_corr), out, pickle.HIGHEST_PROTOCOL)
 
 
 
