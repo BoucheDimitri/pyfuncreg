@@ -20,19 +20,18 @@ def toy_spline_kpl_corr(kernel_sigma, regu):
     # Scalar kernel
     gauss_ker = kernels.GaussianScalarKernel(kernel_sigma, normalize=False)
     # Operator valued kernel matrix
-    B = np.eye(func_dict.n_basis)
+    Adjmat = np.eye(func_dict.n_basis)
     upper_diag = np.diag(corr * np.ones(func_dict.n_basis - 1), k=1)
     lower_diag = np.diag(corr * np.ones(func_dict.n_basis - 1), k=-1)
-    B += upper_diag
-    B += lower_diag
-    regs = [kproj_learning.SeperableKPL(r, gauss_ker, B, func_dict, center_output=False) for r in regu]
+    Adjmat += upper_diag
+    Adjmat += lower_diag
+    output_matrix = ("graph", {"Adjmat": Adjmat})
+    regs = [kproj_learning.SeperableKPL(r, gauss_ker, output_matrix, func_dict, center_output=False) for r in regu]
     configs = configs_generation.configs_combinations({"regu": regu})
     return configs, regs
 
 
 def toy_spline_kpl(kernel_sigma, regu):
-    # Estimate correlation on a large sample because we cannot compute it explicitly
-    corr = toy_data_spline.estimate_correlation()
     # Spline dict
     locs_bounds = np.array([toy_data_spline.BOUNDS_FREQS[0], toy_data_spline.BOUNDS_FREQS[1]])
     domain = toy_data_spline.DOM_OUTPUT

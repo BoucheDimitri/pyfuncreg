@@ -131,9 +131,22 @@ class WaveletsLinear(OutputMatrix):
         return np.diag(freqs_penalization)
 
 
+class GraphRegularizer(OutputMatrix):
+
+    def __init__(self, Adjmat):
+        super().__init__()
+        self.Adjmat = Adjmat
+
+    def get_matrix(self, output_basis):
+        D = np.diag(np.sum(self.Adjmat, axis=1))
+        L = D - self.Adjmat
+        return np.linalg.pinv(L)
+
+
 # ########################### Generate #################################################################################
 
-SUPPORTED_DICT = {"pow": Pow, "wavelets_pow": WaveletsPow, "wavelets_linear": WaveletsLinear, "eye": Eye}
+SUPPORTED_DICT = {"pow": Pow, "wavelets_pow": WaveletsPow, "wavelets_linear": WaveletsLinear, "eye": Eye,
+                  "graph": GraphRegularizer}
 
 
 def generate_output_matrix(key, kwargs):
