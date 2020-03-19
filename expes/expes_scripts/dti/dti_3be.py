@@ -94,7 +94,7 @@ if __name__ == '__main__':
     # ############################# Full cross-validation experiment ###################################################
     if argv == "full":
         configs, regs = generate_expes.dti_3be_fourier(KER_SIGMA, REGU_GRID, CENTER_OUTPUT, FREQS_IN_GRID,
-                                                       FREQS_OUT_GRID,N_RFFS, RFFS_SEED, DOMAIN, DOMAIN)
+                                                       FREQS_OUT_GRID, N_RFFS, RFFS_SEED, DOMAIN, DOMAIN)
 
         best_config, best_result, score_test = parallel_tuning.parallel_tuning(
             regs, Xtrain_extended, Ytrain_extended, Xtest, Ytest, Xpred_train=Xtrain, Ypred_train=Ytrain,

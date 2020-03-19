@@ -2,9 +2,7 @@ import numpy as np
 
 from functional_data import smoothing
 from functional_data import fpca
-from functional_data.DEPRECATED import discrete_functional_data as disc_fd
-from functional_data import discrete_functional_data as disc_fd1
-from functional_data import functional_algebra
+from functional_data import discrete_functional_data as disc_fd
 
 
 class KernelAdditiveModel:
@@ -222,12 +220,12 @@ class KernelAdditiveModelBis:
         return inter_const * (1 / approx_space.shape[0]) * Y_evals.dot(Yfpca_evals.T)
 
     def fit(self, X, Y):
-        self.Ymean = disc_fd1.mean_func(*Y)
-        X_dg = disc_fd1.to_discrete_general(*X)
-        Y_dg = disc_fd1.to_discrete_general(*Y)
-        Ycentered = disc_fd1.center_discrete(*Y_dg, self.Ymean)
-        Ycentered_func = disc_fd1.to_function_linearinterp(*Ycentered)
-        Xfunc = disc_fd1.to_function_linearinterp(*X_dg)
+        self.Ymean = disc_fd.mean_func(*Y)
+        X_dg = disc_fd.to_discrete_general(*X)
+        Y_dg = disc_fd.to_discrete_general(*Y)
+        Ycentered = disc_fd.center_discrete(*Y_dg, self.Ymean)
+        Ycentered_func = disc_fd.to_function_linearinterp(*Ycentered)
+        Xfunc = disc_fd.to_function_linearinterp(*X_dg)
         self.fpca.fit(Ycentered_func)
         Yfpca = self.fpca.get_regressors(self.n_fpca)
         A_evals_in = self.compute_Aevals(Xfunc, Xfunc, self.kernel_in, self.kernel_eval, self.space_in, self.domain_in)
@@ -240,8 +238,8 @@ class KernelAdditiveModelBis:
         self.alpha = self.alpha.reshape((len(Xfunc), len(Yfpca)))
 
     def predict_evaluate(self, Xnew, locs):
-        Xnew_dg = disc_fd1.to_discrete_general(*Xnew)
-        Xfunc_new = disc_fd1.to_function_linearinterp(*Xnew_dg)
+        Xnew_dg = disc_fd.to_discrete_general(*Xnew)
+        Xfunc_new = disc_fd.to_function_linearinterp(*Xnew_dg)
         A_evals_in = self.compute_Aevals(self.Xfunc, Xfunc_new, self.kernel_in,
                                          self.kernel_eval, self.space_in, self.domain_in)
         A_evals_out = self.compute_Aout_pred(self.Yfpca, self.kernel_out,

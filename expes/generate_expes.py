@@ -2,11 +2,51 @@ import numpy as np
 from collections.abc import Iterable
 
 from model_eval import configs_generation
+from data import toy_data_spline
+from functional_data import basis
 from functional_regressors import kernels, kernel_projection_learning as kproj_learning, \
     triple_basis, kernel_additive, ovkernel_ridge, kernel_estimator
 
 
 # ############################### KPL ##################################################################################
+def toy_spline_kpl_corr(kernel_sigma, regu):
+    # Estimate correlation on a large sample because we cannot compute it explicitly
+    corr = toy_data_spline.estimate_correlation()
+    # Spline dict
+    locs_bounds = np.array([toy_data_spline.BOUNDS_FREQS[0], toy_data_spline.BOUNDS_FREQS[1]])
+    domain = toy_data_spline.DOM_OUTPUT
+    func_dict = basis.BSplineUniscaleBasis(domain, toy_data_spline.BOUNDS_FREQS[-1],
+                                           locs_bounds, width=toy_data_spline.WIDTH)
+    # Scalar kernel
+    gauss_ker = kernels.GaussianScalarKernel(kernel_sigma, normalize=False)
+    # Operator valued kernel matrix
+    B = np.eye(func_dict.n_basis)
+    upper_diag = np.diag(corr * np.ones(func_dict.n_basis - 1), k=1)
+    lower_diag = np.diag(corr * np.ones(func_dict.n_basis - 1), k=-1)
+    B += upper_diag
+    B += lower_diag
+    regs = [kproj_learning.SeperableKPL(r, gauss_ker, B, func_dict, center_output=False) for r in regu]
+    configs = configs_generation.configs_combinations({"regu": regu})
+    return configs, regs
+
+
+def toy_spline_kpl(kernel_sigma, regu):
+    # Estimate correlation on a large sample because we cannot compute it explicitly
+    corr = toy_data_spline.estimate_correlation()
+    # Spline dict
+    locs_bounds = np.array([toy_data_spline.BOUNDS_FREQS[0], toy_data_spline.BOUNDS_FREQS[1]])
+    domain = toy_data_spline.DOM_OUTPUT
+    func_dict = basis.BSplineUniscaleBasis(domain, toy_data_spline.BOUNDS_FREQS[-1],
+                                           locs_bounds, width=toy_data_spline.WIDTH)
+    # Scalar kernel
+    gauss_ker = kernels.GaussianScalarKernel(kernel_sigma, normalize=False)
+    # Operator valued kernel matrix
+    B = np.eye(func_dict.n_basis)
+    regs = [kproj_learning.SeperableKPL(r, gauss_ker, B, func_dict, center_output=False) for r in regu]
+    configs = configs_generation.configs_combinations({"regu": regu})
+    return configs, regs
+
+
 def dti_wavs_kpl(kernel_sigma, regu, center_output=True, decrease_base=1, pywt_name="db", moments=2,
                  init_dilat=1.0, translat=1.0, dilat=2, approx_level=5, add_constant=True,
                  domain=np.array([[0, 1]]), locs_bounds=np.array([[0, 1]])):

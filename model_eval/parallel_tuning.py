@@ -6,8 +6,8 @@ import psutil
 
 from model_eval import cross_validation
 from model_eval import metrics
-from functional_data.DEPRECATED import discrete_functional_data as disc_fd
-from functional_data import discrete_functional_data as disc_fd1
+from functional_data import discrete_functional_data as disc_fd
+
 
 def check_cpu_availability(min_nprocs=4, timeout_sleep=3, n_timeout=0, cpu_avail_thresh=30):
     """
@@ -73,21 +73,25 @@ def parallel_cross_vals(regs, cross_val, Xfit, Yfit, Xpred, Ypred, n_procs, rec_
 
     Parameters
     ----------
-    regs: list or tuple
+    regs : list or tuple
         The regressors to cross-validate, must implement the methods **fit** and **predict_evaluate_diff_locs**
-    Xtrain:
-        The input data corresponding to the mode in `cross_val`
-    Ytrain:
-        The output data
-    cross_val: model_eval.cross_validation.KfoldsCrossVal
+    Xfit :
+        The input data used for fitting
+    Yfit :
+        The output data used for fitting
+    Xpred :
+        The input data used for testing
+    Ypred :
+        The output data used for testing
+    cross_val : model_eval.cross_validation.KfoldsCrossVal
         The cross validation to run
-    n_procs: int
+    n_procs : int
         Number of processor to use for parallelization
-    rec_path: str, optional
+    rec_path : str, optional
         Path for recording incrementally the batches of results
-    key: str, optional
+    key : str, optional
         String added to the file name of the batch if `rec_path` is not None
-    configs: dict, optional
+    configs : dict, optional
         The dictionaries of configuration corresponding to the regressors in `regs`, if `rec_path` is not None,
         the corresponding dictionaries are saved along with the results
 
@@ -189,7 +193,7 @@ def parallel_tuning(regs, Xfit_train, Yfit_train, Xtest, Ytest, Xpred_train=None
     best_reg.fit(Xfit_train, Yfit_train)
     # Evaluate its performance on test set
     # Put in discrete_general form for testing
-    Ytest_dg = disc_fd1.to_discrete_general(*Ytest)
+    Ytest_dg = disc_fd.to_discrete_general(*Ytest)
     preds = best_reg.predict_evaluate_diff_locs(Xtest, Ytest_dg[0])
     score_test = metrics.mse(preds, Ytest_dg[1])
     # Return the results
