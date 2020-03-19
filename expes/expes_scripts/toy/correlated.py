@@ -32,6 +32,9 @@ N_PROCS = 8
 # ############################### Regressor config #####################################################################
 REGU = np.geomspace(1e-8, 1, 200)
 N_SAMPLES = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100]
+TASKS_CORREL = [0.1, 0.2]
+# TASKS_CORREL = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
+# TASKS_CORREL = toy_data_spline.estimate_correlation()
 KER_SIGMA = 20
 
 NOISE_INPUT = 0
@@ -53,7 +56,7 @@ if __name__ == '__main__':
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
     # ############################# Load the data ######################################################################
-    configs_corr, regs_corr = generate_expes.toy_spline_kpl_corr(KER_SIGMA, REGU)
+    configs_corr, regs_corr = generate_expes.toy_spline_kpl_corr(KER_SIGMA, REGU, TASKS_CORREL)
     configs, regs = generate_expes.toy_spline_kpl(KER_SIGMA, REGU)
 
     scores_test_corr = []

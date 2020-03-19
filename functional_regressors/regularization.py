@@ -143,10 +143,19 @@ class GraphRegularizer(OutputMatrix):
         return np.linalg.pinv(L)
 
 
+class ChainGraphRegularizer(GraphRegularizer):
+
+    def __init__(self, omega, dim):
+        Adjmat = np.eye(dim)
+        Adjmat += np.diag(omega * np.ones(dim - 1), k=1)
+        Adjmat -= np.diag(omega * np.ones(dim - 1), k=-1)
+        super().__init__(Adjmat)
+
+
 # ########################### Generate #################################################################################
 
 SUPPORTED_DICT = {"pow": Pow, "wavelets_pow": WaveletsPow, "wavelets_linear": WaveletsLinear, "eye": Eye,
-                  "graph": GraphRegularizer}
+                  "graph": GraphRegularizer, "chain_graph": ChainGraphRegularizer}
 
 
 def generate_output_matrix(key, kwargs):

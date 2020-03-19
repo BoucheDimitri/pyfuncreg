@@ -9,9 +9,7 @@ from functional_regressors import kernels, kernel_projection_learning as kproj_l
 
 
 # ############################### KPL ##################################################################################
-def toy_spline_kpl_corr(kernel_sigma, regu):
-    # Estimate correlation on a large sample because we cannot compute it explicitly
-    corr = toy_data_spline.estimate_correlation()
+def toy_spline_kpl_corr(kernel_sigma, regu, tasks_correl):
     # Spline dict
     locs_bounds = np.array([toy_data_spline.BOUNDS_FREQS[0], toy_data_spline.BOUNDS_FREQS[1]])
     domain = toy_data_spline.DOM_OUTPUT
@@ -20,14 +18,12 @@ def toy_spline_kpl_corr(kernel_sigma, regu):
     # Scalar kernel
     gauss_ker = kernels.GaussianScalarKernel(kernel_sigma, normalize=False)
     # Operator valued kernel matrix
-    Adjmat = np.eye(func_dict.n_basis)
-    upper_diag = np.diag(corr * np.ones(func_dict.n_basis - 1), k=1)
-    lower_diag = np.diag(corr * np.ones(func_dict.n_basis - 1), k=-1)
-    Adjmat += upper_diag
-    Adjmat += lower_diag
-    output_matrix = ("graph", {"Adjmat": Adjmat})
-    regs = [kproj_learning.SeperableKPL(r, gauss_ker, output_matrix, func_dict, center_output=False) for r in regu]
-    configs = configs_generation.configs_combinations({"regu": regu})
+    output_matrix_params = {"omega": tasks_correl, "dim": func_dict.n_basis}
+    output_matrices = configs_generation.subconfigs_combinations("chain_graph", output_matrix_params)
+    params = {"kernel": gauss_ker, "regu": regu,  "B": output_matrices, "basis_out": func_dict, "center_output": False}
+    configs = configs_generation.configs_combinations(params)
+    # Create list of regressors from that config
+    regs = [kproj_learning.SeperableKPL(**config) for config in configs]
     return configs, regs
 
 
