@@ -127,7 +127,7 @@ def parallel_cross_vals(regs, cross_val, Xfit, Yfit, Xpred, Ypred, n_procs, rec_
 def parallel_tuning(regs, Xfit_train, Yfit_train, Xtest, Ytest, Xpred_train=None, Ypred_train=None,
                     rec_path=None, key=None, configs=None, input_indexing="discrete_general",
                     output_indexing="discrete_general", n_folds=5, n_procs=None, min_nprocs=4,
-                    timeout_sleep=3, n_timeout=0, cpu_avail_thresh=70):
+                    timeout_sleep=3, n_timeout=10, cpu_avail_thresh=70):
     """
     Tuning of the regressors in parallel by cross-validation, selecting the best and fitting it on the train set,
     its score on test set is then computed.
