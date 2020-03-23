@@ -2,10 +2,23 @@ from abc import ABC, abstractmethod
 import numpy as np
 import functools
 from scipy.interpolate import BSpline
+from integration import integration
 import pywt
 
 from functional_data import smoothing
 from functional_data import fpca
+from functional_data import functional_algebra as falgebra
+
+
+def constant_function(domain):
+    norm_const = 1 / (domain[0, 1] - domain[0, 0])
+
+    def const_func(z):
+        if np.ndim(z) == 0:
+            return norm_const
+        else:
+            return norm_const * np.ones(z.shape[0])
+    return const_func
 
 
 # ######################## Abstract classes ############################################################################
@@ -33,6 +46,7 @@ class Basis(ABC):
     def __init__(self, n_basis, input_dim, domain):
         self.n_basis = n_basis
         self.input_dim = input_dim
+        self.gram_matrix = None
         self.domain = np.array(domain)
         if self.domain.ndim == 1:
             self.domain = np.expand_dims(self.domain, axis=0)
@@ -54,6 +68,10 @@ class Basis(ABC):
         array-like, shape=[n_input, n_basis]
             Matrix of evaluations of the inputs for all basis-function
         """
+        pass
+
+    @abstractmethod
+    def gram_matrix(self):
         pass
 
 
@@ -335,6 +353,9 @@ class FourierBasis(Basis):
             sin_atoms.append(functools.partial(FourierBasis.sin_atom, self.freqs[base], a, b))
         return cos_atoms + sin_atoms
 
+    def gram_matrix(self):
+        return np.eye(self.n_basis)
+
 
 class BSplineUniscaleBasis(Basis):
     """
@@ -346,7 +367,7 @@ class BSplineUniscaleBasis(Basis):
         number of basis to consider (regular repartition into locs_bounds
     locs_bounds: array-like, shape = [1, 2]
         the bounds for the peaks locations of the splines
-    width: float
+    width: int
         the width of the splines
     bounds_disc: bool
         should the knots outside of the domain be thresholded to account for possible out of domain discontinuity
@@ -360,13 +381,16 @@ class BSplineUniscaleBasis(Basis):
         self.order = order
         self.width = width
         self.knots = BSplineUniscaleBasis.knots_generator(domain, n_basis, locs_bounds, width, bounds_disc, order)
-        self.splines = [BSpline.basis_element(self.knots[i], extrapolate=False) for i in range(len(self.knots))]
+        self.splines = [falgebra.NoNanWrapper(BSpline.basis_element(self.knots[i], extrapolate=False))
+                        for i in range(len(self.knots))]
         self.add_constant = add_constant
         # Estimate the norms
         X = np.linspace(domain[0, 0], domain[0, 1], norm_eval)
         evals = np.array([spline(X) for spline in self.splines]).squeeze()
         evals[np.isnan(evals)] = 0
+        # TODO: souci avec les normes
         self.norms = [np.sqrt(np.mean(evals[i] ** 2)) for i in range(evals.shape[0])]
+        # self.norms = [np.sqrt(integration.func_scalar_prod(sp, sp, domain)[0]) for sp in self.splines]
         input_dim = 1
         super().__init__(n_basis + int(self.add_constant), input_dim, domain)
 
@@ -385,6 +409,18 @@ class BSplineUniscaleBasis(Basis):
                 knot[knot > domain[0, 1]] = domain[0, 1]
                 knots.append(knot)
         return knots
+
+    def gram_matrix(self):
+        gram_mat = np.zeros((self.n_basis, self.n_basis))
+        funcs = self.splines.copy()
+        if self.add_constant:
+            funcs.append(constant_function(self.domain))
+        for i in range(self.n_basis):
+            for j in range(i, self.n_basis):
+                esti_scalar = integration.func_scalar_prod(funcs[i], funcs[j], self.domain)
+                gram_mat[i, j] = (1 / (self.norms[i] * self.norms[j])) * esti_scalar[0]
+                gram_mat[j, i] = (1 / (self.norms[i] * self.norms[j])) * esti_scalar[0]
+        return gram_mat
 
     def compute_matrix(self, X):
         if X.ndim == 1:
@@ -495,6 +531,9 @@ class UniscaleCompactlySupported(Basis):
         else:
             return mat
 
+    def gram_matrix(self):
+        return np.eye(self.n_basis)
+
 
 class MultiscaleCompactlySupported(Basis):
     """
@@ -542,6 +581,9 @@ class MultiscaleCompactlySupported(Basis):
             evals.append(constant)
         return np.concatenate(evals, axis=1)
 
+    def gram_matrix(self):
+        return np.eye(self.n_basis)
+
 
 # ######################## Data-dependant bases ########################################################################
 
@@ -563,6 +605,9 @@ class FPCABasis(DataDependantBasis):
         for i in range(self.n_basis):
             mat[:, i] = funcs[i](X)
         return mat
+
+    def gram_matrix(self):
+        return np.eye(self.n_basis)
 
 
 # ######################## Basis generation ############################################################################

@@ -1,6 +1,16 @@
 import numpy as np
 
 
+class NoNanWrapper:
+
+    def __init__(self, func):
+        self.func = func
+
+    def __call__(self, x):
+        evals = self.func(x)
+        return np.nan_to_num(evals, nan=0)
+
+
 def mean_function(func_list):
     """
     Compute the mean function of a list of functions
@@ -78,3 +88,22 @@ def weighted_sum_function(coefs, func_list):
         evals = np.array([coefs[i] * func_list[i](x) for i in range(len(coefs))]).squeeze()
         return np.sum(evals, axis=0)
     return weighted_sum_func
+
+
+def product_function(func1, func2):
+    """
+    Compute the mean function of a list of functions
+
+    Parameters
+    ----------
+    func_list: iterable of functions
+        The functions
+
+    Returns
+    -------
+    function
+        The mean function
+    """
+    def prod_func(x):
+        return func1(x) * func2(x)
+    return prod_func

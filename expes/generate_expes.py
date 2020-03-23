@@ -14,7 +14,7 @@ def toy_spline_kpl_corr(kernel_sigma, regu, tasks_correl):
     locs_bounds = np.array([toy_data_spline.BOUNDS_FREQS[0], toy_data_spline.BOUNDS_FREQS[1]])
     domain = toy_data_spline.DOM_OUTPUT
     func_dict = basis.BSplineUniscaleBasis(domain, toy_data_spline.BOUNDS_FREQS[-1],
-                                           locs_bounds, width=toy_data_spline.WIDTH)
+                                           locs_bounds, width=toy_data_spline.WIDTH, add_constant=False)
     # Scalar kernel
     gauss_ker = kernels.GaussianScalarKernel(kernel_sigma, normalize=False)
     # Operator valued kernel matrix
@@ -32,7 +32,7 @@ def toy_spline_kpl(kernel_sigma, regu):
     locs_bounds = np.array([toy_data_spline.BOUNDS_FREQS[0], toy_data_spline.BOUNDS_FREQS[1]])
     domain = toy_data_spline.DOM_OUTPUT
     func_dict = basis.BSplineUniscaleBasis(domain, toy_data_spline.BOUNDS_FREQS[-1],
-                                           locs_bounds, width=toy_data_spline.WIDTH)
+                                           locs_bounds, width=toy_data_spline.WIDTH, add_constant=False)
     # Scalar kernel
     gauss_ker = kernels.GaussianScalarKernel(kernel_sigma, normalize=False)
     # Operator valued kernel matrix

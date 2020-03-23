@@ -100,7 +100,8 @@ class SeperableKPL(FunctionalRegressor):
         # return Yproj
         # Fit ovk ridge using those approximate projections
         # start_fitovk = perf_counter()
-        self.ovkridge = ovkernel_ridge.SeparableOVKRidge(self.regu, self.kernel, self.B)
+        gram_dict = self.basis_out.gram_matrix()
+        self.ovkridge = ovkernel_ridge.SeparableOVKRidge(self.regu, self.kernel, gram_dict.dot(self.B))
         self.ovkridge.fit(X, Yproj, K=K)
         # end_fitovk = perf_counter()
         # print("Fitting the OVK Ridge: " + str(end_fitovk - start_fitovk))
