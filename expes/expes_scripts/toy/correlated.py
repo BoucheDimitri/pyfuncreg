@@ -18,7 +18,7 @@ from model_eval import parallel_tuning
 
 # ############################### Config ###############################################################################
 # Record config
-OUTPUT_FOLDER = "toy_correlated"
+OUTPUT_FOLDER = "toy_correlated2"
 # Shuffle seed
 SHUFFLE_SEED = 784
 INPUT_INDEXING = "array"
