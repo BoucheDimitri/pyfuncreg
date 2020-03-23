@@ -148,7 +148,7 @@ class ChainGraphRegularizer(GraphRegularizer):
     def __init__(self, omega, dim):
         Adjmat = np.eye(dim)
         Adjmat += np.diag(omega * np.ones(dim - 1), k=1)
-        Adjmat -= np.diag(omega * np.ones(dim - 1), k=-1)
+        Adjmat += np.diag(omega * np.ones(dim - 1), k=-1)
         super().__init__(Adjmat)
 
 
