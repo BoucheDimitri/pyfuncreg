@@ -25,8 +25,8 @@ COEFS_ = functools.partial(np.random.normal, 0, 1)
 # Correlated version params
 F_MAX = 11
 C_MAX = 1
-ALPHA = 0.8
-LAMB = 0.5
+ALPHA = 0.9
+LAMB = 0.1
 # ######################################################################################################################
 
 
@@ -172,3 +172,6 @@ def estimate_correlation(n_samples=20000, n_freqs=N_FREQS, f_max=F_MAX, c_max=C_
     covmat = np.cov(cases.T)
     return covmat[1, 0] / (np.sqrt(covmat[0, 0]) * np.sqrt(covmat[1, 1]))
 
+def plot_data_toy(Xtrain, Ytrain, n=4):
+    #TODO : finish this
+    pass

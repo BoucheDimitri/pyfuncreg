@@ -19,7 +19,8 @@ def toy_spline_kpl_corr(kernel_sigma, regu, tasks_correl):
     gauss_ker = kernels.GaussianScalarKernel(kernel_sigma, normalize=False)
     # Operator valued kernel matrix
     output_matrix_params = {"omega": tasks_correl, "dim": func_dict.n_basis}
-    output_matrices = configs_generation.subconfigs_combinations("chain_graph", output_matrix_params)
+    # output_matrices = configs_generation.subconfigs_combinations("chain_graph", output_matrix_params)
+    output_matrices = configs_generation.subconfigs_combinations("neighbors_correl", output_matrix_params)
     params = {"kernel": gauss_ker, "regu": regu,  "B": output_matrices, "basis_out": func_dict, "center_output": False}
     configs = configs_generation.configs_combinations(params)
     # Create list of regressors from that config

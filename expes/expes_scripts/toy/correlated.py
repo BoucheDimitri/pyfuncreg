@@ -5,10 +5,10 @@ import sys
 import pathlib
 
 # Execution path
-exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
-path = str(exec_path.parent.parent.parent)
-sys.path.append(path)
-# path = os.getcwd()
+# exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
+# path = str(exec_path.parent.parent.parent)
+# sys.path.append(path)
+path = os.getcwd()
 
 # Local imports
 from data import toy_data_spline
@@ -24,21 +24,27 @@ SHUFFLE_SEED = 784
 INPUT_INDEXING = "array"
 OUTPUT_INDEXING = "discrete_general"
 N_FOLDS = 5
-N_PROCS = None
-MIN_PROCS = 32
-# N_PROCS = 8
-# MIN_PROCS = None
+# N_PROCS = None
+# MIN_PROCS = 32
+N_PROCS = 7
+MIN_PROCS = None
 
 # ############################### Regressor config #####################################################################
-REGU = np.geomspace(1e-8, 1, 300)
-N_SAMPLES = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 150, 200, 300, 400, 500]
+# REGU = np.geomspace(1e-8, 1, 300)
+REGU = np.geomspace(1e-8, 1, 100)
+# N_SAMPLES = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 150, 200, 300, 400, 500]
+N_SAMPLES = [5, 10, 15, 20, 25, 50, 100]
 # TASKS_CORREL = [0.1, 0.2]
-TASKS_CORREL = np.arange(0.1, 1, 0.05)
+# TASKS_CORREL = np.arange(0.1, 1, 0.05)
 # TASKS_CORREL = toy_data_spline.estimate_correlation()
+TASKS_CORREL = 0.9
+# TASKS_CORREL = 0L
 KER_SIGMA = 20
 
-NOISE_INPUT = 0.07
-NOISE_OUTPUT = 0.02
+# NOISE_INPUT = 0.07
+# NOISE_OUTPUT = 0.02
+NOISE_INPUT = 0.1
+NOISE_OUTPUT = 0.04
 SEED_INPUT = 768
 SEED_OUTPUT = 456
 

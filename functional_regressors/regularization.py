@@ -143,6 +143,29 @@ class GraphRegularizer(OutputMatrix):
         return np.linalg.pinv(L)
 
 
+class NeighborsCorrelRegularizer(OutputMatrix):
+
+    # def __init__(self, omega, dim):
+    #     Adjmat = np.eye(dim)
+    #     Adjmat += np.diag(omega * np.ones(dim - 1), k=1)
+    #     Adjmat += np.diag(omega * np.ones(dim - 1), k=-1)
+    #     self.Adjmat = Adjmat
+    #     super().__init__()
+    #
+    # def get_matrix(self, output_basis):
+    #     return self.Adjmat
+
+    def __init__(self, omega, dim):
+        Adjmat = np.eye(dim)
+        Adjmat += np.diag(omega * np.ones(dim - 1), k=1)
+        Adjmat += np.diag(omega * np.ones(dim - 1), k=-1)
+        self.Adjmat = Adjmat
+        super().__init__()
+
+    def get_matrix(self, output_basis):
+        return np.linalg.inv(self.Adjmat)
+
+
 class ChainGraphRegularizer(GraphRegularizer):
 
     def __init__(self, omega, dim):
@@ -155,7 +178,7 @@ class ChainGraphRegularizer(GraphRegularizer):
 # ########################### Generate #################################################################################
 
 SUPPORTED_DICT = {"pow": Pow, "wavelets_pow": WaveletsPow, "wavelets_linear": WaveletsLinear, "eye": Eye,
-                  "graph": GraphRegularizer, "chain_graph": ChainGraphRegularizer}
+                  "graph": GraphRegularizer, "chain_graph": ChainGraphRegularizer, "neighbors_correl": NeighborsCorrelRegularizer}
 
 
 def generate_output_matrix(key, kwargs):

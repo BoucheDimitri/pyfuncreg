@@ -71,7 +71,7 @@ class Basis(ABC):
         pass
 
     @abstractmethod
-    def gram_matrix(self):
+    def get_gram_matrix(self):
         pass
 
 
@@ -353,7 +353,7 @@ class FourierBasis(Basis):
             sin_atoms.append(functools.partial(FourierBasis.sin_atom, self.freqs[base], a, b))
         return cos_atoms + sin_atoms
 
-    def gram_matrix(self):
+    def get_gram_matrix(self):
         return np.eye(self.n_basis)
 
 
@@ -384,15 +384,11 @@ class BSplineUniscaleBasis(Basis):
         self.splines = [falgebra.NoNanWrapper(BSpline.basis_element(self.knots[i], extrapolate=False))
                         for i in range(len(self.knots))]
         self.add_constant = add_constant
-        # Estimate the norms
-        X = np.linspace(domain[0, 0], domain[0, 1], norm_eval)
-        evals = np.array([spline(X) for spline in self.splines]).squeeze()
-        evals[np.isnan(evals)] = 0
-        # TODO: souci avec les normes
-        self.norms = [np.sqrt(np.mean(evals[i] ** 2)) for i in range(evals.shape[0])]
+        self.norms = [np.sqrt(integration.func_scalar_prod(sp, sp, domain)) for sp in self.splines]
         # self.norms = [np.sqrt(integration.func_scalar_prod(sp, sp, domain)[0]) for sp in self.splines]
         input_dim = 1
         super().__init__(n_basis + int(self.add_constant), input_dim, domain)
+        self.gram_mat = self.gram_matrix()
 
     @staticmethod
     def knots_generator(domain, n_basis, locs_bounds, width=1, bounds_disc=False, order=3):
@@ -418,9 +414,14 @@ class BSplineUniscaleBasis(Basis):
         for i in range(self.n_basis):
             for j in range(i, self.n_basis):
                 esti_scalar = integration.func_scalar_prod(funcs[i], funcs[j], self.domain)
-                gram_mat[i, j] = (1 / (self.norms[i] * self.norms[j])) * esti_scalar[0]
-                gram_mat[j, i] = (1 / (self.norms[i] * self.norms[j])) * esti_scalar[0]
+                gram_mat[i, j] = (1 / (self.norms[i] * self.norms[j])) * esti_scalar
+                gram_mat[j, i] = (1 / (self.norms[i] * self.norms[j])) * esti_scalar
+                # gram_mat[i, j] = esti_scalar[0]
+                # gram_mat[j, i] = esti_scalar[0]
         return gram_mat
+
+    def get_gram_matrix(self):
+        return self.gram_mat
 
     def compute_matrix(self, X):
         if X.ndim == 1:
@@ -428,6 +429,7 @@ class BSplineUniscaleBasis(Basis):
         else:
             Xreshaped = X
         evals = [(1 / self.norms[i]) * self.splines[i](Xreshaped) for i in range(len(self.norms))]
+        # evals = [sp(Xreshaped) for sp in self.splines]
         constant = np.ones((Xreshaped.shape[0], 1))
         if self.add_constant:
             evals.append(constant)
@@ -531,7 +533,7 @@ class UniscaleCompactlySupported(Basis):
         else:
             return mat
 
-    def gram_matrix(self):
+    def get_gram_matrix(self):
         return np.eye(self.n_basis)
 
 
@@ -581,7 +583,7 @@ class MultiscaleCompactlySupported(Basis):
             evals.append(constant)
         return np.concatenate(evals, axis=1)
 
-    def gram_matrix(self):
+    def get_gram_matrix(self):
         return np.eye(self.n_basis)
 
 
@@ -606,7 +608,7 @@ class FPCABasis(DataDependantBasis):
             mat[:, i] = funcs[i](X)
         return mat
 
-    def gram_matrix(self):
+    def get_gram_matrix(self):
         return np.eye(self.n_basis)
 
 

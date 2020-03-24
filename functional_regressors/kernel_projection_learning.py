@@ -1,10 +1,88 @@
 import numpy as np
+from slycot import sb04qd
 
 from functional_regressors import ovkernel_ridge
 from functional_data import basis
 from functional_regressors import regularization
-from functional_data import discrete_functional_data as disc_fd1
+from functional_data import discrete_functional_data as disc_fd
 from functional_regressors.functional_regressor import FunctionalRegressor
+
+
+class SeparableSubridgeSVD:
+    """
+    Ovk ridge with separable kernel using Sylvester solver
+
+    Parameters
+    ----------
+    regu : float
+        The regularization parameter
+    kernel : callable
+        Must support being called on two array_like objects X0, X1. If len(X0) = n_samples0 and len(X1) = n_samples1,
+        must returns an array_like object with shape = [n_samples_x1, n_samples_x0].
+    B : array_like, shape = [n_output_features, n_output_features]
+        The matrix encoding the similarity between the outputs
+    """
+    def __init__(self, kernel, B, phi_adj_phi):
+        self.kernel = kernel
+        self.B = B
+        self.phi_adj_phi = phi_adj_phi
+        self.K = None
+        self.alpha = None
+        self.X = None
+
+    def fit(self, X, Y, K=None):
+        self.X = X
+        if K is not None:
+            self.K = K
+        else:
+            self.K = self.kernel(X, X)
+        n = len(X)
+        m = len(self.B)
+        self.alpha = sb04qd(n, m, self.K / (self.regu * n), (self.phi_adj_phi.dot(self.B)).T, Y / (self.regu * n))
+
+    def predict(self, Xnew):
+        Knew = self.kernel(self.X, Xnew)
+        preds = (self.B.dot(self.alpha.T.dot(Knew.T))).T
+        return preds
+
+
+class SeparableSubridgeSylv:
+    """
+    Ovk ridge with separable kernel using Sylvester solver
+
+    Parameters
+    ----------
+    regu : float
+        The regularization parameter
+    kernel : callable
+        Must support being called on two array_like objects X0, X1. If len(X0) = n_samples0 and len(X1) = n_samples1,
+        must returns an array_like object with shape = [n_samples_x1, n_samples_x0].
+    B : array_like, shape = [n_output_features, n_output_features]
+        The matrix encoding the similarity between the outputs
+    """
+    def __init__(self, regu, kernel, B, phi_adj_phi):
+        self.kernel = kernel
+        self.B = B
+        self.phi_adj_phi = phi_adj_phi
+        self.regu = regu
+        self.K = None
+        self.alpha = None
+        self.X = None
+
+    def fit(self, X, Y, K=None):
+        self.X = X
+        if K is not None:
+            self.K = K
+        else:
+            self.K = self.kernel(X, X)
+        n = len(X)
+        m = len(self.B)
+        self.alpha = sb04qd(n, m, self.K / (self.regu * n), self.phi_adj_phi.dot(self.B), Y / (self.regu * n))
+
+    def predict(self, Xnew):
+        Knew = self.kernel(self.X, Xnew)
+        preds = (self.B.dot(self.alpha.T.dot(Knew.T))).T
+        return preds
 
 
 class SeperableKPL(FunctionalRegressor):
@@ -59,12 +137,12 @@ class SeperableKPL(FunctionalRegressor):
     def fit(self, X, Y, K=None):
         # Center output functions if relevant
         # start_center = perf_counter()
-        self.Ymean_func = disc_fd1.mean_func(*Y)
+        self.Ymean_func = disc_fd.mean_func(*Y)
         if self.center_output:
-            Ycentered = disc_fd1.center_discrete(*Y, self.Ymean_func)
-            Ycentered = disc_fd1.to_discrete_general(*Ycentered)
+            Ycentered = disc_fd.center_discrete(*Y, self.Ymean_func)
+            Ycentered = disc_fd.to_discrete_general(*Ycentered)
         else:
-            Ycentered = disc_fd1.to_discrete_general(*Y)
+            Ycentered = disc_fd.to_discrete_general(*Y)
         # end_center = perf_counter()
         # print("Centering of the data perf :" + str(end_center - start_center))
         # Memorize training input data
@@ -100,8 +178,9 @@ class SeperableKPL(FunctionalRegressor):
         # return Yproj
         # Fit ovk ridge using those approximate projections
         # start_fitovk = perf_counter()
-        gram_dict = self.basis_out.gram_matrix()
-        self.ovkridge = ovkernel_ridge.SeparableOVKRidge(self.regu, self.kernel, gram_dict.dot(self.B))
+        phi_adj_phi = self.basis_out.get_gram_matrix()
+        # phi_adj_phi = np.eye(self.basis_out.n_basis)
+        self.ovkridge = SeparableSubridgeSylv(self.regu, self.kernel, self.B, phi_adj_phi)
         self.ovkridge.fit(X, Yproj, K=K)
         # end_fitovk = perf_counter()
         # print("Fitting the OVK Ridge: " + str(end_fitovk - start_fitovk))
