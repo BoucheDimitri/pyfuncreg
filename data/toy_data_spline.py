@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.interpolate import BSpline
 import functools
+import matplotlib.pyplot as plt
 
 from functional_data import functional_algebra
 from functional_data import basis
@@ -156,6 +157,9 @@ def get_toy_data_correlated(n_train):
     return Xtrain, Ytrain, Xtest, Ytest
 
 
+
+
+
 def estimate_correlation(n_samples=20000, n_freqs=N_FREQS, f_max=F_MAX, c_max=C_MAX,
                          alpha=ALPHA, lamb=LAMB, seed=SEED_TOY):
     freqs = correlated_freqs_draws(f_max, size=(n_samples, n_freqs), alpha=alpha, seed_state=seed)
@@ -172,6 +176,13 @@ def estimate_correlation(n_samples=20000, n_freqs=N_FREQS, f_max=F_MAX, c_max=C_
     covmat = np.cov(cases.T)
     return covmat[1, 0] / (np.sqrt(covmat[0, 0]) * np.sqrt(covmat[1, 1]))
 
-def plot_data_toy(Xtrain, Ytrain, n=4):
-    #TODO : finish this
-    pass
+
+def plot_data_toy(Xtrain, Ytrain, n_samples, div=2):
+    locs_input = np.linspace(DOM_INPUT[0, 0], DOM_INPUT[0, 1], N_LOCS_INPUT)
+    locs_output = np.linspace(DOM_OUTPUT[0, 0], DOM_OUTPUT[0, 1], N_LOCS_OUTPUT)
+    fig, axes = plt.subplots(nrows=n_samples // div, ncols=2 * div)
+    for i in range(n_samples):
+        row = i % (n_samples // div)
+        col = 2 * (i // (n_samples // div))
+        axes[row, col].plot(locs_input, Xtrain[i])
+        axes[row, col + 1].plot(locs_output, Ytrain[1][i])

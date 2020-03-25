@@ -22,13 +22,16 @@ class SeparableSubridgeSVD:
     B : array_like, shape = [n_output_features, n_output_features]
         The matrix encoding the similarity between the outputs
     """
-    def __init__(self, kernel, B, phi_adj_phi):
+    def __init__(self, regu, kernel, B, phi_adj_phi):
         self.kernel = kernel
         self.B = B
         self.phi_adj_phi = phi_adj_phi
         self.K = None
         self.alpha = None
         self.X = None
+        self.v, self.V = None, None
+        self.u, self.U = None, None
+        self.regu = regu
 
     def fit(self, X, Y, K=None):
         self.X = X
@@ -36,14 +39,23 @@ class SeparableSubridgeSVD:
             self.K = K
         else:
             self.K = self.kernel(X, X)
+        self.v, self.V = np.linalg.eigh(self.phi_adj_phi.dot(self.B))
+        self.u, self.U = np.linalg.eigh(self.K)
+        self.Ytilde = Y.dot(self.V)
         n = len(X)
         m = len(self.B)
-        self.alpha = sb04qd(n, m, self.K / (self.regu * n), (self.phi_adj_phi.dot(self.B)).T, Y / (self.regu * n))
+        alpha_tilde = np.zeros((n, m))
+        regus = self.regu * n / self.v
+        # regus = self.regu / self.v
+        for i in range(m):
+            alpha_tilde[:, i] = self.U.dot(np.diag(1 / (self.u + regus[i]))).dot(self.U.T).dot(self.Ytilde[:, i]) / self.v[i]
+        self.alpha = (self.V.dot(alpha_tilde.T)).T
 
     def predict(self, Xnew):
         Knew = self.kernel(self.X, Xnew)
         preds = (self.B.dot(self.alpha.T.dot(Knew.T))).T
         return preds
+
 
 
 class SeparableSubridgeSylv:
@@ -181,6 +193,8 @@ class SeperableKPL(FunctionalRegressor):
         phi_adj_phi = self.basis_out.get_gram_matrix()
         # phi_adj_phi = np.eye(self.basis_out.n_basis)
         self.ovkridge = SeparableSubridgeSylv(self.regu, self.kernel, self.B, phi_adj_phi)
+        # self.ovkridge = SeparableSubridgeSVD(self.regu, self.kernel, self.B, phi_adj_phi)
+        # return self.ovkridge, Yproj
         self.ovkridge.fit(X, Yproj, K=K)
         # end_fitovk = perf_counter()
         # print("Fitting the OVK Ridge: " + str(end_fitovk - start_fitovk))
