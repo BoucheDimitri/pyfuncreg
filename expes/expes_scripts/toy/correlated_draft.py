@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import sys
 import pathlib
 import importlib
+import time
 
 # Execution path
 # exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
@@ -60,6 +61,7 @@ configs, regs = generate_expes.toy_spline_kpl(KER_SIGMA, REGU)
 scores_test_corr = []
 scores_test = []
 
+start = time.perf_counter()
 for n_samples in N_SAMPLES:
     Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data_correlated(n_samples)
     Xtrain_deg = degradation.add_noise_inputs(Xtrain, NOISE_INPUT, SEED_INPUT)
@@ -72,7 +74,8 @@ for n_samples in N_SAMPLES:
         min_nprocs=MIN_PROCS, input_indexing=INPUT_INDEXING, output_indexing=OUTPUT_INDEXING)
     scores_test_corr.append(score_test_corr)
     scores_test.append(score_test)
-
+end = time.perf_counter()
+print(end - start)
 
 
 # regtest = regs[10]
@@ -112,11 +115,16 @@ for i in range(4):
 
 
 
+import time
 
+start = time.perf_counter()
+best_reg_corr.fit(Xtrain, Ytrain)
+end = time.perf_counter()
+print(end - start)
 
-reg_test = regs_corr[10]
-
-reg_test.fit(Xtrain, Ytrain)
-
+start = time.perf_counter()
+best_reg_corr_svd.fit(Xtrain, Ytrain)
+end = time.perf_counter()
+print(end - start)
 
 
