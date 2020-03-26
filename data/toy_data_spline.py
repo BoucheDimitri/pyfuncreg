@@ -43,6 +43,10 @@ def sin_atom(a):
     return funca
 
 
+def gaussian_func(x, mu=0, sigma=0.1):
+    return (1 / (np.sqrt(2 * np.pi) * sigma)) * np.exp(- (x - mu) ** 2 / (2 * sigma ** 2))
+
+
 def correlated_freqs_draws(f_max, size, alpha=0.8, seed_state=784):
     n_samples = size[0]
     n_freqs = size[1]
@@ -157,9 +161,6 @@ def get_toy_data_correlated(n_train):
     return Xtrain, Ytrain, Xtest, Ytest
 
 
-
-
-
 def estimate_correlation(n_samples=20000, n_freqs=N_FREQS, f_max=F_MAX, c_max=C_MAX,
                          alpha=ALPHA, lamb=LAMB, seed=SEED_TOY):
     freqs = correlated_freqs_draws(f_max, size=(n_samples, n_freqs), alpha=alpha, seed_state=seed)
@@ -175,6 +176,35 @@ def estimate_correlation(n_samples=20000, n_freqs=N_FREQS, f_max=F_MAX, c_max=C_
     cases = np.array(cases)
     covmat = np.cov(cases.T)
     return covmat[1, 0] / (np.sqrt(covmat[0, 0]) * np.sqrt(covmat[1, 1]))
+
+
+# TODO : finish this
+def generate_toy_spline_correlated2(n_samples, dom_input=np.array([[0, 2*np.pi]]),
+                                    dom_output=np.array([[0, 4]]), n_locs_input, n_locs_output,
+                                    alpha=0.2, width=2, sigma=0.1, seed_state=784):
+    locs_input = np.linspace(dom_input[0, 0], dom_input[0, 1], n_locs_input)
+    locs_output = np.linspace(dom_output[0, 0], dom_output[0, 1], n_locs_output)
+    random_state = np.random.RandomState(seed_state)
+    a = random_state.uniform(0, 1, n_samples)
+    b = random_state.uniform(0, 1, n_samples)
+    c = random_state.uniform(0, 1, n_samples)
+    mus = (0.4, 0.7)
+    freqs = (1, 2, 3)
+    mats_input = np.kron(np.expand_dims(a, axis=1), np.expand_dims(np.sin(locs_input), axis=0))
+    mats_input += np.kron(np.expand_dims(b, axis=1), np.expand_dims(np.sin(2 * locs_input), axis=0))
+    mats_input += np.kron(np.expand_dims(c, axis=1), np.expand_dims(np.sin(3 * locs_input), axis=0))
+    splines_basis = basis.BasisFromSmoothFunctions([centered_cubic_spline(freq, width) for freq in freqs], 1, dom_output)
+    ima = np.sin(2 * np.pi * a)
+    imb = gaussian_func(b, mus[0], sigma)
+    imc = gaussian_func(c, mus[1], sigma)
+    coefs0 = ima
+    coefs1 = ima - alpha * imb
+    coefs2 = ima + alpha * imc
+    smooth_out = [functional_algebra.weighted_sum_function((coefs0[n], coefs1[n], coefs2[n]), splines_basis)
+                  for n in range(n_samples)]
+    Y = ([locs_output.copy() for i in range(n_samples)], [func(locs_output) for func in smooth_out])
+    return mats_input, Y
+
 
 
 def plot_data_toy(Xtrain, Ytrain, n_samples, div=2):
