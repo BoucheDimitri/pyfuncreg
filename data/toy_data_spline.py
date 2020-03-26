@@ -178,9 +178,8 @@ def estimate_correlation(n_samples=20000, n_freqs=N_FREQS, f_max=F_MAX, c_max=C_
     return covmat[1, 0] / (np.sqrt(covmat[0, 0]) * np.sqrt(covmat[1, 1]))
 
 
-# TODO : finish this
-def generate_toy_spline_correlated2(n_samples, dom_input=np.array([[0, 2*np.pi]]),
-                                    dom_output=np.array([[0, 4]]), n_locs_input, n_locs_output,
+def generate_toy_spline_correlated2(n_samples, dom_input=np.array([[0, 2*np.pi]]), dom_output=np.array([[0, 4]]),
+                                    n_locs_input=N_LOCS_INPUT, n_locs_output=N_LOCS_OUTPUT,
                                     alpha=0.2, width=2, sigma=0.1, seed_state=784):
     locs_input = np.linspace(dom_input[0, 0], dom_input[0, 1], n_locs_input)
     locs_output = np.linspace(dom_output[0, 0], dom_output[0, 1], n_locs_output)
