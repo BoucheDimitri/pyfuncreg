@@ -166,6 +166,17 @@ class NeighborsCorrelRegularizer(OutputMatrix):
         return np.linalg.inv(self.Adjmat)
 
 
+class AllRelated(OutputMatrix):
+
+    def __init__(self, omega):
+        super().__init__()
+        self.omega = omega
+
+    def get_matrix(self, output_basis):
+        return (1 - self.omega) * np.eye(output_basis.n_basis) \
+               + self.omega * np.ones((output_basis.n_basis, output_basis.n_basis))
+
+
 class ChainGraphRegularizer(GraphRegularizer):
 
     def __init__(self, omega, dim):
@@ -178,7 +189,8 @@ class ChainGraphRegularizer(GraphRegularizer):
 # ########################### Generate #################################################################################
 
 SUPPORTED_DICT = {"pow": Pow, "wavelets_pow": WaveletsPow, "wavelets_linear": WaveletsLinear, "eye": Eye,
-                  "graph": GraphRegularizer, "chain_graph": ChainGraphRegularizer, "neighbors_correl": NeighborsCorrelRegularizer}
+                  "graph": GraphRegularizer, "chain_graph": ChainGraphRegularizer,
+                  "neighbors_correl": NeighborsCorrelRegularizer, "all_related": AllRelated}
 
 
 def generate_output_matrix(key, kwargs):

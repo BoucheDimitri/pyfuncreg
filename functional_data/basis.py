@@ -375,7 +375,7 @@ class BSplineUniscaleBasis(Basis):
         the order of the spline, 3 is for cubic spline for instance.
     """
     def __init__(self, domain, n_basis, locs_bounds, width=1.0, bounds_disc=False,
-                 order=3, norm_eval=500, add_constant=True):
+                 order=3, add_constant=True):
         self.locs_bounds = locs_bounds
         self.bounds_disc = bounds_disc
         self.order = order

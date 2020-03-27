@@ -28,6 +28,42 @@ def toy_spline_kpl_corr(kernel_sigma, regu, tasks_correl):
     return configs, regs
 
 
+def toy_spline_kpl_corr2(kernel_sigma, regu, tasks_correl):
+    # Spline dict
+    locs_bounds = np.array([toy_data_spline.FREQS[0], toy_data_spline.FREQS[-1]])
+    freqs_bounds = toy_data_spline.FREQS[0], toy_data_spline.FREQS[-1]
+    width = toy_data_spline.WIDTH
+    domain = np.expand_dims(np.array([freqs_bounds[0] - width/2, freqs_bounds[1] + width/2]), axis=0)
+    func_dict = basis.BSplineUniscaleBasis(domain, freqs_bounds[1], locs_bounds, width=width, add_constant=False)
+    # Scalar kernel
+    gauss_ker = kernels.GaussianScalarKernel(kernel_sigma, normalize=False)
+    # Operator valued kernel matrix
+    output_matrix_params = {"omega": tasks_correl}
+    # output_matrices = configs_generation.subconfigs_combinations("chain_graph", output_matrix_params)
+    output_matrices = configs_generation.subconfigs_combinations("all_related", output_matrix_params)
+    params = {"kernel": gauss_ker, "regu": regu,  "B": output_matrices, "basis_out": func_dict, "center_output": False}
+    configs = configs_generation.configs_combinations(params)
+    # Create list of regressors from that config
+    regs = [kproj_learning.SeperableKPL(**config) for config in configs]
+    return configs, regs
+
+
+def toy_spline_kpl2(kernel_sigma, regu):
+    # Spline dict
+    locs_bounds = np.array([toy_data_spline.FREQS[0], toy_data_spline.FREQS[-1]])
+    freqs_bounds = toy_data_spline.FREQS[0], toy_data_spline.FREQS[-1]
+    width = toy_data_spline.WIDTH
+    domain = np.expand_dims(np.array([freqs_bounds[0] - width/2, freqs_bounds[1] + width/2]), axis=0)
+    func_dict = basis.BSplineUniscaleBasis(domain, freqs_bounds[1], locs_bounds, width=width, add_constant=False)
+    # Scalar kernel
+    gauss_ker = kernels.GaussianScalarKernel(kernel_sigma, normalize=False)
+    # Operator valued kernel matrix
+    B = np.eye(func_dict.n_basis)
+    regs = [kproj_learning.SeperableKPL(r, gauss_ker, B, func_dict, center_output=False) for r in regu]
+    configs = configs_generation.configs_combinations({"regu": regu})
+    return configs, regs
+
+
 def toy_spline_kpl(kernel_sigma, regu):
     # Spline dict
     locs_bounds = np.array([toy_data_spline.BOUNDS_FREQS[0], toy_data_spline.BOUNDS_FREQS[1]])

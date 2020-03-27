@@ -28,6 +28,12 @@ F_MAX = 11
 C_MAX = 1
 ALPHA = 0.9
 LAMB = 0.1
+
+# Correlated 2 version params
+ALPHA2 = 0.2
+FREQS = (1, 2, 3, 4)
+MUS = (0.1, 0.4, 0.7)
+SIGMA = 0.2
 # ######################################################################################################################
 
 
@@ -178,40 +184,65 @@ def estimate_correlation(n_samples=20000, n_freqs=N_FREQS, f_max=F_MAX, c_max=C_
     return covmat[1, 0] / (np.sqrt(covmat[0, 0]) * np.sqrt(covmat[1, 1]))
 
 
-def generate_toy_spline_correlated2(n_samples, dom_input=np.array([[0, 2*np.pi]]), dom_output=np.array([[0, 4]]),
-                                    n_locs_input=N_LOCS_INPUT, n_locs_output=N_LOCS_OUTPUT,
-                                    alpha=0.2, width=2, sigma=0.1, seed_state=784):
+def generate_toy_spline_correlated2(n_samples, n_locs_input=N_LOCS_INPUT, n_locs_output=N_LOCS_OUTPUT,
+                                    freqs=(1, 2, 3), mus=(0.4, 0.7), alpha=0.2, width=2,
+                                    sigma=0.1, seed_state=784):
+    dom_output = np.expand_dims(np.array([freqs[0] - width / 2, freqs[-1] + width / 2]), axis=0)
+    dom_input=np.array([[0, 2*np.pi]])
     locs_input = np.linspace(dom_input[0, 0], dom_input[0, 1], n_locs_input)
     locs_output = np.linspace(dom_output[0, 0], dom_output[0, 1], n_locs_output)
     random_state = np.random.RandomState(seed_state)
-    a = random_state.uniform(0, 1, n_samples)
-    b = random_state.uniform(0, 1, n_samples)
-    c = random_state.uniform(0, 1, n_samples)
-    mus = (0.4, 0.7)
-    freqs = (1, 2, 3)
-    mats_input = np.kron(np.expand_dims(a, axis=1), np.expand_dims(np.sin(locs_input), axis=0))
-    mats_input += np.kron(np.expand_dims(b, axis=1), np.expand_dims(np.sin(2 * locs_input), axis=0))
-    mats_input += np.kron(np.expand_dims(c, axis=1), np.expand_dims(np.sin(3 * locs_input), axis=0))
-    splines_basis = basis.BasisFromSmoothFunctions([centered_cubic_spline(freq, width) for freq in freqs], 1, dom_output)
-    ima = np.sin(2 * np.pi * a)
-    imb = gaussian_func(b, mus[0], sigma)
-    imc = gaussian_func(c, mus[1], sigma)
-    coefs0 = ima
-    coefs1 = ima - alpha * imb
-    coefs2 = ima + alpha * imc
-    smooth_out = [functional_algebra.weighted_sum_function((coefs0[n], coefs1[n], coefs2[n]), splines_basis)
+    draws = random_state.uniform(0, 1, (len(freqs), n_samples))
+    splines_basis = basis.BasisFromSmoothFunctions(
+        [centered_cubic_spline(freq, width) for freq in freqs], 1, dom_output)
+    mats_input = np.kron(np.expand_dims(draws[0], axis=1), np.expand_dims(np.cos(locs_input), axis=0))
+    common = np.sin(2 * np.pi * draws[0])
+    coefs = [common]
+    for i in range(1, len(freqs)):
+        mats_input += np.kron(np.expand_dims(draws[i], axis=1), np.expand_dims(np.sin((i + 1) * locs_input), axis=0))
+        coefs.append(common + (-1)**i * alpha * gaussian_func(draws[i], mus[i-1], sigma))
+    smooth_out = [functional_algebra.weighted_sum_function([coefs[n] for coefs in coefs], splines_basis)
                   for n in range(n_samples)]
+    X = ([locs_input.copy() for i in range(n_samples)], [mats_input[i] for i in range(n_samples)])
     Y = ([locs_output.copy() for i in range(n_samples)], [func(locs_output) for func in smooth_out])
-    return mats_input, Y
+    return X, Y
 
+
+def get_toy_data_correlated2(n_train):
+    X, Y = generate_toy_spline_correlated2(N_SAMPLES + N_TEST, N_LOCS_INPUT, N_LOCS_OUTPUT, FREQS, MUS, ALPHA2,
+                                          WIDTH, SIGMA, SEED_TOY)
+    Xtrain = np.array([X[1][n] for n in range(n_train)])
+    Ytrain = ([np.expand_dims(Y[0][n], axis=1) for n in range(n_train)], [Y[1][n] for n in range(n_train)])
+    Xtest = np.array([X[1][n] for n in range(N_SAMPLES, N_SAMPLES + N_TEST)])
+    Ytest = ([np.expand_dims(Y[0][n], axis=1) for n in range(N_SAMPLES, N_SAMPLES + N_TEST)],
+             [Y[1][n] for n in range(N_SAMPLES, N_SAMPLES + N_TEST)])
+    return Xtrain, Ytrain, Xtest, Ytest
 
 
 def plot_data_toy(Xtrain, Ytrain, n_samples, div=2):
     locs_input = np.linspace(DOM_INPUT[0, 0], DOM_INPUT[0, 1], N_LOCS_INPUT)
     locs_output = np.linspace(DOM_OUTPUT[0, 0], DOM_OUTPUT[0, 1], N_LOCS_OUTPUT)
-    fig, axes = plt.subplots(nrows=n_samples // div, ncols=2 * div)
+    fig, axes = plt.subplots(nrows=2 * div, ncols=n_samples // div, sharey="row")
     for i in range(n_samples):
-        row = i % (n_samples // div)
-        col = 2 * (i // (n_samples // div))
+        col = i % (n_samples // div)
+        row = 2 * (i // (n_samples // div))
         axes[row, col].plot(locs_input, Xtrain[i])
-        axes[row, col + 1].plot(locs_output, Ytrain[1][i])
+        axes[row, col].set_ylabel("$x(t)$")
+        axes[row + 1, col].plot(locs_output, Ytrain[1][i])
+        axes[row + 1, col].set_ylabel("$y(\\theta)$")
+
+
+def plot_data_toy2(Xtrain, Ytrain, n_samples, div=2, freqs=FREQS, width=WIDTH,
+                   n_locs_input=N_LOCS_INPUT, n_locs_output=N_LOCS_OUTPUT):
+    dom_output = np.expand_dims(np.array([freqs[0] - width / 2, freqs[-1] + width / 2]), axis=0)
+    dom_input = np.array([[0, 2 * np.pi]])
+    locs_input = np.linspace(dom_input[0, 0], dom_input[0, 1], n_locs_input)
+    locs_output = np.linspace(dom_output[0, 0], dom_output[0, 1], n_locs_output)
+    fig, axes = plt.subplots(nrows=2 * div, ncols=n_samples // div, sharey="row")
+    for i in range(n_samples):
+        col = i % (n_samples // div)
+        row = 2 * (i // (n_samples // div))
+        axes[row, col].plot(locs_input, Xtrain[i])
+        axes[row, col].set_ylabel("$x(t)$")
+        axes[row + 1, col].plot(locs_output, Ytrain[1][i])
+        axes[row + 1, col].set_ylabel("$y(\\theta)$")
