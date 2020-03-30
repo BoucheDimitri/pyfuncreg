@@ -83,7 +83,7 @@ if __name__ == '__main__':
             print(deg)
         print(n_samples)
         with open(rec_path + "/" + str(n_samples) + ".pkl", "wb") as out:
-            pickle.dump((MISSING_LEVELS, scores_dict), out, pickle.HIGHEST_PROTOCOL)
+            pickle.dump((MISSING_LEVELS, configs_dict, train_scores_dict, scores_dict), out, pickle.HIGHEST_PROTOCOL)
 
     with open(rec_path + "/full.pkl", "wb") as out:
-        pickle.dump((MISSING_LEVELS, scores_dict), out, pickle.HIGHEST_PROTOCOL)
+        pickle.dump((MISSING_LEVELS, configs_dict, train_scores_dict, scores_dict), out, pickle.HIGHEST_PROTOCOL)
