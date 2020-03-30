@@ -62,10 +62,14 @@ if __name__ == '__main__':
     configs, regs = generate_expes.toy_spline_kpl(KER_SIGMA, REGU)
 
     scores_dict = {}
+    configs_dict = {}
+    train_scores_dict = {}
 
     for n_samples in NSAMPLES_LIST:
         Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(n_samples)
         scores_dict[n_samples] = []
+        configs_dict[n_samples] = []
+        train_scores_dict[n_samples] = []
         for deg in MISSING_LEVELS:
             Xtrain_deg = degradation.add_noise_inputs(Xtrain, NOISE_INPUT, SEED_INPUT)
             Ytrain_deg = degradation.add_noise_outputs(Ytrain, NOISE_OUTPUT, SEED_OUTPUT)
@@ -74,6 +78,8 @@ if __name__ == '__main__':
                 regs, Xtrain_deg, Ytrain_deg, Xtest, Ytest, configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS,
                 min_nprocs=MIN_PROCS, input_indexing=INPUT_INDEXING, output_indexing=OUTPUT_INDEXING)
             scores_dict[n_samples].append(score_test)
+            configs_dict[n_samples].append(configs_dict)
+            train_scores_dict[n_samples].append(best_result)
             print(deg)
         print(n_samples)
         with open(rec_path + "/" + str(n_samples) + ".pkl", "wb") as out:
