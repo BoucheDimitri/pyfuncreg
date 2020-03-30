@@ -1,7 +1,6 @@
 import numpy as np
 from slycot import sb04qd
 
-from functional_regressors import ovkernel_ridge
 from functional_data import basis
 from functional_regressors import regularization
 from functional_data import discrete_functional_data as disc_fd
