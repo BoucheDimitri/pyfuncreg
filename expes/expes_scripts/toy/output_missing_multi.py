@@ -25,10 +25,10 @@ SHUFFLE_SEED = 784
 INPUT_INDEXING = "array"
 OUTPUT_INDEXING = "discrete_general"
 N_FOLDS = 5
-# N_PROCS = None
-# MIN_PROCS = 32
-N_PROCS = 7
-MIN_PROCS = None
+N_PROCS = None
+MIN_PROCS = 32
+# N_PROCS = 7
+# MIN_PROCS = None
 
 # ############################### Experiment parameters ################################################################
 KER_SIGMA = 20
@@ -74,10 +74,12 @@ if __name__ == '__main__':
 
     # ############################# Load the data ######################################################################
     configs, regs = generate_expes.toy_spline_kpl(KER_SIGMA, REGU)
+    scores_dicts = []
+    for i in range(N_AVERAGING):
+
 
     scores_dict = {}
-    configs_dict = {}
-    train_scores_dict = {}
+
 
     for n_samples in NSAMPLES_LIST:
         Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(n_samples)
