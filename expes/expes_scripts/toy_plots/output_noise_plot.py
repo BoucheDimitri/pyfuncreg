@@ -1,43 +1,25 @@
-import numpy as np
-import os
-import sys
 import pickle
-import pathlib
 import matplotlib.pyplot as plt
+import numpy as np
 
-# Execution path
-exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
-path = str(exec_path.parent.parent.parent)
-sys.path.append(path)
-
-# Local imports
 from data import toy_data_spline
 
-# Path to pickle file
-PICKLE_FILE = path + "/outputs/output_noise/output_noise.pkl"
+path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_30-03-2020_11-02/outputs/output_noise/"
+with open(path + "full.pkl", "rb") as inp:
+    noise_levels, scores = pickle.load(inp)
 
-# Config
-N_TRAIN = 500
+# Estimate mean absolute signal
+Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(5000)
+mean_abs_signal = np.mean(np.abs(np.array(Ytrain[1])))
 
-if __name__ == '__main__':
-    with open(PICKLE_FILE, "rb") as inp:
-        noise_levels, scores_test = pickle.load(inp)
+if noise_levels[0] == 0:
+    beg_ind = 1
+else:
+    beg_ind = 0
+snr_grid = np.flip((mean_abs_signal / noise_levels[beg_ind:]))
 
-    # Load dataset to compute mean abs signal (the seed set in the file toy_data_spline.py ensures
-    # that this is the same dataset as the one used to generate the pickle file
-    Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(N_TRAIN)
-    mean_abs_signal = np.mean(np.abs(np.array(Ytrain[1])))
-    # Compute SNR grids
-    if noise_levels[0] == 0:
-        beg_ind = 1
-    else:
-        beg_ind = 0
-    snr_grid = np.flip((mean_abs_signal / noise_levels[beg_ind:]))
-    results_test = np.flip(np.array(scores_test[beg_ind:]))
-    # Generate plot
-    plt.figure()
-    plt.plot(snr_grid, results_test, marker="o")
-    plt.xlabel("Signal to noise ratio")
-    plt.ylabel("MSE score on test set")
-    plt.show()
-
+plt.figure()
+for key in scores.keys():
+    results_test = np.flip(np.array(scores[key][beg_ind:]))
+    plt.semilogy(snr_grid, results_test, label="N=" + str(key), marker="o")
+plt.legend()
