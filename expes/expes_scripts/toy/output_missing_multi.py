@@ -18,21 +18,21 @@ from model_eval import parallel_tuning
 
 # ############################### Config ###############################################################################
 # Record config
-OUTPUT_FOLDER = "output_missing4"
+OUTPUT_FOLDER = "output_missing3"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 # Shuffle seed
 SHUFFLE_SEED = 784
 INPUT_INDEXING = "array"
 OUTPUT_INDEXING = "discrete_general"
 N_FOLDS = 5
-N_PROCS = None
-MIN_PROCS = 32
-# N_PROCS = 7
-# MIN_PROCS = None
+# N_PROCS = None
+# MIN_PROCS = 32
+N_PROCS = 7
+MIN_PROCS = None
 
 # ############################### Experiment parameters ################################################################
 KER_SIGMA = 20
-REGU = np.geomspace(1e-11, 1e2, 500)
+REGU = np.geomspace(1e-9, 1, 400)
 # REGU = np.geomspace(1e-9, 1, 10)
 NOISE_INPUT = 0.07
 NOISE_OUTPUT = 0.02
@@ -47,6 +47,17 @@ SEED_DATA = 784
 SEED_INPUT = 768
 SEED_OUTPUT = 456
 SEED_MISSING = 560
+
+# TODO: finish this
+# Generate seeds
+np.random.seed(SEED_DATA)
+seeds_data = np.random.randint(100, 2000, N_AVERAGING)
+np.random.seed(SEED_INPUT)
+seeds_noise_in = np.random.randint(100, 2000, N_AVERAGING)
+np.random.seed(SEED_OUTPUT)
+seeds_noise_out = np.random.randint(100, 2000, N_AVERAGING)
+np.random.seed(SEED_MISSING)
+seeds_missing = np.random.randint(100, 2000, N_AVERAGING)
 
 if __name__ == '__main__':
 

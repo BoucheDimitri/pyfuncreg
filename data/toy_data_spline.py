@@ -126,9 +126,9 @@ def generate_toy_spline(n_samples, dom_input, dom_output, n_locs_input, n_locs_o
     return X, Y
 
 
-def get_toy_data(n_train):
+def get_toy_data(n_train, seed=SEED_TOY):
     X, Y = generate_toy_spline(N_SAMPLES + N_TEST, DOM_INPUT, DOM_OUTPUT, N_LOCS_INPUT, N_LOCS_OUTPUT, N_FREQS,
-                               FREQS_DRAW_FUNC, COEFS_DRAW_FUNC, WIDTH, SEED_TOY)
+                               FREQS_DRAW_FUNC, COEFS_DRAW_FUNC, WIDTH, seed)
     Xtrain = np.array([X[1][n] for n in range(n_train)])
     Ytrain = ([np.expand_dims(Y[0][n], axis=1) for n in range(n_train)], [Y[1][n] for n in range(n_train)])
     Xtest = np.array([X[1][n] for n in range(N_SAMPLES, N_SAMPLES + N_TEST)])
@@ -186,12 +186,12 @@ def estimate_correlation(n_samples=20000, n_freqs=N_FREQS, f_max=F_MAX, c_max=C_
 
 def generate_toy_spline_correlated2(n_samples, n_locs_input=N_LOCS_INPUT, n_locs_output=N_LOCS_OUTPUT,
                                     freqs=(1, 2, 3), mus=(0.4, 0.7), alpha=0.2, width=2,
-                                    sigma=0.1, seed_state=784):
+                                    sigma=0.1, seed=SEED_TOY):
     dom_output = np.expand_dims(np.array([freqs[0] - width / 2, freqs[-1] + width / 2]), axis=0)
     dom_input=np.array([[0, 2*np.pi]])
     locs_input = np.linspace(dom_input[0, 0], dom_input[0, 1], n_locs_input)
     locs_output = np.linspace(dom_output[0, 0], dom_output[0, 1], n_locs_output)
-    random_state = np.random.RandomState(seed_state)
+    random_state = np.random.RandomState(seed)
     draws = random_state.uniform(0, 1, (len(freqs), n_samples))
     splines_basis = basis.BasisFromSmoothFunctions(
         [centered_cubic_spline(freq, width) for freq in freqs], 1, dom_output)

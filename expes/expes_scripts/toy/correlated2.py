@@ -42,12 +42,23 @@ TASKS_CORREL = 0.6
 # TASKS_CORREL = 0L
 KER_SIGMA = 10
 
-# NOISE_INPUT = 0.07
-# NOISE_OUTPUT = 0.02
+# Noise parameters
 NOISE_INPUT = 0.1
 NOISE_OUTPUT = 0.04
+
+# Seeds for averaging of expes (must all be of the same size)
+N_AVERAGING = 10
+SEED_DATA = 784
 SEED_INPUT = 768
 SEED_OUTPUT = 456
+
+# Generate seeds
+np.random.seed(SEED_DATA)
+seeds_data = np.random.randint(100, 2000, N_AVERAGING)
+np.random.seed(SEED_INPUT)
+seeds_noise_in = np.random.randint(100, 2000, N_AVERAGING)
+np.random.seed(SEED_OUTPUT)
+seeds_noise_out = np.random.randint(100, 2000, N_AVERAGING)
 
 if __name__ == '__main__':
 
@@ -66,6 +77,8 @@ if __name__ == '__main__':
     configs_corr, regs_corr = generate_expes.toy_spline_kpl_corr2(KER_SIGMA, REGU, TASKS_CORREL)
     configs, regs = generate_expes.toy_spline_kpl2(KER_SIGMA, REGU)
 
+    expes_corr = []
+    expes = []
     scores_test_corr = []
     scores_test = []
 
