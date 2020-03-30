@@ -18,7 +18,7 @@ from model_eval import parallel_tuning
 
 # ############################### Config ###############################################################################
 # Record config
-OUTPUT_FOLDER = "output_missing3"
+OUTPUT_FOLDER = "output_missing_multi"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 # Shuffle seed
 SHUFFLE_SEED = 784
@@ -32,7 +32,7 @@ MIN_PROCS = 32
 
 # ############################### Experiment parameters ################################################################
 KER_SIGMA = 20
-REGU = np.geomspace(1e-9, 1, 400)
+REGU = np.geomspace(1e-11, 1e2, 500)
 # REGU = np.geomspace(1e-9, 1, 10)
 NOISE_INPUT = 0.07
 NOISE_OUTPUT = 0.02
@@ -76,30 +76,20 @@ if __name__ == '__main__':
     configs, regs = generate_expes.toy_spline_kpl(KER_SIGMA, REGU)
     scores_dicts = []
     for i in range(N_AVERAGING):
-
-
-    scores_dict = {}
-
-
-    for n_samples in NSAMPLES_LIST:
-        Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(n_samples)
-        scores_dict[n_samples] = []
-        configs_dict[n_samples] = []
-        train_scores_dict[n_samples] = []
-        for deg in MISSING_LEVELS:
-            Xtrain_deg = degradation.add_noise_inputs(Xtrain, NOISE_INPUT, SEED_INPUT)
-            Ytrain_deg = degradation.add_noise_outputs(Ytrain, NOISE_OUTPUT, SEED_OUTPUT)
-            Ytrain_deg = degradation.downsample_output(Ytrain_deg, deg, SEED_MISSING)
-            best_config, best_result, score_test = parallel_tuning.parallel_tuning(
-                regs, Xtrain_deg, Ytrain_deg, Xtest, Ytest, configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS,
-                min_nprocs=MIN_PROCS, input_indexing=INPUT_INDEXING, output_indexing=OUTPUT_INDEXING)
-            scores_dict[n_samples].append(score_test)
-            configs_dict[n_samples].append(configs_dict)
-            train_scores_dict[n_samples].append(best_result)
-            print(deg)
-        print(n_samples)
-        with open(rec_path + "/" + str(n_samples) + ".pkl", "wb") as out:
-            pickle.dump((MISSING_LEVELS, configs_dict, train_scores_dict, scores_dict), out, pickle.HIGHEST_PROTOCOL)
+        scores_dicts.append({})
+        for n_samples in NSAMPLES_LIST:
+            Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(n_samples, seed=seeds_data[i])
+            scores_dicts[i][n_samples] = []
+            for deg in MISSING_LEVELS:
+                Xtrain_deg = degradation.add_noise_inputs(Xtrain, NOISE_INPUT, seeds_noise_in[i])
+                Ytrain_deg = degradation.add_noise_outputs(Ytrain, NOISE_OUTPUT, seeds_noise_out[i])
+                Ytrain_deg = degradation.downsample_output(Ytrain_deg, deg, seeds_missing[i])
+                best_config, best_result, score_test = parallel_tuning.parallel_tuning(
+                    regs, Xtrain_deg, Ytrain_deg, Xtest, Ytest, configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS,
+                    min_nprocs=MIN_PROCS, input_indexing=INPUT_INDEXING, output_indexing=OUTPUT_INDEXING)
+                scores_dicts[i][n_samples].append(score_test)
+        with open(rec_path + "/" + str(i) + ".pkl", "wb") as out:
+            pickle.dump((MISSING_LEVELS, scores_dicts), out, pickle.HIGHEST_PROTOCOL)
 
     with open(rec_path + "/full.pkl", "wb") as out:
-        pickle.dump((MISSING_LEVELS, configs_dict, train_scores_dict, scores_dict), out, pickle.HIGHEST_PROTOCOL)
+        pickle.dump((MISSING_LEVELS, scores_dicts), out, pickle.HIGHEST_PROTOCOL)
