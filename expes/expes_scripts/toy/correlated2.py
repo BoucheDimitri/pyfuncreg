@@ -18,7 +18,7 @@ from model_eval import parallel_tuning
 
 # ############################### Config ###############################################################################
 # Record config
-OUTPUT_FOLDER = "toy_correlated_data2"
+OUTPUT_FOLDER = "toy_correlated_data3"
 # Shuffle seed
 SHUFFLE_SEED = 784
 INPUT_INDEXING = "array"
@@ -36,9 +36,8 @@ N_SAMPLES = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 150, 20
 # N_SAMPLES = [5, 10, 15, 20, 25, 50, 100]
 # N_SAMPLES = [10, 20, 30, 40, 50, 60, 70, 80, 100]
 # TASKS_CORREL = [0.1, 0.2]
-TASKS_CORREL = np.arange(0, 1, 0.05)
+TASKS_CORREL = np.arange(0.4, 1, 0.05)
 # TASKS_CORREL = toy_data_spline.estimate_correlation()
-# TASKS_CORREL = 0.7
 # TASKS_CORREL = 0L
 KER_SIGMA = 10
 

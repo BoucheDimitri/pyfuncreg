@@ -1,6 +1,8 @@
 import numpy as np
 
 
+
+
 class NoNanWrapper:
 
     def __init__(self, func):
