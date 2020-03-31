@@ -30,10 +30,10 @@ ALPHA = 0.9
 LAMB = 0.1
 
 # Correlated 2 version params
-ALPHA2 = 0.2
+ALPHA2 = 0.1
 FREQS = (1, 2, 3, 4)
-MUS = (0.1, 0.4, 0.7)
-SIGMA = 0.2
+MUS = (0.1, 0.5, 0.9)
+SIGMA = 0.1
 # ######################################################################################################################
 
 
@@ -185,8 +185,8 @@ def estimate_correlation(n_samples=20000, n_freqs=N_FREQS, f_max=F_MAX, c_max=C_
 
 
 def generate_toy_spline_correlated2(n_samples, n_locs_input=N_LOCS_INPUT, n_locs_output=N_LOCS_OUTPUT,
-                                    freqs=(1, 2, 3), mus=(0.4, 0.7), alpha=0.2, width=2,
-                                    sigma=0.1, seed=SEED_TOY):
+                                    freqs=FREQS, mus=MUS, alpha=ALPHA2, width=2,
+                                    sigma=SIGMA, seed=SEED_TOY):
     dom_output = np.expand_dims(np.array([freqs[0] - width / 2, freqs[-1] + width / 2]), axis=0)
     dom_input=np.array([[0, 2*np.pi]])
     locs_input = np.linspace(dom_input[0, 0], dom_input[0, 1], n_locs_input)
@@ -199,8 +199,10 @@ def generate_toy_spline_correlated2(n_samples, n_locs_input=N_LOCS_INPUT, n_locs
     common = np.sin(2 * np.pi * draws[0])
     coefs = [common]
     for i in range(1, len(freqs)):
-        mats_input += np.kron(np.expand_dims(draws[i], axis=1), np.expand_dims(np.sin((i + 1) * locs_input), axis=0))
+        mats_input += np.kron(np.expand_dims(draws[i], axis=1), np.expand_dims(np.cos((i + 1) * locs_input), axis=0))
         coefs.append(common + (-1)**i * alpha * gaussian_func(draws[i], mus[i-1], sigma))
+        # coefs.append(common + (-1) ** i * alpha * gaussian_func(draws[0], mus[i - 1], sigma))
+    # return draws, coefs
     smooth_out = [functional_algebra.weighted_sum_function([coefs[n] for coefs in coefs], splines_basis)
                   for n in range(n_samples)]
     X = ([locs_input.copy() for i in range(n_samples)], [mats_input[i] for i in range(n_samples)])
@@ -208,9 +210,9 @@ def generate_toy_spline_correlated2(n_samples, n_locs_input=N_LOCS_INPUT, n_locs
     return X, Y
 
 
-def get_toy_data_correlated2(n_train):
+def get_toy_data_correlated2(n_train, seed=SEED_TOY):
     X, Y = generate_toy_spline_correlated2(N_SAMPLES + N_TEST, N_LOCS_INPUT, N_LOCS_OUTPUT, FREQS, MUS, ALPHA2,
-                                          WIDTH, SIGMA, SEED_TOY)
+                                          WIDTH, SIGMA, seed)
     Xtrain = np.array([X[1][n] for n in range(n_train)])
     Ytrain = ([np.expand_dims(Y[0][n], axis=1) for n in range(n_train)], [Y[1][n] for n in range(n_train)])
     Xtest = np.array([X[1][n] for n in range(N_SAMPLES, N_SAMPLES + N_TEST)])
@@ -246,3 +248,16 @@ def plot_data_toy2(Xtrain, Ytrain, n_samples, div=2, freqs=FREQS, width=WIDTH,
         axes[row, col].set_ylabel("$x(t)$")
         axes[row + 1, col].plot(locs_output, Ytrain[1][i])
         axes[row + 1, col].set_ylabel("$y(\\theta)$")
+
+
+# argsorts = np.argsort(draws, axis=1)
+# plt.plot(draws[0][argsorts[0]], coefs[0][argsorts[0]])
+# plt.plot(draws[1][argsorts[1]], coefs[1][argsorts[1]])
+# plt.plot(draws[2][argsorts[2]], coefs[2][argsorts[2]])
+# plt.plot(draws[3][argsorts[3]], coefs[3][argsorts[3]])
+#
+# argsorts = np.argsort(draws, axis=1)
+# # plt.plot(draws[0][argsorts[0]], coefs[0][argsorts[0]])
+# plt.plot(draws[0][argsorts[0]], coefs[1][argsorts[0]])
+# plt.plot(draws[0][argsorts[0]], coefs[2][argsorts[0]])
+# plt.plot(draws[0][argsorts[0]], coefs[3][argsorts[0]])
