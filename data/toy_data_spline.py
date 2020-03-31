@@ -30,7 +30,8 @@ ALPHA = 0.9
 LAMB = 0.1
 
 # Correlated 2 version params
-ALPHA2 = 0.1
+# ALPHA2 = 0.1
+ALPHA2 = 0.15
 FREQS = (1, 2, 3, 4)
 MUS = (0.1, 0.5, 0.9)
 SIGMA = 0.1
