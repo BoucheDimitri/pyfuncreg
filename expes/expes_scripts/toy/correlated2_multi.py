@@ -83,6 +83,8 @@ if __name__ == '__main__':
         scores_dicts.append({})
         scores_dicts_corr.append({})
         for n_samples in N_SAMPLES:
+            scores_dicts[i][n_samples] = []
+            scores_dicts_corr[i][n_samples] = []
             Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data_correlated2(n_samples, seed=seeds_data[i])
             Xtrain_deg = degradation.add_noise_inputs(Xtrain, NOISE_INPUT, seeds_noise_in[i])
             Ytrain_deg = degradation.add_noise_outputs(Ytrain, NOISE_OUTPUT, seeds_noise_out[i])
