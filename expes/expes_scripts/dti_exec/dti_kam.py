@@ -2,6 +2,7 @@ import numpy as np
 import os
 import sys
 import pathlib
+import pickle
 
 # Execution path
 exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
@@ -11,7 +12,6 @@ sys.path.append(path)
 
 # Local imports
 from model_eval import parallel_tuning
-from model_eval import metrics
 from data import loading
 from data import processing
 from expes import generate_expes
@@ -21,38 +21,43 @@ from functional_data import discrete_functional_data as disc_fd1
 # Path to the data
 DATA_PATH = path + "/data/dataDTI/"
 # Record config
-OUTPUT_FOLDER = "dti_kam"
+OUTPUT_FOLDER = "dti_kam_multi"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
-EXPE_NAME = "dti_kam"
 # Number of processors
-N_PROCS = 8
-SHUFFLE_SEED = 784
+# N_PROCS = 7
+N_PROCS = None
+MIN_PROCS = 32
+# MIN_PROCS = None
+
 N_TRAIN = 70
 N_FOLDS = 5
 
 # ############################### Regressor config #####################################################################
-# REGU = np.geomspace(1e-8, 1, 100)
-# KIN_SIGMA = [0.01, 0.025, 0.05, 0.1]
-# KOUT_SIGMA = [0.01, 0.025, 0.05, 0.1]
-# KEVAL_SIGMA = [0.03, 0.06, 0.1]
-# N_FPCA = [10, 15, 20, 30]
-REGU_GRID = [1e-4, 1e-5]
-KIN_SIGMA = 0.01
-KOUT_SIGMA = 0.01
-KEV_SIGMA = 0.03
-N_FPCA = [10, 15]
+REGU = np.geomspace(1e-8, 1, 50)
+KIN_SIGMA = [0.01, 0.05, 0.1]
+KOUT_SIGMA = [0.01, 0.05, 0.1]
+KEVAL_SIGMA = [0.03, 0.06, 0.1]
+N_FPCA = [10, 20, 30]
+# REGU= [1e-4, 1e-5]
+# KIN_SIGMA = 0.01
+# KOUT_SIGMA = 0.01
+# KEVAL_SIGMA = 0.03
+# N_FPCA = [10, 15]
 DOMAIN = np.array([[0, 1]])
 N_EVALS_IN = 100
 N_EVALS_OUT = 100
 N_EVALS_FPCA = 100
-PARAMS = {"regu": REGU_GRID, "kin_sigma": KIN_SIGMA, "kout_sigma": KOUT_SIGMA, "keval_sigma": KEV_SIGMA,
+PARAMS = {"regu": REGU, "kin_sigma": KIN_SIGMA, "kout_sigma": KOUT_SIGMA, "keval_sigma": KEVAL_SIGMA,
           "n_fpca": N_FPCA, "n_evals_fpca": N_EVALS_FPCA, "n_evals_in": N_EVALS_IN, "n_evals_out": N_EVALS_OUT,
           "domain_in": DOMAIN, "domain_out": DOMAIN}
 
-# ############################### Pre cross-validated config ###########################################################
-PARAMS_CV = {"regu": 0.007564633275546291, "kin_sigma": 0.1, "kout_sigma": 0.05, "keval_sigma": 0.1,
-             "n_fpca": 30, "n_evals_fpca": N_EVALS_FPCA, "n_evals_in": N_EVALS_IN, "n_evals_out": N_EVALS_OUT,
-             "domain_in": DOMAIN, "domain_out": DOMAIN}
+# Seeds for averaging of expes (must all be of the same size)
+N_AVERAGING = 10
+SEED_DATA = 784
+
+# Generate seeds
+np.random.seed(SEED_DATA)
+seeds_data = np.random.randint(100, 2000, N_AVERAGING)
 
 if __name__ == '__main__':
 
@@ -66,34 +71,24 @@ if __name__ == '__main__':
     except FileExistsError:
         pass
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
-    #
-    # Define execution mode
-    try:
-        argv = sys.argv[1]
-    except IndexError:
-        argv = ""
 
-    # ############################# Load the data ######################################################################
-    cca, rcst = loading.load_dti(path + "/data/dataDTI/", shuffle_seed=SHUFFLE_SEED)
-    Xtrain, Ytrain, Xtest, Ytest = processing.process_dti(cca, rcst)
+    scores_test, best_results, best_configs = list(), list(), list()
 
-    Ytest = disc_fd1.to_discrete_general(*Ytest)
+    for i in range(N_AVERAGING):
+        # ############################# Load the data ##################################################################
+        cca, rcst = loading.load_dti(path + "/data/dataDTI/", shuffle_seed=seeds_data[i])
+        Xtrain, Ytrain, Xtest, Ytest = processing.process_dti(cca, rcst)
 
-    # ############################# Full cross-validation experiment ###################################################
-    if argv == "full":
+        Ytest = disc_fd1.to_discrete_general(*Ytest)
+
+        # ############################# Full cross-validation experiment ###############################################
         # Generate configurations and regressors
         configs, regs = generate_expes.dti_kam(**PARAMS)
         # Run tuning in parallel
         best_config, best_result, score_test = parallel_tuning.parallel_tuning(
-            regs, Xtrain, Ytrain, Xtest, Ytest, rec_path=rec_path, configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS)
-        print("Score on test set: " + str(score_test))
-
-    # ############################# Use pre cross-validated dictionary #################################################
-    else:
-        # Generate regressor from cross-validation dictionaries
-        configs, regs = generate_expes.dti_kam(**PARAMS_CV)
-        regs[0].fit(Xtrain, Ytrain)
-        preds = regs[0].predict_evaluate_diff_locs(Xtest, Ytest[0])
-        score_test = metrics.mse(Ytest[1], preds)
-        print("Score on test set: " + str(score_test))
-
+            regs, Xtrain, Ytrain, Xtest, Ytest, configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS, min_nprocs=MIN_PROCS)
+        best_configs.append(best_config)
+        best_results.append(best_results)
+        scores_test.append(score_test)
+        with open(rec_path + "/" + str(i) + ".pkl", "wb") as out:
+            pickle.dump((best_configs, best_results, scores_test), out, pickle.HIGHEST_PROTOCOL)
