@@ -79,13 +79,13 @@ def toy_spline_kpl(kernel_sigma, regu):
     return configs, regs
 
 
-def dti_wavs_kpl(kernel_sigma, regu, center_output=True, decrease_base=1, pywt_name="db", moments=2,
+def dti_wavs_kpl(kernel_sigma, regu, center_output=True, decrease_base=1, pywt_name="db", moments=2, n_dilat=4,
                  init_dilat=1.0, translat=1.0, dilat=2, approx_level=5, add_constant=True,
                  domain=np.array([[0, 1]]), locs_bounds=np.array([[0, 1]])):
     # Wavelets output basses
     output_basis_params = {"pywt_name": pywt_name, "moments": moments, "init_dilat": init_dilat, "translat": translat,
-                           "dilat": dilat, "approx_level": approx_level, "add_constant": add_constant,
-                           "locs_bounds": locs_bounds, "domain": domain}
+                           "dilat": dilat, "n_dilat": n_dilat, "approx_level": approx_level,
+                           "add_constant": add_constant, "locs_bounds": locs_bounds, "domain": domain}
     output_bases = configs_generation.subconfigs_combinations("wavelets", output_basis_params,
                                                               exclude_list=["domain", "locs_bounds"])
     # Gaussian kernel

@@ -201,9 +201,9 @@ def generate_toy_spline_correlated2(n_samples, n_locs_input=N_LOCS_INPUT, n_locs
     coefs = [common]
     for i in range(1, len(freqs)):
         mats_input += np.kron(np.expand_dims(draws[i], axis=1), np.expand_dims(np.cos((i + 1) * locs_input), axis=0))
-        coefs.append(common + (-1)**i * alpha * gaussian_func(draws[i], mus[i-1], sigma))
-        # coefs.append(common + (-1) ** i * alpha * gaussian_func(draws[0], mus[i - 1], sigma))
-    # return draws, coefs
+        # coefs.append(common + (-1)**i * alpha * gaussian_func(draws[i], mus[i-1], sigma))
+        coefs.append(common + (-1) ** i * alpha * gaussian_func(draws[0], mus[i - 1], sigma))
+    return draws, coefs
     smooth_out = [functional_algebra.weighted_sum_function([coefs[n] for coefs in coefs], splines_basis)
                   for n in range(n_samples)]
     X = ([locs_input.copy() for i in range(n_samples)], [mats_input[i] for i in range(n_samples)])
