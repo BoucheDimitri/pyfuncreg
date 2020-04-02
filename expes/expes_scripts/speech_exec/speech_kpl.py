@@ -5,10 +5,10 @@ import pickle
 import pathlib
 
 # Execution path
-# exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
-# path = str(exec_path.parent.parent.parent)
-# sys.path.append(path)
-path = os.getcwd()
+exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
+path = str(exec_path.parent.parent.parent)
+sys.path.append(path)
+# path = os.getcwd()
 
 # Local imports
 from expes import generate_expes
@@ -29,25 +29,24 @@ OUTPUT_INDEXING = "discrete_general"
 N_FOLDS = 5
 
 # Exec config
-N_PROCS = 7
-MIN_PROCS = None
-# N_PROCS = None
-# MIN_PROCS = 32
+# N_PROCS = 7
 # MIN_PROCS = None
+N_PROCS = None
+MIN_PROCS = 32
 
 # ############################### Regressor config #####################################################################
 # Output domain
 DOMAIN = np.array([[0, 1]])
 
 # Regularization parameters grid
-# REGU_GRID = list(np.geomspace(1e-10, 1e-5, 40))
-REGU_GRID = [1e-10, 1e-7]
+REGU_GRID = list(np.geomspace(1e-10, 1e-3, 50))
+# REGU_GRID = [1e-10, 1e-7]
 # Number of principal components to consider
-N_FPCA = [20, 30]
+N_FPCA = [20, 30, 40]
 # Standard deviation parameter for the input kernel
 KER_SIGMA = 1
 # Decrease base
-DECREASE_BASE = [1, 1.2]
+DECREASE_BASE = np.arange(1, 1.6, 0.1)
 # Number of evaluations for FPCA
 NEVALS_FPCA = 300
 
