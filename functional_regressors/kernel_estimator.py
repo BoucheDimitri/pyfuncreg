@@ -46,6 +46,30 @@ class KernelEstimatorFunc:
         return np.array([func(locs) for func in pred_funcs])
 
 
+class KernelEstimatorFuncBis:
+
+    def __init__(self, kernel):
+        self.X = None
+        self.kernel = kernel
+        self.Yfunc = None
+
+    def fit(self, X, Y):
+        self.X = X
+        smoother_out = smoothing.LinearInterpSmoother()
+        smoother_out.fit(Y[0], Y[1])
+        self.Yfunc = smoother_out.get_functions()
+
+    def predict(self, Xnew):
+        m = len(Xnew)
+        Knew = self.kernel(self.X, Xnew)
+        W = Knew / np.expand_dims(np.sum(Knew, axis=1), axis=1)
+        return [functional_algebra.weighted_sum_function(W[i], self.Yfunc) for i in range(m)]
+
+    def predict_evaluate(self, Xnew, locs):
+        pred_funcs = self.predict(Xnew)
+        return np.array([func(locs) for func in pred_funcs])
+
+
 class KernelEstimatorStructIn:
     """
     Version of the kernel estimator with kernelized input

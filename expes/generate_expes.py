@@ -238,6 +238,14 @@ def speech_fkrr(kin_sigma, kout_sigma, regu, approx_locs, center_output):
 
 # ############################### KE ###################################################################################
 
+def dti_ke(kx_sigma):
+    kxs = [kernels.GaussianScalarKernel(sig, normalize=False) for sig in kx_sigma]
+    params = {"kernel": kxs}
+    configs = configs_generation.configs_combinations(params)
+    regs = [kernel_estimator.KernelEstimatorStructIn(**config) for config in configs]
+    return configs, regs
+
+
 def kernel_generator_ke_speech(kx_sigma):
     if isinstance(kx_sigma, Iterable):
         multi_sigs = [sig * np.ones(13) for sig in kx_sigma]
