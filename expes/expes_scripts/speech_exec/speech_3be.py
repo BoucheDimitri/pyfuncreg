@@ -5,10 +5,10 @@ import sys
 import pathlib
 
 # Execution path
-# exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
-# path = str(exec_path.parent.parent.parent)
-# sys.path.append(path)
-path = os.getcwd()
+exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
+path = str(exec_path.parent.parent.parent)
+sys.path.append(path)
+# path = os.getcwd()
 
 # Local imports
 from data import loading
@@ -29,20 +29,20 @@ INPUT_INDEXING = "list"
 OUTPUT_INDEXING = "discrete_general"
 
 # Exec config
-N_PROCS = 7
-MIN_PROCS = None
-# N_PROCS = None
-# MIN_PROCS = 32
+# N_PROCS = 7
+# MIN_PROCS = None
+N_PROCS = None
+MIN_PROCS = 32
 
 # ############################### Regressor config #####################################################################
 
 # Output domain
 DOMAIN = np.array([[0, 1]])
 # Regularization parameters grid
-# REGU_GRID = list(np.geomspace(1e-10, 1e-5, 40))
-REGU_GRID = [1e-10, 1e-7]
+REGU_GRID = list(np.geomspace(1e-10, 1e-3, 50))
+# REGU_GRID = [1e-10, 1e-7]
 # Number of principal components to consider
-N_FPCA = 40
+N_FPCA = [30, 40]
 # Standard deviation parameter for the input kernel
 KER_SIGMA = 1
 # Number of evaluations for FPCA
@@ -79,13 +79,13 @@ if __name__ == '__main__':
         Xtrain, Ytrain_full_ext, Ytrain_full, Xtest, Ytest_full_ext, Ytest_full = processing.process_speech(
             X, Y, shuffle_seed=seeds_data[i], n_train=300, normalize_domain=True, normalize_values=True)
 
-        # try:
-        #     key = sys.argv[1]
-        # except IndexError:
-        #     raise IndexError(
-        #         'You need to define a vocal tract subproblem '
-        #         'in the set {"LA", "LP", "TBCL", "VEL", "GLO", "TTCL", "TTCD"}')
-        key = "LA"
+        try:
+            key = sys.argv[1]
+        except IndexError:
+            raise IndexError(
+                'You need to define a vocal tract subproblem '
+                'in the set {"LA", "LP", "TBCL", "VEL", "GLO", "TTCL", "TTCD"}')
+        # key = "LA"
         Ytrain_ext, Ytrain, Ytest_ext, Ytest \
             = Ytrain_full_ext[key], Ytrain_full[key], Ytest_full_ext[key], Ytest_full[key]
 
