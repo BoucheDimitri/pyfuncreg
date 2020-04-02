@@ -3,46 +3,42 @@ import os
 import sys
 import pickle
 import pathlib
-from time import perf_counter
 
 # Execution path
-exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
-path = str(exec_path.parent.parent.parent)
-sys.path.append(path)
-# path = os.getcwd()
+# exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
+# path = str(exec_path.parent.parent.parent)
+# sys.path.append(path)
+path = os.getcwd()
 
 # Local imports
 from expes import generate_expes
 from data import loading, processing
-from model_eval import parallel_tuning, metrics
+from model_eval import parallel_tuning
 
 # ############################### Execution config #####################################################################
 # Path to the data
 DATA_PATH = path + "/data/dataspeech/processed/"
 # Record config
-OUTPUT_FOLDER = "speech_kpl"
+OUTPUT_FOLDER = "speech_kpl_multi"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
-EXPE_NAME = "speech_kpl"
-# Number of processors
-N_PROCS = 8
+
 # Indexing
 INPUT_INDEXING = "list"
 OUTPUT_INDEXING = "discrete_general"
 # Number of folds
 N_FOLDS = 5
+
+# Exec config
+N_PROCS = 7
+MIN_PROCS = None
+# N_PROCS = None
+# MIN_PROCS = 32
+# MIN_PROCS = None
+
 # ############################### Regressor config #####################################################################
 # Output domain
 DOMAIN = np.array([[0, 1]])
-# Dictionary obtained by cross validation for quick run fitting on train and get score on test
-CV_DICTS = dict()
-CV_DICTS["LP"] = {'kernel_sigma': 1, 'regu': 1e-10, 'n_fpca': 30, 'decrease_base': 1}
-CV_DICTS["LA"] = {'kernel_sigma': 1, 'regu': 1e-10, 'n_fpca': 40, 'decrease_base': 1}
-CV_DICTS["TBCL"] = {'kernel_sigma': 1, 'regu': 1e-10, 'n_fpca': 40, 'decrease_base': 1}
-CV_DICTS["TBCD"] = {'kernel_sigma': 1, 'regu': 1e-10, 'n_fpca': 40, 'decrease_base': 1}
-CV_DICTS["VEL"] = {'kernel_sigma': 1, 'regu': 1e-10, 'n_fpca': 40, 'decrease_base': 1}
-CV_DICTS["GLO"] = {'kernel_sigma': 1, 'regu': 1e-10, 'n_fpca': 40, 'decrease_base': 1}
-CV_DICTS["TTCL"] = {'kernel_sigma': 1, 'regu': 1e-10, 'n_fpca': 40, 'decrease_base': 1}
-CV_DICTS["TTCD"] = {'kernel_sigma': 1, 'regu': 1e-10, 'n_fpca': 40, 'decrease_base': 1}
+
 # Regularization parameters grid
 # REGU_GRID = list(np.geomspace(1e-10, 1e-5, 40))
 REGU_GRID = [1e-10, 1e-7]
@@ -55,6 +51,15 @@ DECREASE_BASE = [1, 1.2]
 # Number of evaluations for FPCA
 NEVALS_FPCA = 300
 
+# Seeds for averaging of expes (must all be of the same size)
+N_AVERAGING = 10
+SEED_DATA = 784
+
+# Generate seeds
+np.random.seed(SEED_DATA)
+seeds_data = np.random.randint(100, 2000, N_AVERAGING)
+
+""
 if __name__ == '__main__':
 
     # ############################# Create folder for recording ########################################################
@@ -68,49 +73,38 @@ if __name__ == '__main__':
         pass
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
+    scores_test, best_results, best_configs = list(), list(), list()
+
     # ############################# Load the data ######################################################################
     X, Y = loading.load_raw_speech_dataset(path + "/data/dataspeech/raw/")
-    Xtrain, Ytrain_full_ext, Ytrain_full, Xtest, Ytest_full_ext, Ytest_full = processing.process_speech(
-        X, Y, shuffle_seed=784, n_train=300, normalize_domain=True, normalize_values=True)
 
-    try:
-        key = sys.argv[1]
-    except IndexError:
-        raise IndexError(
-            'You need to define a vocal tract subproblem in the set {"LA", "LP", "TBCL", "VEL", "GLO", "TTCL", "TTCD"}')
-    # key = "LA"
-    Ytrain_ext, Ytrain, Ytest_ext, Ytest = Ytrain_full_ext[key], Ytrain_full[key], Ytest_full_ext[key], Ytest_full[key]
+    for i in range(N_AVERAGING):
+        Xtrain, Ytrain_full_ext, Ytrain_full, Xtest, Ytest_full_ext, Ytest_full = processing.process_speech(
+            X, Y, shuffle_seed=seeds_data[i], n_train=300, normalize_domain=True, normalize_values=True)
 
-    # ############################# Full cross-validation experiment ###################################################
-    try:
-        argv = sys.argv[2]
-    except IndexError:
-        argv = ""
-    # argv = "con"
-    if argv == "full":
+        # try:
+        #     key = sys.argv[1]
+        # except IndexError:
+        #     raise IndexError(
+        #         'You need to define a vocal tract subproblem '
+        #         'in the set {"LA", "LP", "TBCL", "VEL", "GLO", "TTCL", "TTCD"}')
+        key = "LA"
+        Ytrain_ext, Ytrain, Ytest_ext, Ytest \
+            = Ytrain_full_ext[key], Ytrain_full[key], Ytest_full_ext[key], Ytest_full[key]
+
         # Generate configs and corresponding regressors
         configs, regs = generate_expes.speech_fpca_penpow_kpl(KER_SIGMA, REGU_GRID, N_FPCA,
                                                               NEVALS_FPCA, DECREASE_BASE, DOMAIN)
 
         # Cross validation of the regressors
-        best_dict, best_result, score_test = parallel_tuning.parallel_tuning(
+        best_config, best_result, score_test = parallel_tuning.parallel_tuning(
             regs, Xtrain, Ytrain_ext, Xtest, Ytest, Xpred_train=None, Ypred_train=Ytrain,
             input_indexing=INPUT_INDEXING, output_indexing=OUTPUT_INDEXING,
-            rec_path=rec_path, configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS)
-        # Save the results
-        with open(rec_path + "/" + EXPE_NAME + "_" + key + ".pkl", "wb") as inp:
-            pickle.dump((best_dict, best_result, score_test), inp,
-                        pickle.HIGHEST_PROTOCOL)
-        # Print the result
-        print("Score on test set: " + str(score_test))
+            configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS, min_nprocs=MIN_PROCS)
 
-    # ############################# Reduced experiment with the pre cross validated configuration ######################
-    else:
-        # Use directly the regressor stemming from the cross validation
-        configs, regs = generate_expes.speech_fpca_penpow_kpl(**CV_DICTS[key], n_evals_fpca=NEVALS_FPCA, domain=DOMAIN)
-        regs[0].fit(Xtrain, Ytrain_ext)
-        # Evaluate it on test set
-        preds = regs[0].predict_evaluate_diff_locs(Xtest, Ytest[0])
-        score_test = metrics.mse(Ytest[1], preds)
-        # Print the result
-        print("Score on test set: " + str(score_test))
+        best_configs.append(best_config)
+        best_results.append(best_results)
+        scores_test.append(score_test)
+
+        with open(rec_path + "/" + str(i) + "_" + key + ".pkl", "wb") as out:
+            pickle.dump((best_configs, best_results, scores_test), out, pickle.HIGHEST_PROTOCOL)
