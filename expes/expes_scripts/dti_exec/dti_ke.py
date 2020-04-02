@@ -5,10 +5,10 @@ import pathlib
 import pickle
 
 # Execution path
-# exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
-# path = str(exec_path.parent.parent.parent)
-# sys.path.append(path)
-path = os.getcwd()
+exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
+path = str(exec_path.parent.parent.parent)
+sys.path.append(path)
+# path = os.getcwd()
 
 # Local imports
 from expes import generate_expes
@@ -25,10 +25,10 @@ REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 EXPE_NAME = "dti_ke"
 
 # Exec config
-N_PROCS = 7
-MIN_PROCS = None
-# N_PROCS = None
-# MIN_PROCS = 32
+# N_PROCS = 7
+# MIN_PROCS = None
+N_PROCS = None
+MIN_PROCS = 32
 # MIN_PROCS = None
 
 N_FOLDS = 5
