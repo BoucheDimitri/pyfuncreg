@@ -35,8 +35,8 @@ MIN_PROCS = 32
 
 # ############################### Regressor config #####################################################################
 # Kernel standard deviation
-# KER_SIGMA = np.arange(0.1, 2.1, 0.1)
-KER_SIGMA = [0.1, 1]
+KER_SIGMA = np.arange(0.1, 2.1, 0.1)
+# KER_SIGMA = [0.1, 1]
 CENTER_OUTPUT = False
 
 # Seeds for averaging of expes (must all be of the same size)
