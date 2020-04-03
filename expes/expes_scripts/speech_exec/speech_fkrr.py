@@ -14,11 +14,9 @@ from expes import generate_expes, run_expes
 
 # ############################### Execution config #####################################################################
 # Path to the data
-DATA_PATH = path + "/data/dataspeech/processed/"
+DATA_PATH = path + "/data/dataspeech/raw/"
 # Record config
-OUTPUT_FOLDER = "speech_fkrr_multi"
-REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
-EXPE_NAME = "speech_fkrr"
+OUTPUT_FOLDER = "/speech_fkrr_multi"
 # Indexing
 INPUT_INDEXING = "list"
 OUTPUT_INDEXING = "discrete_general"
@@ -61,6 +59,6 @@ if __name__ == '__main__':
     configs, regs = generate_expes.speech_fkrr(KIN_SIGMA, KOUT_SIGMA, REGU_GRID, APPROX_LOCS, CENTER_OUTPUT)
     # Run expes
     best_configs, best_results, scores_test = run_expes.run_expe_speech(
-        configs, regs, seeds=seeds_data, data_path=path + "/data/dataspeech/raw/", rec_path=rec_path,
+        configs, regs, seeds=seeds_data, data_path=DATA_PATH, rec_path=rec_path,
         input_indexing=INPUT_INDEXING, output_indexing=OUTPUT_INDEXING, n_folds=N_FOLDS,
         n_procs=N_FOLDS, min_nprocs=MIN_PROCS)

@@ -6,7 +6,7 @@ from data import loading, processing
 from model_eval import parallel_tuning
 
 
-def create_output_folder(root_path, output_folder, parent="/ouptuts"):
+def create_output_folder(root_path, output_folder, parent="/outputs"):
     try:
         os.mkdir(root_path + parent)
     except FileExistsError:

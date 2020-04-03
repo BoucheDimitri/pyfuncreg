@@ -14,10 +14,9 @@ from expes import generate_expes, run_expes
 
 # ############################### Execution config #####################################################################
 # Path to the data
-DATA_PATH = path + "/data/dataspeech/processed/"
+DATA_PATH = path + "/data/dataspeech/raw/"
 # Record config
-OUTPUT_FOLDER = "speech_kpl_multi"
-REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
+OUTPUT_FOLDER = "/speech_kpl_multi"
 
 # Indexing
 INPUT_INDEXING = "list"
@@ -64,6 +63,6 @@ if __name__ == '__main__':
                                                           NEVALS_FPCA, DECREASE_BASE, DOMAIN)
     # Run expes
     best_configs, best_results, scores_test = run_expes.run_expe_speech(
-        configs, regs, seeds=seeds_data, data_path=path + "/data/dataspeech/raw/", rec_path=rec_path,
+        configs, regs, seeds=seeds_data, data_path=DATA_PATH, rec_path=rec_path,
         input_indexing=INPUT_INDEXING, output_indexing=OUTPUT_INDEXING, n_folds=N_FOLDS,
         n_procs=N_FOLDS, min_nprocs=MIN_PROCS)
