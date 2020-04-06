@@ -19,10 +19,10 @@ def mean_variance_result_dti(path):
         _1, _2, score_test = pickle.load(inp)
     return np.mean(score_test), np.std(score_test)
 
-path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_06-04-2020_15-21/outputs/"
+path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_06-04-2020_15-59/outputs/"
 
 # folders_dti = ["dti_3be_multi", "dti_fkrr_multi", "dti_kam_multi", "dti_kpl_multi", "dti_ke_multi"]
-folders_dti = ["dti_3be_multi", "dti_fkrr_multi", "dti_kpl_multi2", "dti_ke_multi"]
+folders_dti = ["dti_3be_multi", "dti_fkrr_multi", "dti_kpl_multi3", "dti_ke_multi"]
 
 
 with open(path + "dti_kpl_multi2" + "/9.pkl", "rb") as inp:

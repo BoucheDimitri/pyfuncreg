@@ -46,12 +46,12 @@ DOMAIN_OUT = np.array([[0, 1]])
 LOCS_BOUNDS = np.array([[0 - SIGNAL_EXT[1][0], 1 + SIGNAL_EXT[1][1]]])
 # DECREASE_BASE = np.arange(1, 2, 0.05)
 DECREASE_BASE = np.arange(1, 1.6, 0.05)
-# MOMENTS = [2, 3]
-# PYWT_NAME = ["db"]
-# N_DILATS = [4, 5]
-MOMENTS = [2]
+MOMENTS = [2, 3]
 PYWT_NAME = ["db"]
-N_DILATS = [4]
+N_DILATS = [4, 5]
+# MOMENTS = [2]
+# PYWT_NAME = ["db"]
+# N_DILATS = [4]
 BASIS_DICT = {"pywt_name": PYWT_NAME, "moments": MOMENTS, "n_dilat": N_DILATS, "init_dilat": 1.0, "translat": 1.0, "dilat": 2, "approx_level": 6,
               "add_constant": True, "domain": DOMAIN_OUT, "locs_bounds": LOCS_BOUNDS}
 # Standard deviation parameter for the input kernel

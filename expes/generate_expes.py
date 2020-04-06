@@ -175,6 +175,62 @@ def dti_3be_fourier(ker_sigma, regu, center_output, max_freq_in, max_freq_out,
     return configs, regs
 
 
+def dti_3be_wavs(kernel_sigma, regu, center_output, n_rffs, rffs_seed,
+                 pywt_name_in="db", moments_in=2, n_dilat_in=4,
+                 init_dilat_in=1.0, translat_in=1.0, dilat_in=2, approx_level_in=6, add_constant_in=True,
+                 domain_in=np.array([[0, 1]]), locs_bounds_in=np.array([[0, 1]]),
+                 pywt_name_out="db", moments_out=2, n_dilat_out=4, init_dilat_out=1.0, translat_out=1.0,
+                 dilat_out=2, approx_level_out=6, add_constant_out=True,
+                 domain_out=np.array([[0, 1]]), locs_bounds_out=np.array([[0, 1]])):
+    rffs_basis_dict = {"n_basis": n_rffs, "domain": domain_out, "bandwidth": kernel_sigma, "seed": rffs_seed}
+    bases_rffs = configs_generation.subconfigs_combinations("random_fourier",
+                                                            rffs_basis_dict, exclude_list=["domain"])
+    # Wavelets output basses
+    input_basis_params = {"pywt_name": pywt_name_in, "moments": moments_in, "init_dilat": init_dilat_in,
+                          "translat": translat_in, "dilat": dilat_in, "n_dilat": n_dilat_in,
+                          "approx_level": approx_level_in, "add_constant": add_constant_in,
+                          "locs_bounds": locs_bounds_in, "domain": domain_in}
+    output_basis_params = {"pywt_name": pywt_name_out, "moments": moments_out, "init_dilat": init_dilat_out,
+                           "translat": translat_out, "dilat": dilat_out, "n_dilat": n_dilat_out,
+                           "approx_level": approx_level_out, "add_constant": add_constant_out,
+                           "locs_bounds": locs_bounds_out, "domain": domain_out}
+    bases_in = configs_generation.subconfigs_combinations("wavelets", input_basis_params,
+                                                          exclude_list=["domain", "locs_bounds"])
+    bases_out = configs_generation.subconfigs_combinations("wavelets", output_basis_params,
+                                                           exclude_list=["domain", "locs_bounds"])
+    # Generate full configs
+    params = {"basis_in": bases_in, "basis_out": bases_out, 'basis_rffs': bases_rffs, "regu": regu,
+              "center_output": center_output}
+    configs = configs_generation.configs_combinations(params)
+    # Create list of regressors from that config
+    regs = [triple_basis.TripleBasisEstimator(**config) for config in configs]
+    return configs, regs
+
+
+def dti_3be_fourwavs(kernel_sigma, regu, center_output, max_freq_in, n_rffs, rffs_seed,
+                     pywt_name="db", moments=2, n_dilat=4, init_dilat=1.0, translat=1.0,
+                     dilat=2, approx_level=5, add_constant=True, domain_in=np.array([[0, 1]]),
+                     domain_out=np.array([[0, 1]]), locs_bounds_out=np.array([[0, 1]])):
+    input_basis_dict = {"lower_freq": 0, "upper_freq": max_freq_in, "domain": domain_in}
+    rffs_basis_dict = {"n_basis": n_rffs, "domain": domain_out, "bandwidth": kernel_sigma, "seed": rffs_seed}
+    bases_in = configs_generation.subconfigs_combinations("fourier", input_basis_dict, exclude_list=["domain"])
+    bases_rffs = configs_generation.subconfigs_combinations("random_fourier",
+                                                            rffs_basis_dict, exclude_list=["domain"])
+    # Wavelets output basses
+    output_basis_params = {"pywt_name": pywt_name, "moments": moments, "init_dilat": init_dilat, "translat": translat,
+                           "dilat": dilat, "n_dilat": n_dilat, "approx_level": approx_level,
+                           "add_constant": add_constant, "locs_bounds": locs_bounds_out, "domain": domain_out}
+    bases_out = configs_generation.subconfigs_combinations("wavelets", output_basis_params,
+                                                           exclude_list=["domain", "locs_bounds"])
+    # Generate full configs
+    params = {"basis_in": bases_in, "basis_out": bases_out, 'basis_rffs': bases_rffs, "regu": regu,
+              "center_output": center_output}
+    configs = configs_generation.configs_combinations(params)
+    # Create list of regressors from that config
+    regs = [triple_basis.TripleBasisEstimator(**config) for config in configs]
+    return configs, regs
+
+
 def speech_fpca_3be(ker_sigma, regu, n_fpca, n_evals_fpca, domain=np.array([[0, 1]])):
     # FPCA output basis
     output_basis_params = {"n_basis": n_fpca, "input_dim": 1, "domain": domain, "n_evals": n_evals_fpca}
