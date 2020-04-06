@@ -88,7 +88,7 @@ if __name__ == '__main__':
         best_config, best_result, score_test = parallel_tuning.parallel_tuning(
             regs, Xtrain, Ytrain, Xtest, Ytest, configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS, min_nprocs=MIN_PROCS)
         best_configs.append(best_config)
-        best_results.append(best_results)
+        best_results.append(best_result)
         scores_test.append(score_test)
         with open(rec_path + "/" + str(i) + ".pkl", "wb") as out:
             pickle.dump((best_configs, best_results, scores_test), out, pickle.HIGHEST_PROTOCOL)

@@ -42,10 +42,14 @@ SIGNAL_EXT = ("symmetric", (1, 1))
 CENTER_OUTPUT = True
 DOMAIN_OUT = np.array([[0, 1]])
 LOCS_BOUNDS = np.array([[0 - SIGNAL_EXT[1][0], 1 + SIGNAL_EXT[1][1]]])
-DECREASE_BASE = np.arange(1, 2, 0.05)
-MOMENTS = [2, 3]
-PYWT_NAME = ["db", "coif"]
-N_DILATS = [4, 5]
+# DECREASE_BASE = np.arange(1, 2, 0.05)
+DECREASE_BASE = np.arange(1, 1.6, 0.05)
+# MOMENTS = [2, 3]
+# PYWT_NAME = ["db"]
+# N_DILATS = [4, 5]
+MOMENTS = [2]
+PYWT_NAME = ["db"]
+N_DILATS = [5]
 BASIS_DICT = {"pywt_name": PYWT_NAME, "moments": MOMENTS, "n_dilat": N_DILATS, "init_dilat": 1.0, "translat": 1.0, "dilat": 2, "approx_level": 6,
               "add_constant": True, "domain": DOMAIN_OUT, "locs_bounds": LOCS_BOUNDS}
 # Standard deviation parameter for the input kernel
@@ -103,7 +107,7 @@ if __name__ == '__main__':
             input_indexing=INPUT_INDEXING, output_indexing=OUTPUT_INDEXING, min_nprocs=MIN_PROCS,
             configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS)
         best_configs.append(best_config)
-        best_results.append(best_results)
+        best_results.append(best_result)
         scores_test.append(score_test)
         with open(rec_path + "/" + str(i) + ".pkl", "wb") as out:
             pickle.dump((best_configs, best_results, scores_test), out, pickle.HIGHEST_PROTOCOL)
