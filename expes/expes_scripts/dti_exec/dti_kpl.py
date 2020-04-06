@@ -21,7 +21,7 @@ from functional_data import discrete_functional_data as disc_fd
 # Path to the data
 DATA_PATH = path + "/data/dataDTI/"
 # Record config
-OUTPUT_FOLDER = "dti_kpl_multi"
+OUTPUT_FOLDER = "dti_kpl_multi2"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 EXPE_NAME = "dti_kpl"
 # Number of processors
