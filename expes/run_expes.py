@@ -52,7 +52,7 @@ def run_expe_speech(configs, regs, seeds, data_path, rec_path, input_indexing,
         best_config, best_result, score_test = run_subexpe_speech(
             X ,Y, configs, regs, key, seeds[i], input_indexing, output_indexing, n_folds, n_procs, min_nprocs)
         best_configs.append(best_config)
-        best_results.append(best_results)
+        best_results.append(best_result)
         scores_test.append(score_test)
         with open(rec_path + "/" + str(i) + "_" + key + ".pkl", "wb") as out:
             pickle.dump((best_configs, best_results, scores_test), out, pickle.HIGHEST_PROTOCOL)

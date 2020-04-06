@@ -43,5 +43,24 @@ for folder in folders_dti:
 
 KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
 
-folders_speech = ["dti_3be_multi", "dti_fkrr_multi", "dti_kpl_multi", "dti_ke_multi"]
 
+folders_speech = ["speech_3be_multi", "speech_kpl_multi", "speech_ke_multi"]
+
+with open(path + "speech_3be_multi/9_LP.pkl", "rb") as inp:
+    _1, _2, score_test = pickle.load(inp)
+
+
+def mean_variance_result_speech(path, key):
+    with open(path + "/9_" + key + ".pkl", "rb") as inp:
+        _1, _2, score_test = pickle.load(inp)
+    return np.mean(score_test), np.std(score_test)
+
+
+for key in KEYS:
+    print(key)
+    for folder in folders_speech:
+        print(folder)
+        m, s = mean_variance_result_speech(path + folder, key)
+        print("mean:" + str(m))
+        print("std: " + str(s))
+    print(" ")

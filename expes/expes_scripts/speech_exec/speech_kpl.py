@@ -16,7 +16,7 @@ from expes import generate_expes, run_expes
 # Path to the data
 DATA_PATH = path + "/data/dataspeech/raw/"
 # Record config
-OUTPUT_FOLDER = "/speech_kpl_multi"
+OUTPUT_FOLDER = "/speech_kpl_multi2"
 
 # Indexing
 INPUT_INDEXING = "list"
@@ -38,11 +38,12 @@ DOMAIN = np.array([[0, 1]])
 REGU_GRID = list(np.geomspace(1e-10, 1e-3, 50))
 # REGU_GRID = [1e-10, 1e-7]
 # Number of principal components to consider
-N_FPCA = [20, 30, 40]
+N_FPCA = [30, 40]
 # Standard deviation parameter for the input kernel
 KER_SIGMA = 1
 # Decrease base
-DECREASE_BASE = np.arange(1, 1.6, 0.1)
+# DECREASE_BASE = np.arange(1, 1.6, 0.1)
+DECREASE_BASE = 1
 # Number of evaluations for FPCA
 NEVALS_FPCA = 300
 
