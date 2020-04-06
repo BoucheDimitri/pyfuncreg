@@ -29,10 +29,10 @@ OUTPUT_INDEXING = "discrete_general"
 N_FOLDS = 5
 
 # Exec config
-N_PROCS = 7
-MIN_PROCS = None
-# N_PROCS = None
-# MIN_PROCS = 32
+# N_PROCS = 7
+# MIN_PROCS = None
+N_PROCS = None
+MIN_PROCS = 32
 # MIN_PROCS = None
 
 # ############################### Regressor config #####################################################################
