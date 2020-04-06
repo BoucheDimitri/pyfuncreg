@@ -34,7 +34,7 @@ N_FOLDS = 5
 N_PROCS = None
 MIN_PROCS = 32
 # MIN_PROCS = None
-
+# 
 # ############################### Regressor config #####################################################################
 # Dictionary obtained by cross validation for quick run fitting on train and get score on test
 SIGNAL_EXT_INPUT = ("symmetric", (1, 1))
