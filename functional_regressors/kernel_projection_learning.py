@@ -273,7 +273,6 @@ class SeperableKPL(FunctionalRegressor):
             preds.append(np.squeeze(self.predict_from_coefs(pred_coefs[i], Yins_new[i])))
         return preds
 
-
     # def predict_evaluate(self, Xnew, yin_new):
     #     pred_coefs = self.predict(Xnew)
     #     basis_evals = self.basis_out.compute_matrix(yin_new)
