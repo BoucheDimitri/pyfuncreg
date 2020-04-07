@@ -19,16 +19,19 @@ def mean_variance_result_dti(path):
         _1, _2, score_test = pickle.load(inp)
     return np.mean(score_test), np.std(score_test)
 
-path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_06-04-2020_15-59/outputs/"
+path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_07-04-2020_16-10/outputs/"
 
 # folders_dti = ["dti_3be_multi", "dti_fkrr_multi", "dti_kam_multi", "dti_kpl_multi", "dti_ke_multi"]
-folders_dti = ["dti_3be_multi", "dti_fkrr_multi", "dti_kpl_multi3", "dti_ke_multi"]
+folders_dti = ["dti_3be_multi_wavs", "dti_fkrr_multi", "dti_kpl_multi3", "dti_ke_multi"]
 
 
 with open(path + "dti_kpl_multi2" + "/9.pkl", "rb") as inp:
     _1, _2, score_test = pickle.load(inp)
 
-with open(path + "dti_3be_multi" + "/9.pkl", "rb") as inp:
+with open(path + "dti_3be_multi_wavs" + "/9.pkl", "rb") as inp:
+    _1, _2, score_test = pickle.load(inp)
+
+with open(path + "dti_kam_multi" + "/3.pkl", "rb") as inp:
     _1, _2, score_test = pickle.load(inp)
 
 for folder in folders_dti:
@@ -40,14 +43,17 @@ for folder in folders_dti:
 
 
 # ############################ SPEECH ##################################################################################
-
+path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_07-04-2020_16-10/outputs/"
 KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
 
 
 folders_speech = ["speech_3be_multi", "speech_kpl_multi", "speech_ke_multi"]
 
 with open(path + "speech_3be_multi/9_LP.pkl", "rb") as inp:
-    _1, _2, score_test = pickle.load(inp)
+    best_config_3be, best_result_3be, score_test_3be = pickle.load(inp)
+
+with open(path + "speech_kpl_multi/9_LP.pkl", "rb") as inp:
+    best_config_kpl, best_result_kpl, score_test_kpl = pickle.load(inp)
 
 
 def mean_variance_result_speech(path, key):

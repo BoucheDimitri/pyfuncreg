@@ -251,21 +251,44 @@ class SeperableKPL(FunctionalRegressor):
     def predict(self, Xnew):
         return self.ovkridge.predict(Xnew)
 
-    def predict_evaluate(self, Xnew, yin_new):
-        pred_coefs = self.predict(Xnew)
+    def predict_from_coefs(self, pred_coefs, yin_new):
+        if pred_coefs.ndim == 1:
+            pred_coefs = np.expand_dims(pred_coefs, axis=0)
         basis_evals = self.basis_out.compute_matrix(yin_new)
-        if self.center_output is not False:
+        if self.center_output:
             mean_eval = np.expand_dims(self.Ymean_func(yin_new), axis=0)
             return pred_coefs.dot(basis_evals.T) + mean_eval
         else:
             return pred_coefs.dot(basis_evals.T)
 
+    def predict_evaluate(self, Xnew, yin_new):
+        pred_coefs = self.predict(Xnew)
+        return self.predict_from_coefs(pred_coefs, yin_new)
+
     def predict_evaluate_diff_locs(self, Xnew, Yins_new):
         n_preds = len(Xnew)
         preds = []
+        pred_coefs = self.predict(Xnew)
         for i in range(n_preds):
-            preds.append(np.squeeze(self.predict_evaluate([Xnew[i]], Yins_new[i])))
+            preds.append(np.squeeze(self.predict_from_coefs(pred_coefs[i], Yins_new[i])))
         return preds
+
+
+    # def predict_evaluate(self, Xnew, yin_new):
+    #     pred_coefs = self.predict(Xnew)
+    #     basis_evals = self.basis_out.compute_matrix(yin_new)
+    #     if self.center_output is not False:
+    #         mean_eval = np.expand_dims(self.Ymean_func(yin_new), axis=0)
+    #         return pred_coefs.dot(basis_evals.T) + mean_eval
+    #     else:
+    #         return pred_coefs.dot(basis_evals.T)
+    #
+    # def predict_evaluate_diff_locs(self, Xnew, Yins_new):
+    #     n_preds = len(Xnew)
+    #     preds = []
+    #     for i in range(n_preds):
+    #         preds.append(np.squeeze(self.predict_evaluate([Xnew[i]], Yins_new[i])))
+    #     return preds
 
 
 # TODO : finish this

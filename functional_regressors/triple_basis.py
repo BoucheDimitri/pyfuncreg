@@ -146,7 +146,7 @@ class BiBasisEstimator:
         if self.basis_out is None:
             self.basis_out = basis.generate_basis(self.basis_out_config[0], self.basis_out_config[1])
         if isinstance(self.basis_out, basis.DataDependantBasis):
-            self.basis_out.fit(Y[0], Y[1])
+            self.basis_out.fit(*Y)
 
     def fit(self, X, Y, K=None):
         self.X = X
