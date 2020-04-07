@@ -5,10 +5,10 @@ import pathlib
 import pickle
 
 # Execution path
-exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
-path = str(exec_path.parent.parent.parent)
-sys.path.append(path)
-# path = os.getcwd()
+# exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
+# path = str(exec_path.parent.parent.parent)
+# sys.path.append(path)
+path = os.getcwd()
 
 # Local imports
 from model_eval import parallel_tuning
@@ -25,11 +25,10 @@ OUTPUT_FOLDER = "dti_kpl_multi_modif"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 
 # Number of processors
-# N_PROCS = 7
-N_PROCS = None
-MIN_PROCS = 32
-# MIN_PROCS = None
-
+N_PROCS = 7
+MIN_PROCS = None
+# N_PROCS = None
+# MIN_PROCS = 32
 
 N_TRAIN = 70
 N_FOLDS = 5
@@ -44,21 +43,22 @@ SIGNAL_EXT = ("symmetric", (1, 1))
 CENTER_OUTPUT = True
 DOMAIN_OUT = np.array([[0, 1]])
 LOCS_BOUNDS = np.array([[0 - SIGNAL_EXT[1][0], 1 + SIGNAL_EXT[1][1]]])
-DECREASE_BASE = np.arange(1, 2, 0.05)
+# DECREASE_BASE = np.arange(1, 2, 0.05)
 # DECREASE_BASE = np.arange(1, 1.6, 0.05)
-MOMENTS = [2, 3]
-PYWT_NAME = ["db"]
-N_DILATS = [4, 5]
-# MOMENTS = [2]
+DECREASE_BASE = 1
+# MOMENTS = [2, 3]
 # PYWT_NAME = ["db"]
-# N_DILATS = [4]
+# N_DILATS = [4, 5]
+MOMENTS = [2]
+PYWT_NAME = ["db"]
+N_DILATS = [4]
 BASIS_DICT = {"pywt_name": PYWT_NAME, "moments": MOMENTS, "n_dilat": N_DILATS, "init_dilat": 1.0, "translat": 1.0, "dilat": 2, "approx_level": 6,
               "add_constant": True, "domain": DOMAIN_OUT, "locs_bounds": LOCS_BOUNDS}
 # Standard deviation parameter for the input kernel
 KER_SIGMA = 0.9
 # Regularization grid
-REGUS = np.geomspace(1e-8, 1, 100)
-# REGUS = [1e-3, 1e-4]
+# REGUS = np.geomspace(1e-8, 1, 100)
+REGUS = [1e-3, 1e-4]
 
 
 # Seeds for averaging of expes (must all be of the same size)

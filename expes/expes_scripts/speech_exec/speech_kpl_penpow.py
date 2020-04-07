@@ -16,7 +16,7 @@ from expes import generate_expes, run_expes
 # Path to the data
 DATA_PATH = path + "/data/dataspeech/raw/"
 # Record config
-OUTPUT_FOLDER = "/speech_kpl_multi_penpow"
+OUTPUT_FOLDER = "/speech_kpl_multi_penpow2"
 
 # Indexing
 INPUT_INDEXING = "list"
