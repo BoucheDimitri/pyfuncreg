@@ -21,9 +21,9 @@ from functional_data import discrete_functional_data as disc_fd
 # Path to the data
 DATA_PATH = path + "/data/dataDTI/"
 # Record config
-OUTPUT_FOLDER = "dti_kpl_multi3"
+OUTPUT_FOLDER = "dti_kpl_multi_modif"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
-EXPE_NAME = "dti_kpl"
+
 # Number of processors
 # N_PROCS = 7
 N_PROCS = None
@@ -38,14 +38,14 @@ OUTPUT_INDEXING = "discrete_general"
 
 # ############################### Regressor config #####################################################################
 # Signal extension method
-# SIGNAL_EXT = ("symmetric", (1, 1))
+SIGNAL_EXT = ("symmetric", (1, 1))
 # SIGNAL_EXT = ("symmetric", (2, 2))
-SIGNAL_EXT = ("symmetric", (0, 0))
+# SIGNAL_EXT = ("symmetric", (0, 0))
 CENTER_OUTPUT = True
 DOMAIN_OUT = np.array([[0, 1]])
 LOCS_BOUNDS = np.array([[0 - SIGNAL_EXT[1][0], 1 + SIGNAL_EXT[1][1]]])
-# DECREASE_BASE = np.arange(1, 2, 0.05)
-DECREASE_BASE = np.arange(1, 1.6, 0.05)
+DECREASE_BASE = np.arange(1, 2, 0.05)
+# DECREASE_BASE = np.arange(1, 1.6, 0.05)
 MOMENTS = [2, 3]
 PYWT_NAME = ["db"]
 N_DILATS = [4, 5]
