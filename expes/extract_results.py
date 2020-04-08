@@ -43,16 +43,16 @@ for folder in folders_dti:
 
 
 # ############################ SPEECH ##################################################################################
-path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_07-04-2020_16-10/outputs/"
+path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_08-04-2020_09-12/outputs/"
 KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
 
 
-folders_speech = ["speech_3be_multi", "speech_kpl_multi", "speech_ke_multi"]
+folders_speech = ["speech_3be_multi", "speech_kpl_multi_penpow2", "speech_ke_multi"]
 
 with open(path + "speech_3be_multi/9_LP.pkl", "rb") as inp:
     best_config_3be, best_result_3be, score_test_3be = pickle.load(inp)
 
-with open(path + "speech_kpl_multi/9_LP.pkl", "rb") as inp:
+with open(path + "speech_kpl_multi_penpow2/9_LP.pkl", "rb") as inp:
     best_config_kpl, best_result_kpl, score_test_kpl = pickle.load(inp)
 
 
