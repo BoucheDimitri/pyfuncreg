@@ -16,7 +16,7 @@ from expes import generate_expes, run_expes
 # Path to the data
 DATA_PATH = path + "/data/dataspeech/raw/"
 # Record config
-OUTPUT_FOLDER = "/speech_3be_multi"
+OUTPUT_FOLDER = "/speech_3be_multi_max"
 
 N_FOLDS = 5
 INPUT_INDEXING = "list"
@@ -36,7 +36,7 @@ DOMAIN = np.array([[0, 1]])
 REGU_GRID = list(np.geomspace(1e-10, 1e-3, 50))
 # REGU_GRID = [1e-10, 1e-7]
 # Number of principal components to consider
-N_FPCA = [30, 40]
+N_FPCA = [30, 40, 50]
 # N_FPCA = [20]
 # Standard deviation parameter for the input kernel
 KER_SIGMA = 1
