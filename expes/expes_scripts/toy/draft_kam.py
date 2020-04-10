@@ -18,32 +18,45 @@ from model_eval import parallel_tuning
 
 # ############################### Config ###############################################################################
 # Record config
-OUTPUT_FOLDER = "toy_fkrr_kertuning"
+OUTPUT_FOLDER = "toy_kam_kertuning"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 # Shuffle seed
 SHUFFLE_SEED = 784
-INPUT_INDEXING = "array"
+INPUT_INDEXING = "discrete_general"
 OUTPUT_INDEXING = "discrete_general"
 N_FOLDS = 5
-# N_PROCS = None
-# MIN_PROCS = 32
-N_PROCS = 7
-MIN_PROCS = None
+N_PROCS = None
+MIN_PROCS = 32
+# N_PROCS = 7
+# MIN_PROCS = None
 
 # ############################### Experiment parameters ################################################################
-KER_SIGMA = 20
-# KOUT_SIGMA = [0.1, 0.25, 0.5, 0.75, 1, 2, 3, 4, 5, 7.5, 10]
-KOUT_SIGMA = [0.1, 0.25, 0.5]
-# REGU = np.geomspace(1e-11, 1e2, 500)
-REGU = np.geomspace(1e-9, 1, 3)
+REGU = np.geomspace(1e-8, 1, 50)
+KIN_SIGMA = [0.05, 0.1, 0.25, 0.5, 1, 2.5]
+KOUT_SIGMA = [0.05, 0.1, 0.25, 0.5, 1, 2.5]
+KEVAL_SIGMA = [0.05, 0.1, 0.25, 0.5, 1, 2.5]
+# KIN_SIGMA = [0.05]
+# KOUT_SIGMA = [0.01]
+# KEVAL_SIGMA = [0.03]
+# N_FPCA = [10, 20, 30]
+# REGU = [1e-4]
+# KIN_SIGMA = 0.01
+# KOUT_SIGMA = 0.01
+# KEVAL_SIGMA = 0.03
+N_FPCA = [10, 20, 30]
 NOISE_INPUT = 0.07
 NOISE_OUTPUT = 0.02
-NSAMPLES_LIST = [150]
+NSAMPLES_LIST = [100]
 MISSING_LEVELS = np.arange(0, 1, 0.05)
-# NSAMPLES_LIST = [20, 50]
-# MISSING_LEVELS = [0, 0.1]
-N_APPROX = 200
-APPROX_LOCS = np.linspace(toy_data_spline.DOM_OUTPUT[0, 0], toy_data_spline.DOM_OUTPUT[0, 1], N_APPROX)
+DOMAIN_OUT = toy_data_spline.DOM_OUTPUT
+DOMAIN_IN = toy_data_spline.DOM_INPUT
+LOCS_IN = np.linspace(DOMAIN_IN[0, 0], DOMAIN_IN[0, 1], toy_data_spline.N_LOCS_INPUT)
+N_EVALS_IN = 100
+N_EVALS_OUT = 100
+N_EVALS_FPCA = 100
+PARAMS = {"regu": REGU, "kin_sigma": KIN_SIGMA, "kout_sigma": KOUT_SIGMA, "keval_sigma": KEVAL_SIGMA,
+          "n_fpca": N_FPCA, "n_evals_fpca": N_EVALS_FPCA, "n_evals_in": N_EVALS_IN, "n_evals_out": N_EVALS_OUT,
+          "domain_in": DOMAIN_IN, "domain_out": DOMAIN_OUT}
 
 
 # Seeds for averaging of expes (must all be of the same size)
@@ -77,13 +90,15 @@ if __name__ == '__main__':
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
     # ############################# Load the data ######################################################################
-    configs, regs = generate_expes.toy_spline_fkrr(KER_SIGMA, KOUT_SIGMA, REGU, APPROX_LOCS, False)
+    configs, regs = generate_expes.dti_kam(**PARAMS)
     scores_dicts = []
     Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(NSAMPLES_LIST[0], seed=784)
     Xtrain_deg = degradation.add_noise_inputs(Xtrain, NOISE_INPUT, 586)
+    Xtrain_deg = ([LOCS_IN for i in range(Xtrain_deg.shape[0])], [Xtrain_deg[i]for i in range(Xtrain_deg.shape[0])])
     Ytrain_deg = degradation.add_noise_outputs(Ytrain, NOISE_OUTPUT, 765)
     Ytrain_deg = ([np.squeeze(y) for y in Ytrain_deg[0]], Ytrain_deg[1])
     Ytest = ([np.squeeze(y) for y in Ytest[0]], Ytest[1])
+    Xtest = ([LOCS_IN for i in range(Xtest.shape[0])], [Xtest[i] for i in range(Xtest.shape[0])])
     best_config, best_result, score_test = parallel_tuning.parallel_tuning(
         regs, Xtrain_deg, Ytrain_deg, Xtest, Ytest, configs=configs, n_folds=N_FOLDS, n_procs=N_PROCS,
         min_nprocs=MIN_PROCS, input_indexing=INPUT_INDEXING, output_indexing=OUTPUT_INDEXING)
