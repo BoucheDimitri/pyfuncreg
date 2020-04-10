@@ -25,18 +25,19 @@ SHUFFLE_SEED = 784
 INPUT_INDEXING = "array"
 OUTPUT_INDEXING = "discrete_general"
 N_FOLDS = 5
-N_PROCS = None
-MIN_PROCS = 32
-# N_PROCS = 7
-# MIN_PROCS = None
+# N_PROCS = None
+# MIN_PROCS = 32
+N_PROCS = 7
+MIN_PROCS = None
 
 # ############################### Experiment parameters ################################################################
 KER_SIGMA = 20
+KOUT_SIGMA =
 REGU = np.geomspace(1e-11, 1e2, 500)
 # REGU = np.geomspace(1e-9, 1, 10)
 NOISE_INPUT = 0.07
 NOISE_OUTPUT = 0.02
-NSAMPLES_LIST = [10, 25, 50, 100, 250, 500, 1000]
+NSAMPLES_LIST = [250]
 MISSING_LEVELS = np.arange(0, 1, 0.05)
 # NSAMPLES_LIST = [20, 50]
 # MISSING_LEVELS = [0, 0.1]
@@ -74,8 +75,7 @@ if __name__ == '__main__':
     # ############################# Load the data ######################################################################
     configs, regs = generate_expes.toy_spline_kpl(KER_SIGMA, REGU)
     scores_dicts = []
-    # for i in range(N_AVERAGING):
-    for i in range(9, 10):
+    for i in range(N_AVERAGING):
         scores_dicts.append({})
         for n_samples in NSAMPLES_LIST:
             Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(n_samples, seed=seeds_data[i])

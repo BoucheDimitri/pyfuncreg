@@ -251,6 +251,16 @@ def speech_fpca_3be(ker_sigma, regu, n_fpca, n_evals_fpca, domain=np.array([[0, 
 
 # ############################### FKRR #################################################################################
 
+def toy_spline_fkrr(kin_sigma, kout_sigma, regu, approx_locs, center_output):
+    kin = kernels.GaussianScalarKernel(kin_sigma, normalize=False)
+    kout = kernels.LaplaceScalarKernel(kout_sigma, normalize=False)
+    params = {"regu": regu, "kernel_in": kin, "kernel_out": kout,
+              "approx_locs": approx_locs, "center_output": center_output}
+    configs = configs_generation.configs_combinations(params, exclude_list=["approx_locs"])
+    regs = [ovkernel_ridge.SeparableOVKRidgeFunctional(**config) for config in configs]
+    return configs, regs
+
+
 def kernels_generator_fkrr_dti(kin_sigma, kout_sigma):
     if isinstance(kin_sigma, Iterable):
         kernels_in = [kernels.GaussianScalarKernel(sig, normalize=False) for sig in kin_sigma]
