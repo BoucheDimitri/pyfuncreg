@@ -69,10 +69,9 @@ if __name__ == '__main__':
 
     # ############################## Run experiment ####################################################################
     configs, regs = generate_expes.toy_spline_kpl(KER_SIGMA, REGU)
-    scores_dicts = []
+    scores_dicts = [{} for i in range(N_AVERAGING)]
     # for i in range(N_AVERAGING):
     for i in range(9, 10):
-        scores_dicts.append({})
         for n_samples in NSAMPLES_LIST:
             Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(n_samples, seed=seeds_data[i])
             # Add input noise
