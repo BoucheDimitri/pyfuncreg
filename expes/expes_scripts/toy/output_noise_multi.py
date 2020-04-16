@@ -18,18 +18,18 @@ from expes import generate_expes
 
 # ############################### Config ###############################################################################
 # Record config
-OUTPUT_FOLDER = "output_noise_multi"
+OUTPUT_FOLDER = "output_noise_multi2"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 EXPE_NAME = "output_noise"
 
 # ############################### Experiment parameters ################################################################
 KER_SIGMA = 20
-REGU = np.geomspace(1e-11, 1e2, 500)
+REGU = np.geomspace(1e-11, 1e2, 250)
 # REGU = np.geomspace(1e-9, 1, 10)
 NOISE_INPUT = 0.07
 NOISE_OUTPUT = np.linspace(0, 1.5, 50)
 # NOISE_OUTPUT = np.linspace(0, 1.5, 10)
-NSAMPLES_LIST = [10, 25, 50, 100, 250, 500, 1000]
+NSAMPLES_LIST = [10, 50, 100, 500]
 # NSAMPLES_LIST = [10, 25, 50]
 # NOISE_OUTPUT = np.linspace(0, 1.5, 3)
 INPUT_INDEXING = "array"
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     configs, regs = generate_expes.toy_spline_kpl(KER_SIGMA, REGU)
     scores_dicts = [{} for i in range(N_AVERAGING)]
     # for i in range(N_AVERAGING):
-    for i in range(9, 10):
+    for i in range(N_AVERAGING):
         for n_samples in NSAMPLES_LIST:
             Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(n_samples, seed=seeds_data[i])
             # Add input noise

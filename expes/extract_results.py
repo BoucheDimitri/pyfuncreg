@@ -19,10 +19,10 @@ def mean_variance_result_dti(path):
         _1, _2, score_test = pickle.load(inp)
     return np.mean(score_test), np.std(score_test)
 
-path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_07-04-2020_16-10/outputs/"
+path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_16-04-2020_11-33/outputs/"
 
 # folders_dti = ["dti_3be_multi", "dti_fkrr_multi", "dti_kam_multi", "dti_kpl_multi", "dti_ke_multi"]
-folders_dti = ["dti_3be_multi_wavs", "dti_fkrr_multi", "dti_kpl_multi3", "dti_ke_multi"]
+folders_dti = ["dti_3be_multi_wavs", "dti_fkrr_multi", "dti_kpl_multi3", "dti_ke_multi", "dti_kam_multi"]
 
 
 with open(path + "dti_kpl_multi2" + "/9.pkl", "rb") as inp:
@@ -43,11 +43,11 @@ for folder in folders_dti:
 
 
 # ############################ SPEECH ##################################################################################
-path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_08-04-2020_09-12/outputs/"
+path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_16-04-2020_11-33/outputs/"
 KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
 
 
-folders_speech = ["speech_3be_multi", "speech_kpl_multi_penpow2", "speech_ke_multi"]
+folders_speech = ["speech_3be_multi_max", "speech_kpl_multi_penpow_max", "speech_ke_multi", "speech_fkrr_multi"]
 
 with open(path + "speech_3be_multi/9_LP.pkl", "rb") as inp:
     best_config_3be, best_result_3be, score_test_3be = pickle.load(inp)

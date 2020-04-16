@@ -7,7 +7,6 @@ import pathlib
 # Execution path
 exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
 path = str(exec_path.parent.parent.parent)
-sys.path.append(path)
 # path = os.getcwd()
 
 # Local imports
