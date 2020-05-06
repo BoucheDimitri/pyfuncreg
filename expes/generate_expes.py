@@ -139,7 +139,7 @@ def speech_fourier_kpl(kernel_sigma, regu, n_freqs, domain=np.array([[0, 1]])):
     output_matrices = configs_generation.subconfigs_combinations("eye", output_matrix_params)
     # Generate full configs
     params = {"kernel": multi_ker, "B": output_matrices, "basis_out": output_bases,
-              "regu": regu, "center_output": True}
+              "regu": regu, "center_output": False}
     configs = configs_generation.configs_combinations(params)
     # Create list of regressors from that config
     regs = [kproj_learning.SeperableKPL(**config) for config in configs]

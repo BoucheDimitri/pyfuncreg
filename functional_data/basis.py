@@ -205,6 +205,7 @@ class RandomFourierFeatures(Basis):
         self.w = np.random.normal(0, 1, (self.input_dim, self.n_basis))
         np.random.seed(seed)
         self.b = np.random.uniform(0, 2 * np.pi, (1, self.n_basis))
+        self.gram_mat = np.zeros((n_basis, n_basis))
 
     def compute_matrix(self, X):
         n = X.shape[0]
@@ -236,6 +237,9 @@ class RandomFourierFeatures(Basis):
 
     def get_atom(self, i):
         return lambda x: np.sqrt(2 / self.n_basis) * np.cos(self.bandwidth * self.w[:, i].dot(x) + self.b[:, i])
+    #
+    # def get_gram_matrix(self):
+    #
 
 
 class BasisFromSmoothFunctions(Basis):
