@@ -51,6 +51,7 @@ RFFS_SIGMA = [0.01, 0.05, 0.1, 0.5, 1, 5, 10]
 
 # Seeds for averaging of expes (must all be of the same size)
 N_AVERAGING = 10
+# N_AVERAGING = 2
 SEED_DATA = 784
 SEED_RFF = 567
 
