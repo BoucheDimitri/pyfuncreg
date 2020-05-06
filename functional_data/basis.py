@@ -205,7 +205,23 @@ class RandomFourierFeatures(Basis):
         self.w = np.random.normal(0, 1, (self.input_dim, self.n_basis))
         np.random.seed(seed)
         self.b = np.random.uniform(0, 2 * np.pi, (1, self.n_basis))
-        self.gram_mat = np.zeros((n_basis, n_basis))
+        self.compute_gram_matrix()
+
+    def compute_gram_matrix(self):
+        self.gram_mat = np.zeros((self.n_basis, self.n_basis))
+        for i in range(self.n_basis - 1):
+            for j in range(i + 1, self.n_basis):
+                a0 = np.abs(self.bandwidth * (self.w[0, i] - self.w[0, j]))
+                a1 = np.abs(self.bandwidth * (self.w[0, i] + self.w[0, j]))
+                b0 = self.b[0, i] - self.b[0, j]
+                b1 = self.b[0, i] + self.b[0, j]
+                entry = 0.5 * ((np.sin(a0 + b0) - np.sin(b0)) / a0 + (np.sin(a1 + b1) - np.sin(b1)) / a1)
+                self.gram_mat[i, j] = entry
+                self.gram_mat[j, i] = entry
+        for i in range(self.n_basis):
+            a = 2 * self.bandwidth * np.abs(self.w[0, i])
+            b = 2 * self.b[0, i]
+            self.gram_mat[i, i] = 0.5 + 0.5 * (1 / a) * (np.sin(a + b) - np.sin(b))
 
     def compute_matrix(self, X):
         n = X.shape[0]
@@ -237,9 +253,11 @@ class RandomFourierFeatures(Basis):
 
     def get_atom(self, i):
         return lambda x: np.sqrt(2 / self.n_basis) * np.cos(self.bandwidth * self.w[:, i].dot(x) + self.b[:, i])
-    #
-    # def get_gram_matrix(self):
-    #
+
+    def get_gram_matrix(self):
+        return self.gram_mat
+
+
 
 
 class BasisFromSmoothFunctions(Basis):
