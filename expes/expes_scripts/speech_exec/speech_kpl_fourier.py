@@ -49,7 +49,7 @@ DECREASE_BASE = 1
 NEVALS_FPCA = 300
 
 # Seeds for averaging of expes (must all be of the same size)
-N_AVERAGING = 2
+N_AVERAGING = 10
 SEED_DATA = 784
 
 # Generate seeds
