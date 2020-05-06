@@ -1,8 +1,31 @@
 import pickle
 import matplotlib.pyplot as plt
+import matplotlib
 import numpy as np
 
 from data import toy_data_spline
+
+# fontweight = 500
+# plt.rcParams.update({'ps.useafm': True})
+# plt.rcParams.update({'pdf.use14corefonts': True})
+# plt.rcParams.update({'text.usetex': True})
+# plt.rcParams.update({'text.usetex': True})
+plt.rcParams.update({"pdf.fonttype": 42})
+plt.rcParams.update({"font.size": 32})
+# plt.rcParams.update({"mathtext.bf":"sans:bold"})
+# plt.rcParams.update({"mathtext.fontset": "cm"})
+# plt.rcParams.update({"pdf.fonttype": 1})
+# plt.rcParams.update({'pdf.use14corefonts': True})
+# plt.rcParams.update({"font.weight": fontweight})
+# plt.rcParams.update({'ps.useafm': True})
+plt.rcParams.update({"lines.linewidth": 7})
+plt.rcParams.update({"lines.markersize": 10})
+plt.rcParams.update({"axes.linewidth": 2.5})
+plt.rcParams.update({"xtick.major.size": 10})
+plt.rcParams.update({"xtick.major.width": 2.5})
+plt.rcParams.update({"ytick.major.size": 10})
+plt.rcParams.update({"ytick.major.width": 2.5})
+
 
 path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_16-04-2020_11-33/outputs/output_noise_multi/"
 all_results = []
@@ -41,3 +64,5 @@ for key in sub_n_samples:
     results_test = np.flip(np.array(scores[key][beg_ind:]))
     plt.semilogy(snr_grid, results_test, label="N=" + str(key), marker="o")
 plt.legend()
+plt.xlabel("SNR")
+plt.ylabel("MSE (log scale)")

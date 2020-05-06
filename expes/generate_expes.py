@@ -124,6 +124,28 @@ def speech_fpca_penpow_kpl(kernel_sigma, regu, n_fpca, n_evals_fpca, decrease_ba
     return configs, regs
 
 
+def speech_fourier_kpl(kernel_sigma, regu, n_freqs, domain=np.array([[0, 1]])):
+    # FPCA output basis
+    output_basis_params = {"lower_freq": 0, "upper_freq": n_freqs, "domain": domain}
+    output_bases = configs_generation.subconfigs_combinations("fourier",
+                                                              output_basis_params,
+                                                              exclude_list=["domain"])
+    # Sum of Gaussian kernels
+    kernel_sigmas = kernel_sigma * np.ones(13)
+    gauss_kers = [kernels.GaussianScalarKernel(sig, normalize=False, normalize_dist=True) for sig in kernel_sigmas]
+    multi_ker = kernels.SumOfScalarKernel(gauss_kers, normalize=False)
+    # Penalize power
+    output_matrix_params = {}
+    output_matrices = configs_generation.subconfigs_combinations("eye", output_matrix_params)
+    # Generate full configs
+    params = {"kernel": multi_ker, "B": output_matrices, "basis_out": output_bases,
+              "regu": regu, "center_output": True}
+    configs = configs_generation.configs_combinations(params)
+    # Create list of regressors from that config
+    regs = [kproj_learning.SeperableKPL(**config) for config in configs]
+    return configs, regs
+
+
 # ############################### KAM ##################################################################################
 
 def kernels_generator_kam(kin_sigma, kout_sigma, keval_sigma):

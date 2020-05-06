@@ -8,17 +8,18 @@ import os
 # rc('text.usetext')
 
 
-fontweight = "bold"
+fontweight = 500
 # plt.rcParams.update({'ps.useafm': True})
 # plt.rcParams.update({'pdf.use14corefonts': True})
 # plt.rcParams.update({'text.usetex': True})
-plt.rcParams.update({'text.usetex': True})
+# plt.rcParams.update({'text.usetex': True})
+plt.rcParams.update({"pdf.fonttype": 42})
 plt.rcParams.update({"font.size": 32})
 # plt.rcParams.update({"mathtext.bf":"sans:bold"})
 # plt.rcParams.update({"mathtext.fontset": "cm"})
 # plt.rcParams.update({"pdf.fonttype": 1})
 # plt.rcParams.update({'pdf.use14corefonts': True})
-# plt.rcParams.update({"font.weight": fontweight})
+plt.rcParams.update({"font.weight": fontweight})
 # plt.rcParams.update({'ps.useafm': True})
 plt.rcParams.update({"lines.linewidth": 7})
 plt.rcParams.update({"lines.markersize": 10})
@@ -70,5 +71,5 @@ for n in sub_n_samples:
 
 plt.legend()
 plt.ylabel("MSE")
-plt.xlabel("Output degradation (\% of evaluations missing)")
+plt.xlabel("Output degradation (% of evaluations missing)")
 
