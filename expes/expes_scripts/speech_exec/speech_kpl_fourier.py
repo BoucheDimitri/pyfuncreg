@@ -16,7 +16,7 @@ from expes import generate_expes, run_expes
 # Path to the data
 DATA_PATH = path + "/data/dataspeech/raw/"
 # Record config
-OUTPUT_FOLDER = "/speech_kpl_fourier_multi"
+OUTPUT_FOLDER = "/speech_kpl_fourier"
 
 # Indexing
 INPUT_INDEXING = "list"
@@ -35,10 +35,10 @@ MIN_PROCS = 32
 DOMAIN = np.array([[0, 1]])
 
 # Regularization parameters grid
-REGU_GRID = list(np.geomspace(1e-10, 1e-3, 50))
+REGU_GRID = list(np.geomspace(1e-11, 1e-4, 50))
 # REGU_GRID = [1e-10, 1e-7]
 # Number of principal components to consider
-N_FREQS = [5, 10, 15, 20, 25, 30, 40]
+N_FREQS = [5, 10, 15, 20, 25, 30, 40, 50]
 # N_FREQS = [5]
 # Standard deviation parameter for the input kernel
 KER_SIGMA = 1
@@ -47,6 +47,7 @@ KER_SIGMA = 1
 DECREASE_BASE = 1
 # Number of evaluations for FPCA
 NEVALS_FPCA = 300
+CENTER_OUTPUT = [True, False]
 
 # Seeds for averaging of expes (must all be of the same size)
 N_AVERAGING = 10
@@ -61,7 +62,7 @@ if __name__ == '__main__':
     # Create folder for saving results
     rec_path = run_expes.create_output_folder(path, OUTPUT_FOLDER)
     # Generate configurations and corresponding regressors
-    configs, regs = generate_expes.speech_fourier_kpl(KER_SIGMA, REGU_GRID, N_FREQS, DOMAIN)
+    configs, regs = generate_expes.speech_fourier_kpl(KER_SIGMA, REGU_GRID, N_FREQS, CENTER_OUTPUT, DOMAIN)
     # Run expes
     best_configs, best_results, scores_test = run_expes.run_expe_speech(
         configs, regs, seeds=seeds_data, data_path=DATA_PATH, rec_path=rec_path,

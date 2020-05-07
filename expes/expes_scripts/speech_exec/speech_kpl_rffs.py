@@ -16,7 +16,7 @@ from expes import generate_expes, run_expes
 # Path to the data
 DATA_PATH = path + "/data/dataspeech/raw/"
 # Record config
-OUTPUT_FOLDER = "/speech_kpl_rffs_multi"
+OUTPUT_FOLDER = "/speech_kpl_rffs2"
 
 # Indexing
 INPUT_INDEXING = "list"
@@ -35,7 +35,7 @@ MIN_PROCS = 32
 DOMAIN = np.array([[0, 1]])
 
 # Regularization parameters grid
-REGU_GRID = list(np.geomspace(1e-10, 1e-3, 50))
+REGU_GRID = list(np.geomspace(1e-11, 1e-4, 50))
 # REGU_GRID = [1e-10, 1e-7]
 # N_FREQS = [5]
 # Standard deviation parameter for the input kernel
@@ -44,9 +44,10 @@ KER_SIGMA = 1
 # DECREASE_BASE = np.arange(1, 1.6, 0.1)
 DECREASE_BASE = 1
 # Number of evaluations for FPCA
-N_RFFS = 100
+N_RFFS = [100]
+CENTER_OUTPUT = [True, False]
 # RFFS_SIGMA
-RFFS_SIGMA = [0.01, 0.05, 0.1, 0.5, 1, 5, 10]
+RFFS_SIGMA = [10, 25, 50, 75, 100]
 # RFFS_SIGMA = [0.025, 0.05]
 
 # Seeds for averaging of expes (must all be of the same size)
@@ -64,7 +65,8 @@ if __name__ == '__main__':
     # Create folder for saving results
     rec_path = run_expes.create_output_folder(path, OUTPUT_FOLDER)
     # Generate configurations and corresponding regressors
-    configs, regs = generate_expes.speech_rffs_kpl(KER_SIGMA, REGU_GRID, N_RFFS, RFFS_SIGMA, SEED_RFF, DOMAIN)
+    configs, regs = generate_expes.speech_rffs_kpl(KER_SIGMA, REGU_GRID, N_RFFS, RFFS_SIGMA,
+                                                   SEED_RFF, CENTER_OUTPUT, DOMAIN)
     # Run expes
     best_configs, best_results, scores_test = run_expes.run_expe_speech(
         configs, regs, seeds=seeds_data, data_path=DATA_PATH, rec_path=rec_path,
