@@ -209,9 +209,9 @@ class RandomFourierFeatures(Basis):
         # self.compute_gram_matrix_bis()
 
     def compute_gram_matrix(self):
-        space = np.linspace(0, 1, 1000)
+        space = np.linspace(0, 1, 2000)
         mat = self.compute_matrix(space)
-        self.gram_mat = (1/1000) * mat.T.dot(mat)
+        self.gram_mat = (1/2000) * mat.T.dot(mat)
     #
     # def compute_gram_matrix(self):
     #     self.gram_mat = np.zeros((self.n_basis, self.n_basis))

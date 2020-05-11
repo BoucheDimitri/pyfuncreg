@@ -30,11 +30,18 @@ def extract_key_speech(argv):
             'in the set {"LA", "LP", "TBCL", "VEL", "GLO", "TTCL", "TTCD"}')
 
 
-def run_subexpe_speech(X ,Y, configs, regs, key, seed, input_indexing, output_indexing, n_folds, n_procs, min_nprocs):
+def run_subexpe_speech(X ,Y, configs, regs, key, seed, input_indexing, output_indexing, n_folds, n_procs,
+                       min_nprocs, seed_dict=None):
     Xtrain, Ytrain_full_ext, Ytrain_full, Xtest, Ytest_full_ext, Ytest_full = processing.process_speech(
         X, Y, shuffle_seed=seed, n_train=300, normalize_domain=True, normalize_values=True)
     Ytrain_ext, Ytrain, Ytest_ext, Ytest \
         = Ytrain_full_ext[key], Ytrain_full[key], Ytest_full_ext[key], Ytest_full[key]
+    # Workaround for setting new seed for RFFS
+    # TODO: make this clean
+    if seed_dict is not None:
+        for i in range(len(regs)):
+            regs[i].basis_out_config[1]["seed"] = seed_dict
+            configs[i]["basis_out"][1]["seed"] = seed_dict
     # Cross validation of the regressors
     best_config, best_result, score_test = parallel_tuning.parallel_tuning(
         regs, Xtrain, Ytrain_ext, Xtest, Ytest, Xpred_train=None, Ypred_train=Ytrain,
@@ -44,13 +51,21 @@ def run_subexpe_speech(X ,Y, configs, regs, key, seed, input_indexing, output_in
 
 
 def run_expe_speech(configs, regs, seeds, data_path, rec_path, input_indexing,
-                    output_indexing, n_folds, n_procs, min_nprocs):
+                    output_indexing, n_folds, n_procs, min_nprocs, seeds_dict=None):
     scores_test, best_results, best_configs = list(), list(), list()
     X, Y = loading.load_raw_speech_dataset(data_path)
     key = extract_key_speech(sys.argv)
     for i in range(len(seeds)):
-        best_config, best_result, score_test = run_subexpe_speech(
-            X ,Y, configs, regs, key, seeds[i], input_indexing, output_indexing, n_folds, n_procs, min_nprocs)
+        # Workaround for setting new seed for RFFS
+        # TODO: make this clean
+        if seeds_dict is not None:
+            best_config, best_result, score_test = run_subexpe_speech(
+                X ,Y, configs, regs, key, seeds[i], input_indexing, output_indexing, n_folds,
+                n_procs, min_nprocs, seeds_dict[i])
+        else:
+            best_config, best_result, score_test = run_subexpe_speech(
+                X ,Y, configs, regs, key, seeds[i], input_indexing, output_indexing, n_folds,
+                n_procs, min_nprocs, None)
         best_configs.append(best_config)
         best_results.append(best_result)
         scores_test.append(score_test)

@@ -43,17 +43,17 @@ for folder in folders_dti:
 
 
 # ############################ SPEECH ##################################################################################
-path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_07-05-2020_11-05/outputs/"
+path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_11-05-2020_08-52/outputs/"
 KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
 # KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL")
 
 # folders_speech = ["speech_3be_multi_max", "speech_kpl_multi_penpow_max", "speech_ke_multi", "speech_fkrr_multi"]
-folders_speech = ["speech_3be_multi_max", "speech_kpl_rffs_multi", "speech_ke_multi", "speech_fkrr_multi"]
+folders_speech = ["speech_3be_multi_max", "speech_kpl_rffs2", "speech_ke_multi", "speech_fkrr_multi"]
 
-with open(path + "speech_3be_multi/9_LP.pkl", "rb") as inp:
-    best_config_3be, best_result_3be, score_test_3be = pickle.load(inp)
-
-with open(path + "speech_kpl_fourier_multi/9_LA.pkl", "rb") as inp:
+# with open(path + "speech_3be_multi/9_LP.pkl", "rb") as inp:
+#     best_config_3be, best_result_3be, score_test_3be = pickle.load(inp)
+#
+with open(path + "speech_kpl_rffs2/9_LA.pkl", "rb") as inp:
     best_config_kpl, best_result_kpl, score_test_kpl = pickle.load(inp)
 
 

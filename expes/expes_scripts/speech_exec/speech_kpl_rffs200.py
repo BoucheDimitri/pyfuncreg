@@ -16,7 +16,7 @@ from expes import generate_expes, run_expes
 # Path to the data
 DATA_PATH = path + "/data/dataspeech/raw/"
 # Record config
-OUTPUT_FOLDER = "/speech_kpl_rffs2"
+OUTPUT_FOLDER = "/speech_kpl_rffs200"
 
 # Indexing
 INPUT_INDEXING = "list"
@@ -44,10 +44,10 @@ KER_SIGMA = 1
 # DECREASE_BASE = np.arange(1, 1.6, 0.1)
 DECREASE_BASE = 1
 # Number of evaluations for FPCA
-N_RFFS = [100]
+N_RFFS = [200]
 CENTER_OUTPUT = [True, False]
 # RFFS_SIGMA
-RFFS_SIGMA = [10, 25, 50, 75, 100]
+RFFS_SIGMA = [50, 100, 150, 250, 500]
 # RFFS_SIGMA = [0.025, 0.05]
 
 # Seeds for averaging of expes (must all be of the same size)
@@ -59,6 +59,8 @@ SEED_RFF = 567
 # Generate seeds
 np.random.seed(SEED_DATA)
 seeds_data = np.random.randint(100, 2000, N_AVERAGING)
+np.random.seed(SEED_RFF)
+seeds_rffs = np.random.randint(100, 2000, N_AVERAGING)
 
 if __name__ == '__main__':
 
@@ -71,4 +73,4 @@ if __name__ == '__main__':
     best_configs, best_results, scores_test = run_expes.run_expe_speech(
         configs, regs, seeds=seeds_data, data_path=DATA_PATH, rec_path=rec_path,
         input_indexing=INPUT_INDEXING, output_indexing=OUTPUT_INDEXING, n_folds=N_FOLDS,
-        n_procs=N_FOLDS, min_nprocs=MIN_PROCS)
+        n_procs=N_FOLDS, min_nprocs=MIN_PROCS, seeds_dict=seeds_rffs)
