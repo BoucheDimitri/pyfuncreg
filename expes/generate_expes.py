@@ -293,6 +293,24 @@ def speech_fpca_3be(ker_sigma, regu, n_fpca, n_evals_fpca, domain=np.array([[0, 
     return configs, regs
 
 
+def speech_fourier_3be(ker_sigma, regu, upper_freqs, domain=np.array([[0, 1]])):
+    # Fourier output basis
+    output_basis_params = {"lower_freq": 0, "upper_freq": upper_freqs, "domain": domain}
+    output_bases = configs_generation.subconfigs_combinations("fourier",
+                                                              output_basis_params,
+                                                              exclude_list=["domain"])
+    # Sum of Gaussian kernels
+    ker_sigmas = ker_sigma * np.ones(13)
+    gauss_kers = [kernels.GaussianScalarKernel(sig, normalize=False, normalize_dist=True) for sig in ker_sigmas]
+    multi_ker = kernels.SumOfScalarKernel(gauss_kers, normalize=False)
+    # Generate full configs
+    params = {"kernel": multi_ker, "basis_out": output_bases, "regu": regu, "center_output": True}
+    configs = configs_generation.configs_combinations(params)
+    # Create list of regressors from that config
+    regs = [triple_basis.BiBasisEstimator(**config) for config in configs]
+    return configs, regs
+
+
 # ############################### FKRR #################################################################################
 
 def kernels_generator_fkrr_dti(kin_sigma, kout_sigma):
