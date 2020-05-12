@@ -9,7 +9,7 @@ from model_eval import metrics
 from functional_data import discrete_functional_data as disc_fd
 
 
-def check_cpu_availability(min_nprocs=4, timeout_sleep=3, n_timeout=0, cpu_avail_thresh=90):
+def check_cpu_availability(min_nprocs=32, timeout_sleep=3, n_timeout=0, cpu_avail_thresh=90):
     """
     Allocate CPUs for execution based on a minimum number of available CPUs for `n_procs`, if the number of
     CPUs available are inferior to that number, the function can be set to wait and re-try several times.
