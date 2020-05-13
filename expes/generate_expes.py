@@ -363,6 +363,27 @@ def speech_fkrr(kin_sigma, kout_sigma, regu, approx_locs, center_output):
     return configs, regs
 
 
+def kernels_generator_gauss_fkrr_speech(kin_sigma, kout_sigma):
+    kin_sigmas = kin_sigma * np.ones(13)
+    gauss_kers = [kernels.GaussianScalarKernel(sig, normalize=False, normalize_dist=True) for sig in kin_sigmas]
+    kernels_in = kernels.SumOfScalarKernel(gauss_kers, normalize=False)
+    if isinstance(kout_sigma, Iterable):
+        kernels_out = [kernels.GaussianScalarKernel(sig, normalize=False) for sig in kout_sigma]
+    else:
+        kernels_out = kernels.GaussianScalarKernel(kout_sigma, normalize=False)
+    return kernels_in, kernels_out
+
+
+def speech_fkrr_gauss(kin_sigma, kout_sigma, regu, approx_locs, center_output):
+    kernels_in, kernels_out = kernels_generator_gauss_fkrr_speech(kin_sigma, kout_sigma)
+    params = {"regu": regu, "kernel_in": kernels_in, "kernel_out": kernels_out,
+              "approx_locs": approx_locs, "center_output": center_output}
+    configs = configs_generation.configs_combinations(params, exclude_list=["approx_locs"])
+    regs = [ovkernel_ridge.SeparableOVKRidgeFunctional(**config) for config in configs]
+    return configs, regs
+
+
+
 # ############################### KE ###################################################################################
 
 def dti_ke(kx_sigma):
