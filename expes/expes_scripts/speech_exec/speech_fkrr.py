@@ -16,7 +16,7 @@ from expes import generate_expes, run_expes
 # Path to the data
 DATA_PATH = path + "/data/dataspeech/raw/"
 # Record config
-OUTPUT_FOLDER = "/speech_fkrr_multi"
+OUTPUT_FOLDER = "/speech_fkrr_max"
 # Indexing
 INPUT_INDEXING = "list"
 OUTPUT_INDEXING = "discrete_general"
@@ -41,7 +41,7 @@ KOUT_SIGMA = [0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.125, 0.15]
 # Approximation locations
 APPROX_LOCS = np.linspace(0, 1, 300)
 #
-CENTER_OUTPUT = True
+CENTER_OUTPUT = [False, True]
 
 # Seeds for averaging of expes (must all be of the same size)
 N_AVERAGING = 10
