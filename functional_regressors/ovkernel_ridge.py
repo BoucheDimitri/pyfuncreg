@@ -2,6 +2,7 @@
 # $conda install -c conda-forge slycot
 from slycot import sb04qd
 import numpy as np
+import time
 
 from functional_data import smoothing
 from functional_data import discrete_functional_data as disc_fd
@@ -100,7 +101,10 @@ class SeparableOVKRidgeFunctional:
         # Compute representer coefficients
         n = len(X)
         m = self.Kout.shape[0]
+        start = time.process_time()
         self.alpha = sb04qd(n, m, Kin / (self.regu * n), self.Kout, Yeval / (self.regu * n))
+        end = time.process_time()
+        print("Fitting :" + str(end - start))
 
     def predict(self, Xnew):
         Knew = self.kernel_in(self.X, Xnew)

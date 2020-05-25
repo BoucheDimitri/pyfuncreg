@@ -4,6 +4,7 @@ import pickle
 
 from data import loading, processing
 from model_eval import parallel_tuning
+from model_eval import perf_timing
 
 
 def create_output_folder(root_path, output_folder, parent="/outputs"):
@@ -72,3 +73,36 @@ def run_expe_speech(configs, regs, seeds, data_path, rec_path, input_indexing,
         with open(rec_path + "/" + str(i) + "_" + key + ".pkl", "wb") as out:
             pickle.dump((best_configs, best_results, scores_test), out, pickle.HIGHEST_PROTOCOL)
     return best_configs, best_results, scores_test
+
+
+def run_subexpe_perf_speech(X ,Y, regs, key, seed, n_procs, min_nprocs, seed_dict=None):
+    Xtrain, Ytrain_full_ext, Ytrain_full, Xtest, Ytest_full_ext, Ytest_full = processing.process_speech(
+        X, Y, shuffle_seed=seed, n_train=300, normalize_domain=True, normalize_values=True)
+    Ytrain_ext, Ytrain, Ytest_ext, Ytest \
+        = Ytrain_full_ext[key], Ytrain_full[key], Ytest_full_ext[key], Ytest_full[key]
+    # Workaround for setting new seed for RFFS
+    # TODO: make this clean
+    if seed_dict is not None:
+        for i in range(len(regs)):
+            regs[i].basis_out_config[1]["seed"] = seed_dict
+    results = perf_timing.parallel_perf_counter(regs, Xtrain, Ytrain_ext, n_procs=n_procs, min_nprocs=min_nprocs)
+    return results
+
+
+def run_expe_perf_speech(regs, seeds, data_path, rec_path, n_procs, min_nprocs, seeds_dict=None):
+    perfs = list()
+    X, Y = loading.load_raw_speech_dataset(data_path)
+    key = extract_key_speech(sys.argv)
+    for i in range(len(seeds)):
+        # Workaround for setting new seed for RFFS
+        # TODO: make this clean
+        if seeds_dict is not None:
+            results = run_subexpe_perf_speech(
+                X ,Y, regs, key, seeds[i], n_procs, min_nprocs, seeds_dict[i])
+        else:
+            results = run_subexpe_perf_speech(
+                X, Y, regs, key, seeds[i], n_procs, min_nprocs, None)
+        perfs.append(results)
+        with open(rec_path + "/" + str(i) + "_" + key + ".pkl", "wb") as out:
+            pickle.dump(perfs, out, pickle.HIGHEST_PROTOCOL)
+    return perfs

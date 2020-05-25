@@ -1,4 +1,5 @@
 import numpy as np
+import time
 from slycot import sb04qd
 
 from functional_data import basis
@@ -210,28 +211,33 @@ class SeperableKPL(FunctionalRegressor):
         self.X = X
         # Generate output dictionary
         # start_basis = perf_counter()
+        start = time.process_time()
         self.generate_output_basis(Ycentered)
+        end = time.process_time()
+        print("Generate output basis " + str(end - start))
         # end_basis = perf_counter()
         # print("Generating the output basis perf :" + str(end_basis - start_basis))
         # Generate output matrix
-        # start_outmat = perf_counter()
+        start_outmat = time.process_time()
         self.generate_output_matrix()
-        # end_outmat = perf_counter()
+        end_outmat = time.process_time()
+        print("Generate output matrix " + str(end_outmat - start_outmat))
         # print("Generating output matrix perf :" + str(end_outmat - start_outmat))
         # Compute input kernel matrix if not given
-        # start_kmat = perf_counter()
+        start_kmat = time.process_time()
         if K is None:
             K = self.kernel(X, X)
-        # end_kmat = perf_counter()
+        end_kmat = time.process_time()
+        print("Kmat " + str(end_kmat - start_kmat))
         # print("Computing kernel matrix perf: " + str(end_kmat - start_kmat))
         n = K.shape[0]
         # Compute approximate dot product between output functions and dictionary functions
         # return Ycentered, self.output_basis
-        # start_phimats = perf_counter()
+        start_phimats = time.process_time()
         phi_mats = [(1 / len(Ycentered[1][i]))
                     * self.basis_out.compute_matrix(Ycentered[0][i]).T for i in range(n)]
-        # end_phimats = perf_counter()
-        # print("Computing phi mats perf: " + str(end_phimats - start_phimats))
+        end_phimats = time.process_time()
+        print("Computing phi mats perf: " + str(end_phimats - start_phimats))
         # start_yproj = perf_counter()
         Yproj = np.array([phi_mats[i].dot(Ycentered[1][i]) for i in range(n)])
         # end_yproj = perf_counter()
@@ -244,7 +250,10 @@ class SeperableKPL(FunctionalRegressor):
         self.ovkridge = SeparableSubridgeSylv(self.regu, self.kernel, self.B, phi_adj_phi)
         # self.ovkridge = SeparableSubridgeSVD(self.regu, self.kernel, self.B, phi_adj_phi)
         # return self.ovkridge, Yproj
+        start2 = time.process_time()
         self.ovkridge.fit(X, Yproj, K=K)
+        end2 = time.process_time()
+        print("Fitting " + str(end2 - start2))
         # end_fitovk = perf_counter()
         # print("Fitting the OVK Ridge: " + str(end_fitovk - start_fitovk))
 
