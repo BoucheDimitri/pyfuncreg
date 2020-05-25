@@ -31,16 +31,18 @@ def check_cpu_availability(min_nprocs=32, timeout_sleep=3, n_timeout=0, cpu_avai
         The number of available CPUs for execution
     """
     cpu_occup = np.array(psutil.cpu_percent(percpu=True))
-    n_procs = (cpu_occup[cpu_occup < cpu_avail_thresh]).shape[0]
-    timeout_count = 0
-    while n_procs < min_nprocs and timeout_count < n_timeout:
-        time.sleep(timeout_sleep)
-        cpu_occup = np.array(psutil.cpu_percent(percpu=True))
-        n_procs = (cpu_occup[cpu_occup < 90]).shape[0]
-        timeout_count += 1
-    if n_procs < min_nprocs:
-        raise ResourceWarning("The minimum number of CPUs required could not be allocated")
-    return n_procs
+    return len(cpu_occup)
+    # TODO: Shortcut chanmé attention
+    # n_procs = (cpu_occup[cpu_occup < cpu_avail_thresh]).shape[0]
+    # timeout_count = 0
+    # while n_procs < min_nprocs and timeout_count < n_timeout:
+    #     time.sleep(timeout_sleep)
+    #     cpu_occup = np.array(psutil.cpu_percent(percpu=True))
+    #     n_procs = (cpu_occup[cpu_occup < 90]).shape[0]
+    #     timeout_count += 1
+    # if n_procs < min_nprocs:
+    #     raise ResourceWarning("The minimum number of CPUs required could not be allocated")
+    # return n_procs
 
 
 def run_cross_vals_batch(regs_split, cross_val, Xfit, Yfit, Xpred=None, Ypred=None):
@@ -127,7 +129,7 @@ def parallel_cross_vals(regs, cross_val, Xfit, Yfit, Xpred, Ypred, n_procs, rec_
 def parallel_tuning(regs, Xfit_train, Yfit_train, Xtest, Ytest, Xpred_train=None, Ypred_train=None,
                     rec_path=None, key=None, configs=None, input_indexing="discrete_general",
                     output_indexing="discrete_general", n_folds=5, n_procs=None, min_nprocs=4,
-                    timeout_sleep=3, n_timeout=10, cpu_avail_thresh=70):
+                    timeout_sleep=3, n_timeout=10, cpu_avail_thresh=90):
     """
     Tuning of the regressors in parallel by cross-validation, selecting the best and fitting it on the train set,
     its score on test set is then computed.

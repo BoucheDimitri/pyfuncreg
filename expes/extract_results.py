@@ -43,18 +43,18 @@ for folder in folders_dti:
 
 
 # ############################ SPEECH ##################################################################################
-path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_14-05-2020_10-05/outputs/"
-# KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
-KEYS = ("LP", "LA", "TBCL", "TBCD")
+path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_19-05-2020_08-28/outputs/"
+KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
+# KEYS = ("LP", "LA", "TBCL", "TBCD")
 
-# folders_speech = ["speech_3be_multi_max", "speech_kpl_multi_penpow_max", "speech_ke_multi", "speech_fkrr_multi"]
+# folders_speech = ["speech_3be_fourier", "speech_kpl_rffsmax", "speech_ke_multi", "speech_fkrr_multi"]
 # folders_speech = ["speech_3be_multi_max", "speech_kpl_rffs300", "speech_ke_multi", "speech_fkrr_multi"]
-folders_speech = ["speech_kpl_rffsmax", "speech_kpl_rffs200"]
+folders_speech = ["speech_kpl_rffs200", "speech_kpl_rffs100"]
 
 # with open(path + "speech_3be_multi/9_LP.pkl", "rb") as inp:
 #     best_config_3be, best_result_3be, score_test_3be = pickle.load(inp)
 #
-with open(path + "speech_kpl_rffs200/9_TBCL.pkl", "rb") as inp:
+with open(path + "speech_kpl_rffsmax/9_TTCD.pkl", "rb") as inp:
     best_config_200, best_result_200, score_test_200 = pickle.load(inp)
 
 
