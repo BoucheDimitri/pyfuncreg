@@ -54,7 +54,7 @@ folders_speech = ["speech_kpl_rffs200", "speech_kpl_rffs100"]
 # with open(path + "speech_3be_multi/9_LP.pkl", "rb") as inp:
 #     best_config_3be, best_result_3be, score_test_3be = pickle.load(inp)
 #
-with open(path + "speech_kpl_rffsmax/9_TTCD.pkl", "rb") as inp:
+with open(path + "speech_fkrr_multi/9_LP.pkl", "rb") as inp:
     best_config_200, best_result_200, score_test_200 = pickle.load(inp)
 
 
