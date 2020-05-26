@@ -188,7 +188,9 @@ class BiBasisEstimator:
     def predict(self, Xnew):
         # preds = np.array([reg.predict(Xnew) for reg in self.regressors]).T
         Knew = self.kernel(self.X, Xnew)
-        preds = np.array([Knew.dot(alpha) for alpha in self.dual_coefs]).T
+        # preds = np.array([Knew.dot(alpha) for alpha in self.dual_coefs]).T
+        preds = np.array(self.dual_coefs).dot(Knew.T).T
+        # preds = np
         return preds
 
     def predict_from_coefs(self, pred_coefs, yin_new):
@@ -205,10 +207,16 @@ class BiBasisEstimator:
         pred_coefs = self.predict(Xnew)
         return self.predict_from_coefs(pred_coefs, yin_new)
 
-    def predict_evaluate_diff_locs(self, Xnew, Yins_new):
+    def predict_evaluate_diff_locs(self, Xnew, Yins_new, return_cputime=False):
+        start = time.process_time()
         n_preds = len(Xnew)
         preds = []
         pred_coefs = self.predict(Xnew)
+        # end = time.process_time()
         for i in range(n_preds):
             preds.append(np.squeeze(self.predict_from_coefs(pred_coefs[i], Yins_new[i])))
-        return preds
+        end = time.process_time()
+        if return_cputime:
+            return preds, end - start
+        else:
+            return preds

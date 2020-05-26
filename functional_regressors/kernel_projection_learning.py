@@ -276,13 +276,19 @@ class SeperableKPL(FunctionalRegressor):
         pred_coefs = self.predict(Xnew)
         return self.predict_from_coefs(pred_coefs, yin_new)
 
-    def predict_evaluate_diff_locs(self, Xnew, Yins_new):
+    def predict_evaluate_diff_locs(self, Xnew, Yins_new, return_cputime=False):
+        start = time.process_time()
         n_preds = len(Xnew)
         preds = []
         pred_coefs = self.predict(Xnew)
+        # end = time.process_time()
         for i in range(n_preds):
             preds.append(np.squeeze(self.predict_from_coefs(pred_coefs[i], Yins_new[i])))
-        return preds
+        end = time.process_time()
+        if return_cputime:
+            return preds, end - start
+        else:
+            return preds
 
     # def predict_evaluate(self, Xnew, yin_new):
     #     pred_coefs = self.predict(Xnew)

@@ -126,7 +126,7 @@ class SeparableOVKRidgeFunctional:
         funcs = self.predict_func(Xnew)
         return np.array([func(locs) for func in funcs]).squeeze()
 
-    def predict_evaluate_diff_locs(self, Xnew, Ylocs):
+    def predict_evaluate_diff_locs(self, Xnew, Ylocs, return_cputime=False):
         n_preds = len(Xnew)
         preds = []
         for i in range(n_preds):

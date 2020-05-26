@@ -85,7 +85,7 @@ def run_subexpe_perf_speech(X ,Y, regs, key, seed, n_procs, min_nprocs, seed_dic
     if seed_dict is not None:
         for i in range(len(regs)):
             regs[i].basis_out_config[1]["seed"] = seed_dict
-    results = perf_timing.parallel_perf_counter(regs, Xtrain, Ytrain_ext, n_procs=n_procs, min_nprocs=min_nprocs)
+    results = perf_timing.parallel_perf_counter(regs, Xtrain, Ytrain_ext, Xtest, Ytest, n_procs=n_procs, min_nprocs=min_nprocs)
     return results
 
 

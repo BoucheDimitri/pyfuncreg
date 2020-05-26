@@ -16,7 +16,7 @@ from expes import generate_expes, run_expes
 # Path to the data
 DATA_PATH = path + "/data/dataspeech/raw/"
 # Record config
-OUTPUT_FOLDER = "/speech_kpl_rffs100_time"
+OUTPUT_FOLDER = "/speech_kpl_rffs100_timer"
 
 # Indexing
 INPUT_INDEXING = "list"
@@ -35,8 +35,8 @@ MIN_PROCS = 32
 DOMAIN = np.array([[0, 1]])
 
 # Regularization parameters grid
-# REGU_GRID = list(np.geomspace(1e-11, 1e-4, 50))
-REGU_GRID = [1e-10, 1e-7]
+REGU_GRID = list(np.geomspace(1e-10, 1e-3, 50))
+# REGU_GRID = [1e-7]
 # N_FREQS = [5]
 # Standard deviation parameter for the input kernel
 KER_SIGMA = 1
@@ -44,16 +44,17 @@ KER_SIGMA = 1
 # DECREASE_BASE = np.arange(1, 1.6, 0.1)
 DECREASE_BASE = 1
 # Number of evaluations for FPCA
-N_RFFS = [75]
+N_RFFS = [100]
 CENTER_OUTPUT = [True, False]
+# CENTER_OUTPUT = [True]
 # RFFS_SIGMA
-# RFFS_SIGMA = [50, 100, 150, 250, 500]
-RFFS_SIGMA = [50, 100]
+RFFS_SIGMA = [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]
+# RFFS_SIGMA = [50]
 # RFFS_SIGMA = [0.025, 0.05]
 
 # Seeds for averaging of expes (must all be of the same size)
-# N_AVERAGING = 10
-N_AVERAGING = 2
+N_AVERAGING = 10
+# N_AVERAGING = 2
 SEED_DATA = 784
 SEED_RFF = 567
 

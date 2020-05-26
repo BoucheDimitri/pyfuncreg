@@ -9,8 +9,12 @@ from model_eval import metrics
 from functional_data import discrete_functional_data as disc_fd
 
 
-def fit_perf_counter(reg, Xfit, Yfit):
-    return reg.fit(Xfit, Yfit, return_cputime=True)
+def fit_perf_counter(reg, Xfit, Yfit, Xtest, Ytest):
+    fit_time = reg.fit(Xfit, Yfit, return_cputime=True)
+    return fit_time
+    # Ytest_dg = disc_fd.to_discrete_general(*Ytest)
+    # preds, pred_time = reg.predict_evaluate_diff_locs(Xtest, Ytest_dg[0], return_cputime=True)
+    # return fit_time + pred_time
 
 
 def check_cpu_availability(min_nprocs=32, timeout_sleep=3, n_timeout=0, cpu_avail_thresh=90):
@@ -49,9 +53,9 @@ def check_cpu_availability(min_nprocs=32, timeout_sleep=3, n_timeout=0, cpu_avai
     # return n_procs
 
 
-def run_fit_batch(regs_split, Xfit, Yfit):
+def run_fit_batch(regs_split, Xfit, Yfit, Xtest, Ytest):
     with multiprocessing.Pool(processes=len(regs_split)) as pool:
-        multiple_results = [pool.apply_async(fit_perf_counter, (regs_split[j], Xfit, Yfit))
+        multiple_results = [pool.apply_async(fit_perf_counter, (regs_split[j], Xfit, Yfit, Xtest, Ytest))
                             for j in range(len(regs_split))]
         return [res.get() for res in multiple_results]
 
@@ -67,7 +71,7 @@ def record_up_to_current_batch(rec_path, key, results, batch_no, n_batches, n_pr
             pickle.dump(results[:(batch_no + 1) * n_procs], outp, pickle.HIGHEST_PROTOCOL)
 
 
-def parallel_fit_perf_counter(regs, Xfit, Yfit, n_procs, rec_path=None, key=None):
+def parallel_fit_perf_counter(regs, Xfit, Yfit, Xtest, Ytest, n_procs, rec_path=None, key=None):
     """
     Cross validate the regressors in reg in parallel.
 
@@ -95,7 +99,7 @@ def parallel_fit_perf_counter(regs, Xfit, Yfit, n_procs, rec_path=None, key=None
     n_batches = len(regs) // n_procs
     results = []
     if n_batches == 0:
-        results += run_fit_batch(regs, Xfit, Yfit)
+        results += run_fit_batch(regs, Xfit, Yfit, Xtest, Ytest)
     else:
         # Execute batches sequentially
         for i in range(n_batches + 1):
@@ -103,7 +107,7 @@ def parallel_fit_perf_counter(regs, Xfit, Yfit, n_procs, rec_path=None, key=None
                 # Create batch
                 regs_split = regs[i * n_procs: (i + 1) * n_procs]
                 # Execute batch
-                results += run_fit_batch(regs_split, Xfit, Yfit)
+                results += run_fit_batch(regs_split, Xfit, Yfit, Xtest, Ytest)
                 # Print progress
                 print("Process batch number " + str(i) + " finished. Remaining: " + str(n_batches - i - 1))
                 # Record results up to current batch
@@ -111,11 +115,11 @@ def parallel_fit_perf_counter(regs, Xfit, Yfit, n_procs, rec_path=None, key=None
             else:
                 regs_split = regs[i * n_procs:]
                 if len(regs_split) > 0:
-                    results += run_fit_batch(regs_split, Xfit, Yfit)
+                    results += run_fit_batch(regs_split, Xfit, Yfit, Xtest, Ytest)
     return results
 
 
-def parallel_perf_counter(regs, Xfit_train, Yfit_train, rec_path=None, key=None,
+def parallel_perf_counter(regs, Xfit_train, Yfit_train, Xtest, Ytest, rec_path=None, key=None,
                           n_procs=None, min_nprocs=4, timeout_sleep=3, n_timeout=10, cpu_avail_thresh=90):
     """
     Tuning of the regressors in parallel by cross-validation, selecting the best and fitting it on the train set,
@@ -170,7 +174,7 @@ def parallel_perf_counter(regs, Xfit_train, Yfit_train, rec_path=None, key=None,
         n_procs = check_cpu_availability(min_nprocs=min_nprocs, timeout_sleep=timeout_sleep,
                                          n_timeout=n_timeout, cpu_avail_thresh=cpu_avail_thresh)
     # Run cross-validations in parallel for the regressors in regs
-    results = parallel_fit_perf_counter(regs, Xfit_train, Yfit_train, n_procs, rec_path, key)
+    results = parallel_fit_perf_counter(regs, Xfit_train, Yfit_train, Xtest, Ytest, n_procs, rec_path, key)
     # Return the results
     return results
 

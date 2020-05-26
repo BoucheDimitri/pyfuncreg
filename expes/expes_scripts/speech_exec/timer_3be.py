@@ -16,7 +16,7 @@ from expes import generate_expes, run_expes
 # Path to the data
 DATA_PATH = path + "/data/dataspeech/raw/"
 # Record config
-OUTPUT_FOLDER = "/speech_3be_fourier"
+OUTPUT_FOLDER = "/speech_3be_fourier_timer"
 
 N_FOLDS = 5
 INPUT_INDEXING = "list"
@@ -33,15 +33,15 @@ MIN_PROCS = 32
 # Output domain
 DOMAIN = np.array([[0, 1]])
 # Regularization parameters grid
-# REGU_GRID = list(np.geomspace(1e-10, 1e-3, 50))
-REGU_GRID = [1e-10, 1e-7]
-# N_FREQS = [5, 10, 15, 20, 30, 40]
-N_FREQS = [100, 150]
+REGU_GRID = list(np.geomspace(1e-10, 1e-3, 50))
+# REGU_GRID = [1e-10, 1e-7]
+# Number of principal components to consider
+N_FREQS = [10, 25, 50, 75, 100, 150]
 # Standard deviation parameter for the input kernel
 KER_SIGMA = 1
 
 # Seeds for averaging of expes (must all be of the same size)
-N_AVERAGING = 2
+N_AVERAGING = 10
 SEED_DATA = 784
 
 # Generate seeds
