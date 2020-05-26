@@ -49,7 +49,7 @@ KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
 
 # folders_speech = ["speech_3be_fourier", "speech_kpl_rffsmax", "speech_ke_multi", "speech_fkrr_multi"]
 # folders_speech = ["speech_3be_multi_max", "speech_kpl_rffs300", "speech_ke_multi", "speech_fkrr_multi"]
-folders_speech = ["speech_kpl_rffs50", "speech_3be_fourier"]
+folders_speech = ["speech_kpl_rffsmax", "speech_3be_fourier", "speech_fkrr_multi"]
 
 # with open(path + "speech_3be_multi/9_LP.pkl", "rb") as inp:
 #     best_config_3be, best_result_3be, score_test_3be = pickle.load(inp)
@@ -72,3 +72,27 @@ for key in KEYS:
         print("mean:" + str(m))
         print("std: " + str(s))
     print(" ")
+
+import matplotlib.pyplot as plt
+
+means = {folder: [] for folder in folders_speech}
+
+x = np.arange(len(KEYS))  # the label locations
+width = 0.1  # the width of the bars
+
+for key in KEYS:
+    for folder in folders_speech:
+        m, s = mean_variance_result_speech(path + folder, key)
+        means[folder].append(m)
+
+fig, ax = plt.subplots()
+n_folders = len(folders_speech)
+add = 0
+for folder in folders_speech:
+    rects = ax.bar(x - width/2 + add, means[folder], width, label='folder')
+    add += width
+
+# Add some text for labels, title and custom x-axis tick labels, etc.
+ax.set_xticks(x)
+ax.set_xticklabels(KEYS)
+ax.legend()
