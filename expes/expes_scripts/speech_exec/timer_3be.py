@@ -36,7 +36,7 @@ DOMAIN = np.array([[0, 1]])
 # REGU_GRID = list(np.geomspace(1e-10, 1e-3, 50))
 REGU_GRID = [1e-10, 1e-7]
 # N_FREQS = [5, 10, 15, 20, 30, 40]
-N_FREQS = [30, 40]
+N_FREQS = [100, 150]
 # Standard deviation parameter for the input kernel
 KER_SIGMA = 1
 
