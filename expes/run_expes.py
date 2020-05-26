@@ -77,7 +77,7 @@ def run_expe_speech(configs, regs, seeds, data_path, rec_path, input_indexing,
 
 def run_subexpe_perf_speech(X ,Y, regs, key, seed, n_procs, min_nprocs, seed_dict=None):
     Xtrain, Ytrain_full_ext, Ytrain_full, Xtest, Ytest_full_ext, Ytest_full = processing.process_speech(
-        X, Y, shuffle_seed=seed, n_train=300, normalize_domain=True, normalize_values=True)
+        X, Y, shuffle_seed=seed, n_train=412, normalize_domain=True, normalize_values=True)
     Ytrain_ext, Ytrain, Ytest_ext, Ytest \
         = Ytrain_full_ext[key], Ytrain_full[key], Ytest_full_ext[key], Ytest_full[key]
     # Workaround for setting new seed for RFFS
