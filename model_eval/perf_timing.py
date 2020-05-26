@@ -10,10 +10,7 @@ from functional_data import discrete_functional_data as disc_fd
 
 
 def fit_perf_counter(reg, Xfit, Yfit):
-    start = time.process_time()
-    reg.fit(Xfit, Yfit)
-    end = time.process_time()
-    return end - start
+    return reg.fit(Xfit, Yfit, return_cputime=True)
 
 
 def check_cpu_availability(min_nprocs=32, timeout_sleep=3, n_timeout=0, cpu_avail_thresh=90):

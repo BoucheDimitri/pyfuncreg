@@ -16,7 +16,7 @@ from expes import generate_expes, run_expes
 # Path to the data
 DATA_PATH = path + "/data/dataspeech/raw/"
 # Record config
-OUTPUT_FOLDER = "/speech_fkrr_biggrid"
+OUTPUT_FOLDER = "/speech_fkrr_timer"
 # Indexing
 INPUT_INDEXING = "list"
 OUTPUT_INDEXING = "discrete_general"
@@ -59,5 +59,5 @@ if __name__ == '__main__':
     # Generate configurations and corresponding regressors
     configs, regs = generate_expes.speech_fkrr(KIN_SIGMA, KOUT_SIGMA, REGU_GRID, APPROX_LOCS, CENTER_OUTPUT)
     perfs = run_expes.run_expe_perf_speech(regs, seeds=seeds_data, data_path=DATA_PATH, rec_path=rec_path,
-                                             min_nprocs=MIN_PROCS, n_procs=N_PROCS)
+                                           min_nprocs=MIN_PROCS, n_procs=N_PROCS)
     print(perfs)

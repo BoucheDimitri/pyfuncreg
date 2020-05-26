@@ -78,7 +78,7 @@ class SeparableOVKRidgeFunctional:
         self.Ymean = None
         self.center_output = center_output
 
-    def fit(self, X, Y, Kin=None):
+    def fit(self, X, Y, Kin=None, return_cputime=False):
         # Memorize training input data
         self.X = X
         # Compute mean func from output data
@@ -104,7 +104,8 @@ class SeparableOVKRidgeFunctional:
         start = time.process_time()
         self.alpha = sb04qd(n, m, Kin / (self.regu * n), self.Kout, Yeval / (self.regu * n))
         end = time.process_time()
-        print("Fitting :" + str(end - start))
+        if return_cputime:
+            return end - start
 
     def predict(self, Xnew):
         Knew = self.kernel_in(self.X, Xnew)

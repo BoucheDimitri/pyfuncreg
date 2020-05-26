@@ -49,7 +49,7 @@ KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
 
 # folders_speech = ["speech_3be_fourier", "speech_kpl_rffsmax", "speech_ke_multi", "speech_fkrr_multi"]
 # folders_speech = ["speech_3be_multi_max", "speech_kpl_rffs300", "speech_ke_multi", "speech_fkrr_multi"]
-folders_speech = ["speech_kpl_rffs200", "speech_kpl_rffs100"]
+folders_speech = ["speech_kpl_rffs50", "speech_3be_fourier"]
 
 # with open(path + "speech_3be_multi/9_LP.pkl", "rb") as inp:
 #     best_config_3be, best_result_3be, score_test_3be = pickle.load(inp)

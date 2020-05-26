@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn import kernel_ridge
+import time
 
 from functional_data import basis
 from functional_data import smoothing
@@ -23,6 +24,7 @@ class KernelRidge:
 
     def fit(self, X, Y, K=None):
         self.X = X
+
         if K is None:
             K = self.kernel(X, X)
         self.reg.fit(K, Y)
@@ -138,6 +140,8 @@ class BiBasisEstimator:
         self.kernel = kernel
         self.regu = regu
         self.regressors = None
+        # self.dual_coefs = None
+        # self.KnlambdaI_inv = None
         self.X = None
         self.Ymean = None
         self.center_output = center_output
@@ -148,7 +152,7 @@ class BiBasisEstimator:
         if isinstance(self.basis_out, basis.DataDependantBasis):
             self.basis_out.fit(*Y)
 
-    def fit(self, X, Y, K=None):
+    def fit(self, X, Y, K=None, return_cputime=False):
         self.X = X
         self.Ymean = disc_fd.mean_func(*Y)
         if self.center_output:
@@ -161,15 +165,30 @@ class BiBasisEstimator:
         if K is None:
             K = self.kernel(X, X)
         n_probs = coefsY.shape[1]
+        # start = time.process_time()
+        # self.KnlambdaI_inv = np.linalg.inv(K + K.shape[0] * self.regu * np.eye(K.shape[0]))
+        # dual_coefs = []
+        # for prob in range(n_probs):
+        #     dual_coefs.append(self.KnlambdaI_inv.dot(coefsY[:, prob]))
+        # self.dual_coefs = dual_coefs
+        # end = time.process_time()
+        # if return_cputime:
+        #     return end - start
+        start = time.process_time()
         regressors = []
         for prob in range(n_probs):
             reg = KernelRidge(self.kernel, self.regu)
             reg.fit(X, coefsY[:, prob], K=K)
             regressors.append(reg)
         self.regressors = regressors
+        end = time.process_time()
+        if return_cputime:
+            return end - start
 
     def predict(self, Xnew):
         preds = np.array([reg.predict(Xnew) for reg in self.regressors]).T
+        # Knew = self.kernel(self.X, Xnew)
+        # preds = np.array([Knew.dot(alpha) for alpha in self.dual_coefs]).T
         return preds
 
     def predict_from_coefs(self, pred_coefs, yin_new):
