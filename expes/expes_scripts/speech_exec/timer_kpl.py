@@ -35,8 +35,8 @@ MIN_PROCS = 32
 DOMAIN = np.array([[0, 1]])
 
 # Regularization parameters grid
-REGU_GRID = list(np.geomspace(1e-10, 1e-3, 50))
-# REGU_GRID = [1e-7]
+REGU_GRID = list(np.geomspace(1e-10, 1e-3, 25))
+# REGU_GRID = [1e-10, 1e-7]
 # N_FREQS = [5]
 # Standard deviation parameter for the input kernel
 KER_SIGMA = 1
@@ -45,11 +45,11 @@ KER_SIGMA = 1
 DECREASE_BASE = 1
 # Number of evaluations for FPCA
 N_RFFS = [100]
-CENTER_OUTPUT = [True, False]
-# CENTER_OUTPUT = [True]
+# CENTER_OUTPUT = [True, False]
+CENTER_OUTPUT = [True]
 # RFFS_SIGMA
-RFFS_SIGMA = [50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]
-# RFFS_SIGMA = [50]
+RFFS_SIGMA = [50, 75, 100, 125, 150]
+# RFFS_SIGMA = [100]
 # RFFS_SIGMA = [0.025, 0.05]
 
 # Seeds for averaging of expes (must all be of the same size)

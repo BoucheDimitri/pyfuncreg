@@ -7,22 +7,11 @@ import os
 # plt.style.use('seaborn')
 # rc('text.usetext')
 
-
-fontweight = 500
-# plt.rcParams.update({'ps.useafm': True})
-# plt.rcParams.update({'pdf.use14corefonts': True})
-# plt.rcParams.update({'text.usetex': True})
-# plt.rcParams.update({'text.usetex': True})
 plt.rcParams.update({"pdf.fonttype": 42})
-plt.rcParams.update({"font.size": 32})
-# plt.rcParams.update({"mathtext.bf":"sans:bold"})
-# plt.rcParams.update({"mathtext.fontset": "cm"})
-# plt.rcParams.update({"pdf.fonttype": 1})
-# plt.rcParams.update({'pdf.use14corefonts': True})
-plt.rcParams.update({"font.weight": fontweight})
+plt.rcParams.update({"font.size": 40})
 # plt.rcParams.update({'ps.useafm': True})
-plt.rcParams.update({"lines.linewidth": 7})
-plt.rcParams.update({"lines.markersize": 10})
+plt.rcParams.update({"lines.linewidth": 9})
+plt.rcParams.update({"lines.markersize": 12})
 plt.rcParams.update({"axes.linewidth": 2.5})
 plt.rcParams.update({"xtick.major.size": 10})
 plt.rcParams.update({"xtick.major.width": 2.5})
@@ -67,9 +56,9 @@ sub_n_samples = [10, 50, 100, 500]
 for n in sub_n_samples:
     # plt.plot(missing_levels, means_dict[n], label="N=" + str(n))
     plt.errorbar(100 * np.array(missing_levels), means_dict[n],
-                 yerr=stds_dict[n], marker="o", capsize=3, label="N=" + str(n), lolims=True)
+                 yerr=stds_dict[n], marker="o", capsize=5, label="N=" + str(n), lolims=True)
 
 plt.legend()
 plt.ylabel("MSE")
-plt.xlabel("Output degradation (% of evaluations missing)")
+plt.xlabel("Percentage missing")
 

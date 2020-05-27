@@ -33,15 +33,16 @@ MIN_PROCS = 32
 # Output domain
 DOMAIN = np.array([[0, 1]])
 # Regularization parameters grid
-REGU_GRID = list(np.geomspace(1e-10, 1e-3, 50))
-# REGU_GRID = [1e-10, 1e-7]
+# REGU_GRID = list(np.geomspace(1e-10, 1e-3, 50))
+REGU_GRID = [1e-10, 1e-7]
 # Number of principal components to consider
-N_FREQS = [10, 25, 50, 75, 100, 150]
+# N_FREQS = [10, 25, 50, 75, 100, 150]
+N_FREQS = [100]
 # Standard deviation parameter for the input kernel
 KER_SIGMA = 1
 
 # Seeds for averaging of expes (must all be of the same size)
-N_AVERAGING = 10
+N_AVERAGING = 2
 SEED_DATA = 784
 
 # Generate seeds
