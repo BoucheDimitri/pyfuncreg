@@ -43,13 +43,14 @@ for folder in folders_dti:
 
 
 # ############################ SPEECH ##################################################################################
-path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_27-05-2020_08-55/outputs/"
+path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_28-05-2020_17-19/outputs/"
 # KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
-KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL")
+KEYS = ("LP", "LA", "TBCL", "GLO", "TTCL", "TTCD")
 
 # folders_speech = ["speech_3be_fourier", "speech_kpl_rffsmax", "speech_ke_multi", "speech_fkrr_multi"]
 # folders_speech = ["speech_3be_multi_max", "speech_kpl_rffs300", "speech_ke_multi", "speech_fkrr_multi"]
-folders_speech = ["speech_kpl_rffs100_max", "speech_3be_fourier_morefreqs", "speech_fkrr_biggrid"]
+# folders_speech = ["speech_kpl_rffs75_max", "speech_3be_fourier_morefreqs", "speech_fkrr_biggrid"]
+folders_speech = ["speech_kpl_rffs75_max", "speech_kpl_rffs100_max"]
 
 # with open(path + "speech_3be_multi/9_LP.pkl", "rb") as inp:
 #     best_config_3be, best_result_3be, score_test_3be = pickle.load(inp)
@@ -98,9 +99,10 @@ ax.set_xticklabels(KEYS)
 ax.legend()
 
 
-path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_27-05-2020_08-55/outputs/"
+# path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_27-05-2020_08-55/outputs/"
+path = os.getcwd() + "/outputs/"
 KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
-folders_speech = ["speech_kpl_rffs100_timer", "speech_fkrr_timer", "speech_3be_fourier_timer"]
+folders_speech = ["speech_kpl_rffs100_timer", "speech_3be_fourier_timer"]
 
 with open(path + "speech_kpl_rffs100_timer/9_LA" + ".pkl", "rb") as inp:
     test = pickle.load(inp)
@@ -109,3 +111,12 @@ def mean_variance_time_speech(path, key):
     with open(path + "/9_" + key + ".pkl", "rb") as inp:
         timers = pickle.load(inp)
     return np.mean(timers), np.std(timers)
+
+for key in KEYS:
+    print(key)
+    for folder in folders_speech:
+        print(folder)
+        m, s = mean_variance_time_speech(path + folder, key)
+        print("mean:" + str(m))
+        print("std: " + str(s))
+    print(" ")

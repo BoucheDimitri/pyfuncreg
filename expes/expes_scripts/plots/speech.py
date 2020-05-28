@@ -41,13 +41,13 @@ for key in KEYS:
         means[folders_method_dict[folder]].append(m)
         stds[folders_method_dict[folder]].append(s)
 
-# count = 0
-# for key in KEYS:
-#     best = np.min([means[folders_method_dict[folder]][count] for folder in folders_speech])
-#     for folder in folders_speech:
-#         means[folders_method_dict[folder]][count] *= 1 / best
-#         stds[folders_method_dict[folder]][count] *= 1 / best
-#     count += 1
+count = 0
+for key in KEYS:
+    best = np.min([means[folders_method_dict[folder]][count] for folder in folders_speech])
+    for folder in folders_speech:
+        means[folders_method_dict[folder]][count] *= 1 / best
+        stds[folders_method_dict[folder]][count] *= 1 / best
+    count += 1
 
 
 # Plot
