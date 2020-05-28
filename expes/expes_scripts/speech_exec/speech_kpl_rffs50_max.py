@@ -16,7 +16,7 @@ from expes import generate_expes, run_expes
 # Path to the data
 DATA_PATH = path + "/data/dataspeech/raw/"
 # Record config
-OUTPUT_FOLDER = "/speech_kpl_rffs75_max"
+OUTPUT_FOLDER = "/speech_kpl_rffs50_max"
 
 # Indexing
 INPUT_INDEXING = "list"
@@ -44,7 +44,7 @@ KER_SIGMA = 1
 # DECREASE_BASE = np.arange(1, 1.6, 0.1)
 DECREASE_BASE = 1
 # Number of evaluations for FPCA
-N_RFFS = [75]
+N_RFFS = [50]
 CENTER_OUTPUT = [True, False]
 # CENTER_OUTPUT = [True]
 # RFFS_SIGMA
