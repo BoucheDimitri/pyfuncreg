@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 plt.rcParams.update({"pdf.fonttype": 42})
 plt.rcParams.update({"font.size": 40})
-plt.rcParams.update({"lines.linewidth": 4})
+plt.rcParams.update({"lines.linewidth": 5})
 plt.rcParams.update({"lines.markersize": 10})
 plt.rcParams.update({"axes.linewidth": 2.5})
 plt.rcParams.update({"xtick.major.size": 10})
@@ -19,12 +19,12 @@ def mean_variance_result_speech(path, key):
     return np.mean(score_test), np.std(score_test)
 
 
-path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_27-05-2020_08-55/outputs/"
+path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_28-05-2020_17-19/outputs/"
 KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
 KEYS = ("LP", "LA", "TBCL", "TBCD", "GLO", "TTCD", "TTCL", "VEL")
 # KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL")
 
-folders_speech = ["speech_kpl_rffs100_max", "speech_3be_fourier", "speech_fkrr_multi", "speech_ke_multi"]
+folders_speech = ["speech_kpl_rffs100_max", "speech_3be_fourier_morefreqs", "speech_fkrr_biggrid", "speech_ke_multi"]
 folders_method_dict = dict()
 folders_method_dict[folders_speech[0]] = "KPL"
 folders_method_dict[folders_speech[1]] = "3BE"
@@ -41,13 +41,13 @@ for key in KEYS:
         means[folders_method_dict[folder]].append(m)
         stds[folders_method_dict[folder]].append(s)
 
-count = 0
-for key in KEYS:
-    best = np.min([means[folders_method_dict[folder]][count] for folder in folders_speech])
-    for folder in folders_speech:
-        means[folders_method_dict[folder]][count] *= 1 / best
-        stds[folders_method_dict[folder]][count] *= 1 / best
-    count += 1
+# count = 0
+# for key in KEYS:
+#     best = np.min([means[folders_method_dict[folder]][count] for folder in folders_speech])
+#     for folder in folders_speech:
+#         means[folders_method_dict[folder]][count] *= 1 / best
+#         stds[folders_method_dict[folder]][count] *= 1 / best
+#     count += 1
 
 
 # Plot
@@ -57,9 +57,10 @@ width = 0.2  # the width of the bars
 fig, ax = plt.subplots()
 n_folders = len(folders_speech)
 add = 0
+error_kw = dict(lw=5, capsize=5, capthick=3)
 for folder in folders_speech:
     rects = ax.bar(x - 2 * width + width/2 + add, means[folders_method_dict[folder]], width, yerr=stds[folders_method_dict[folder]],
-                   capsize=5, label=folders_method_dict[folder])
+                   error_kw=error_kw, label=folders_method_dict[folder])
     add += width
 
 # Add some text for labels, title and custom x-axis tick labels, etc.

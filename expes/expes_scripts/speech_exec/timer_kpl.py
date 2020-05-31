@@ -44,7 +44,7 @@ KER_SIGMA = 1
 # DECREASE_BASE = np.arange(1, 1.6, 0.1)
 DECREASE_BASE = 1
 # Number of evaluations for FPCA
-N_RFFS = [100]
+N_RFFS = [75]
 # CENTER_OUTPUT = [True, False]
 CENTER_OUTPUT = [True]
 # RFFS_SIGMA
