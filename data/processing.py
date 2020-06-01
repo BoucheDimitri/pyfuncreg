@@ -85,8 +85,8 @@ def normalize_output_values(Ytrain, Ytest):
     n_train = len(Ytrain[loading.VOCAL_TRACTS[0]][1])
     n_test = len(Ytest[loading.VOCAL_TRACTS[0]][1])
     for vt in loading.VOCAL_TRACTS:
-        m = np.min(np.concatenate([Ytrain[vt][1][i] for i in range(n_train)]))
-        M = np.max(np.concatenate([Ytrain[vt][1][i] for i in range(n_train)]))
+        m = np.nanmin(np.concatenate([Ytrain[vt][1][i] for i in range(n_train)]))
+        M = np.nanmax(np.concatenate([Ytrain[vt][1][i] for i in range(n_train)]))
         a = 2 / (M - m)
         b = 1 - a * M
         norm_vals[vt] = (a, b)

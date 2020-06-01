@@ -16,7 +16,7 @@ from expes import generate_expes, run_expes
 # Path to the data
 DATA_PATH = path + "/data/dataspeech/raw/"
 # Record config
-OUTPUT_FOLDER = "/speech_3be_fourier_timer"
+OUTPUT_FOLDER = "/speech_3be_fourier_timer75"
 
 N_FOLDS = 5
 INPUT_INDEXING = "list"
@@ -37,7 +37,7 @@ REGU_GRID = list(np.geomspace(1e-10, 1e-3, 25))
 # REGU_GRID = [1e-10, 1e-7]
 # Number of principal components to consider
 # N_FREQS = [10, 25, 50, 75, 100, 150]
-N_FREQS = [100]
+N_FREQS = [75]
 # Standard deviation parameter for the input kernel
 KER_SIGMA = 1
 

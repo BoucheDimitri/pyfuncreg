@@ -16,7 +16,7 @@ from expes import generate_expes, run_expes
 # Path to the data
 DATA_PATH = path + "/data/dataspeech/raw/"
 # Record config
-OUTPUT_FOLDER = "/speech_kpl_rffs100_timer"
+OUTPUT_FOLDER = "/speech_kpl_rffs75_timer"
 
 # Indexing
 INPUT_INDEXING = "list"
