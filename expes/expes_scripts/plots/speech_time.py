@@ -66,16 +66,5 @@ ax.set_yticklabels(methods)
 ax.invert_yaxis()  # labels read top-to-bottom
 ax.set_xlabel('CPU time', labelpad=2)
 
-# n_folders = len(folders_speech)
-# add = 0
-# error_kw = dict(lw=5, capsize=5, capthick=3)
-# for folder in folders_speech:
-#     print(means[folders_method_dict[folder]])
-#     print(stds[folders_method_dict[folder]])
-#     rects = ax.bar(np.array([0]) + width/2 + add, means[folders_method_dict[folder]], width, yerr=stds[folders_method_dict[folder]],
-#                    error_kw=error_kw, label=folders_method_dict[folder])
-#     add += width
-
-# Add some text for labels, title and custom x-axis tick labels, etc.
 ax.legend()
 ax.set_ylabel("CPU time")

@@ -196,7 +196,7 @@ class RandomFourierFeatures(Basis):
     b: array-like
         Random intercept
     """
-    def __init__(self, n_basis, domain, bandwidth, input_dim, seed=0):
+    def __init__(self, n_basis, domain, bandwidth, input_dim, seed=0, compute_gram=True):
         super().__init__(n_basis, input_dim, domain)
         self.bandwidth = bandwidth
         self.input_dim = input_dim
@@ -205,7 +205,8 @@ class RandomFourierFeatures(Basis):
         self.w = np.random.normal(0, 1, (self.input_dim, self.n_basis))
         np.random.seed(seed)
         self.b = np.random.uniform(0, 2 * np.pi, (1, self.n_basis))
-        self.compute_gram_matrix()
+        if compute_gram:
+            self.compute_gram_matrix()
         # self.compute_gram_matrix_bis()
 
     def compute_gram_matrix(self):
@@ -276,8 +277,6 @@ class RandomFourierFeatures(Basis):
 
     def get_gram_matrix(self):
         return self.gram_mat
-
-
 
 
 class BasisFromSmoothFunctions(Basis):

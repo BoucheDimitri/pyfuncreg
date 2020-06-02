@@ -16,7 +16,7 @@ from expes import generate_expes, run_expes
 # Path to the data
 DATA_PATH = path + "/data/dataspeech/raw/"
 # Record config
-OUTPUT_FOLDER = "/speech_fkrr_timer"
+OUTPUT_FOLDER = "/speech_fkrr_timer300"
 # Indexing
 INPUT_INDEXING = "list"
 OUTPUT_INDEXING = "discrete_general"
@@ -39,7 +39,7 @@ REGU_GRID = list(np.geomspace(1e-10, 1e-3, 25))
 KIN_SIGMA = 1
 KOUT_SIGMA = [0.025, 0.05, 0.1, 0.15]
 # Approximation locations
-APPROX_LOCS = np.linspace(0, 1, 400)
+APPROX_LOCS = np.linspace(0, 1, 300)
 #
 CENTER_OUTPUT = [True]
 

@@ -58,9 +58,9 @@ LOCS_BOUNDS_OUT = np.array([[0 - SIGNAL_EXT_OUTPUT[1][0], 1 + SIGNAL_EXT_OUTPUT[
 # BASIS_DICT_OUT = {"pywt_name_out": PYWT_NAME_OUT, "moments_out": MOMENTS_OUT, "n_dilat_out": N_DILATS_OUT,
 #                   "add_constant_out": True, "domain_out": DOMAIN, "locs_bounds_out": LOCS_BOUNDS_OUT}
 
-MOMENTS_IN = [2]
+MOMENTS_IN = [2, 3]
 PYWT_NAME_IN = ["db"]
-N_DILATS_IN = [4]
+N_DILATS_IN = [4, 3]
 BASIS_DICT_IN = {"pywt_name_in": PYWT_NAME_IN, "moments_in": MOMENTS_IN, "n_dilat_in": N_DILATS_IN,
                  "add_constant_in": True, "domain_in": DOMAIN, "locs_bounds_in": LOCS_BOUNDS_IN}
 
@@ -71,7 +71,7 @@ BASIS_DICT_OUT = {"pywt_name_out": PYWT_NAME_OUT, "moments_out": MOMENTS_OUT, "n
                   "add_constant_out": True, "domain_out": DOMAIN, "locs_bounds_out": LOCS_BOUNDS_OUT}
 
 # Number of random fourier features
-N_RFFS = 300
+N_RFFS = 100
 # Seed for the random fourier features
 RFFS_SEED = 567
 # Regularization grid
@@ -121,9 +121,11 @@ if __name__ == '__main__':
         configs, regs = generate_expes.dti_3be_wavs(KER_SIGMA, REGU_GRID, CENTER_OUTPUT,
                                                     N_RFFS, RFFS_SEED, **BASIS_DICT_IN, **BASIS_DICT_OUT)
 
-        result = perf_timing.parallel_perf_counter(regs, Xtrain, Ytrain_extended, Xtest, Ytest, n_procs=N_PROCS,
+        result = perf_timing.parallel_perf_counter(regs, Xtrain_extended, Ytrain_extended,
+                                                   Xtest, Ytest, n_procs=N_PROCS,
                                                    min_nprocs=MIN_PROCS)
         results.append(result)
         with open(rec_path + "/" + str(i) + ".pkl", "wb") as out:
             pickle.dump(results, out, pickle.HIGHEST_PROTOCOL)
+        print(i)
     print(results)

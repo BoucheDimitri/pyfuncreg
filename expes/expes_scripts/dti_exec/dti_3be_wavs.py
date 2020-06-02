@@ -46,31 +46,42 @@ LOCS_BOUNDS_OUT = np.array([[0 - SIGNAL_EXT_OUTPUT[1][0], 1 + SIGNAL_EXT_OUTPUT[
 # MOMENTS = [2, 3]
 # PYWT_NAME = ["db"]
 # N_DILATS = [4, 5]
-MOMENTS_IN = [2, 3]
+# MOMENTS_IN = [2, 3]
+# PYWT_NAME_IN = ["db"]
+# N_DILATS_IN = [4, 5]
+# BASIS_DICT_IN = {"pywt_name_in": PYWT_NAME_IN, "moments_in": MOMENTS_IN, "n_dilat_in": N_DILATS_IN,
+#                  "add_constant_in": True, "domain_in": DOMAIN, "locs_bounds_in": LOCS_BOUNDS_IN}
+#
+# MOMENTS_OUT = [2, 3]
+# PYWT_NAME_OUT = ["db"]
+# N_DILATS_OUT = [4, 5]
+# BASIS_DICT_OUT = {"pywt_name_out": PYWT_NAME_OUT, "moments_out": MOMENTS_OUT, "n_dilat_out": N_DILATS_OUT,
+#                   "add_constant_out": True, "domain_out": DOMAIN, "locs_bounds_out": LOCS_BOUNDS_OUT}
+MOMENTS_IN = [2]
 PYWT_NAME_IN = ["db"]
-N_DILATS_IN = [4, 5]
+N_DILATS_IN = [4]
 BASIS_DICT_IN = {"pywt_name_in": PYWT_NAME_IN, "moments_in": MOMENTS_IN, "n_dilat_in": N_DILATS_IN,
                  "add_constant_in": True, "domain_in": DOMAIN, "locs_bounds_in": LOCS_BOUNDS_IN}
 
-MOMENTS_OUT = [2, 3]
+MOMENTS_OUT = [2]
 PYWT_NAME_OUT = ["db"]
-N_DILATS_OUT = [4, 5]
+N_DILATS_OUT = [4]
 BASIS_DICT_OUT = {"pywt_name_out": PYWT_NAME_OUT, "moments_out": MOMENTS_OUT, "n_dilat_out": N_DILATS_OUT,
                   "add_constant_out": True, "domain_out": DOMAIN, "locs_bounds_out": LOCS_BOUNDS_OUT}
-
 # Number of random fourier features
 N_RFFS = 300
 # Seed for the random fourier features
 RFFS_SEED = 567
 # Regularization grid
-REGU_GRID = list(np.geomspace(1e-8, 1, 100))
-# REGU_GRID = [1e-1, 1]
+# REGU_GRID = list(np.geomspace(1e-8, 1, 100))
+REGU_GRID = [1e-1, 1]
 # Standard deviation grid for input kernel
-KER_SIGMA = [1, 5, 10, 15, 20]
+# KER_SIGMA = [1, 5, 10, 15, 20]
+KER_SIGMA = [5]
 CENTER_OUTPUT = True
 
 # Seeds for averaging of expes (must all be of the same size)
-N_AVERAGING = 10
+N_AVERAGING = 2
 SEED_DATA = 784
 
 # Generate seeds
@@ -115,3 +126,4 @@ if __name__ == '__main__':
         scores_test.append(score_test)
         with open(rec_path + "/" + str(i) + ".pkl", "wb") as out:
             pickle.dump((best_configs, best_results, scores_test), out, pickle.HIGHEST_PROTOCOL)
+        print(scores_test)

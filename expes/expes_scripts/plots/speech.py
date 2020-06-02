@@ -19,17 +19,20 @@ def mean_variance_result_speech(path, key):
     return np.mean(score_test), np.std(score_test)
 
 
-path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_28-05-2020_17-19/outputs/"
-KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
-KEYS = ("LP", "LA", "TBCL", "TBCD", "GLO", "TTCD", "TTCL", "VEL")
+path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_02-06-2020_20-35/outputs/"
+# KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
+# KEYS = ("LP", "LA", "TBCL", "TBCD", "GLO", "TTCD", "TTCL", "VEL")
+KEYS = ("LP", "LA", "TBCL", "TBCD", "GLO", "TTCD", "VEL")
 # KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL")
 
-folders_speech = ["speech_kpl_rffs100_max", "speech_3be_fourier_morefreqs", "speech_fkrr_biggrid", "speech_ke_multi"]
+# folders_speech = ["speech_kpl_rffs100_max", "speech_3be_fourier_morefreqs", "speech_fkrr", "speech_ke_multi"]
+# folders_speech = ["speech_kpl_rffs75_missing", "speech_3be_fourier_missing", "speech_fkrr_missing", "speech_ke_multi"]
+folders_speech = ["speech_kpl_rffs75_missing", "speech_3be_fourier_missing", "speech_fkrr_missing"]
 folders_method_dict = dict()
 folders_method_dict[folders_speech[0]] = "KPL"
 folders_method_dict[folders_speech[1]] = "3BE"
 folders_method_dict[folders_speech[2]] = "FKRR"
-folders_method_dict[folders_speech[3]] = "KE"
+# folders_method_dict[folders_speech[3]] = "KE"
 
 means = {folders_method_dict[folder]: [] for folder in folders_speech}
 stds = {folders_method_dict[folder]: [] for folder in folders_speech}
@@ -69,3 +72,4 @@ ax.set_xticklabels(KEYS)
 ax.legend()
 ax.set_xlabel("Vocal tract")
 ax.set_ylabel("MSE")
+# ax.set_yscale("log")

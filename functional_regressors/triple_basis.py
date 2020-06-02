@@ -57,6 +57,7 @@ class TripleBasisEstimator:
         self.basis_in_config, self.basis_in = basis.set_basis_config(basis_in)
         self.basis_out_config, self.basis_out = basis.set_basis_config(basis_out)
         self.basis_rffs_config, self.basis_rffs = basis.set_basis_config(basis_rffs)
+        self.ridge_inv = None
         self.regu = regu
         self.regressors = None
         self.center_output = center_output
@@ -73,9 +74,10 @@ class TripleBasisEstimator:
             self.basis_in.fit(Y[0], Y[1])
         if self.basis_rffs is None:
             self.basis_rffs_config[1]["input_dim"] = self.basis_in.n_basis
-            self.basis_rffs = basis.generate_basis(self.basis_rffs_config[0], self.basis_rffs_config[1])
+            self.basis_rffs = basis.generate_basis(self.basis_rffs_config[0],
+                                                   {**self.basis_rffs_config[1], **{"compute_gram": False}})
 
-    def fit(self, X, Y):
+    def fit(self, X, Y, return_cputime=False):
         self.Ymean = disc_fd.mean_func(*Y)
         X_dg = disc_fd.to_discrete_general(*X)
         Y_dg = disc_fd.to_discrete_general(*Y)
@@ -84,17 +86,30 @@ class TripleBasisEstimator:
         coefsX = projection_coefs(X_dg, self.basis_in)
         coefsY = projection_coefs(Ycentered, self.basis_out)
         n_probs = coefsY.shape[1]
-        regressors = []
+        # regressors = []
+        # for prob in range(n_probs):
+        #     reg = smoothing.ExpandedRidge(self.regu, self.basis_rffs)
+        #     reg.fit(coefsX, coefsY[:, prob])
+        #     regressors.append(reg)
+        # self.regressors = regressors
+        Z = self.basis_rffs.compute_matrix(coefsX)
+        ridge_mat = Z.T.dot(Z) + self.regu * np.eye(self.basis_rffs.n_basis)
+        start = time.process_time()
+        self.ridge_inv = np.linalg.inv(ridge_mat)
+        dual_coefs = []
         for prob in range(n_probs):
-            reg = smoothing.ExpandedRidge(self.regu, self.basis_rffs)
-            reg.fit(coefsX, coefsY[:, prob])
-            regressors.append(reg)
-        self.regressors = regressors
+            dual_coefs.append(self.ridge_inv.dot(Z.T.dot(coefsY[:, prob])))
+        self.dual_coefs = dual_coefs
+        end = time.process_time()
+        if return_cputime:
+            return end - start
 
     def predict(self, Xnew):
         Xnew_dg = disc_fd.to_discrete_general(*Xnew)
         coefsXnew = projection_coefs(Xnew_dg, self.basis_in)
-        preds = np.array([reg(coefsXnew) for reg in self.regressors]).T
+        Znew = self.basis_rffs.compute_matrix(coefsXnew)
+        # preds = np.array([reg(coefsXnew) for reg in self.regressors]).T
+        preds = np.array([Znew.dot(alpha) for alpha in self.dual_coefs]).T
         return preds
 
     def predict_from_coefs(self, pred_coefs, yin_new):
