@@ -49,7 +49,7 @@ DECREASE_BASE = 1
 # MOMENTS = [2, 3]
 # PYWT_NAME = ["db"]
 # N_DILATS = [4, 5]
-MOMENTS = [2]
+MOMENTS = [2, 3]
 PYWT_NAME = ["db"]
 N_DILATS = [4]
 BASIS_DICT = {"pywt_name": PYWT_NAME, "moments": MOMENTS, "n_dilat": N_DILATS, "init_dilat": 1.0, "translat": 1.0, "dilat": 2, "approx_level": 6,
@@ -63,7 +63,7 @@ REGUS = np.geomspace(1e-8, 1, 25)
 
 
 # Seeds for averaging of expes (must all be of the same size)
-N_AVERAGING = 2
+N_AVERAGING = 10
 SEED_DATA = 784
 
 # Generate seeds

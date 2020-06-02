@@ -94,4 +94,5 @@ if __name__ == '__main__':
         results.append(result)
         with open(rec_path + "/" + str(i) + ".pkl", "wb") as out:
             pickle.dump(results, out, pickle.HIGHEST_PROTOCOL)
+        print(i)
     print(results)
