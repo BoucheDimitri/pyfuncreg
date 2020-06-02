@@ -1,4 +1,5 @@
 import numpy as np
+import time
 
 from functional_data import smoothing
 from functional_data import fpca
@@ -93,7 +94,8 @@ class KernelAdditiveModel:
         inter_const = domain[0, 1] - domain[0, 0]
         return inter_const * (1 / approx_space.shape[0]) * Y_evals.dot(Yfpca_evals.T)
 
-    def fit(self, X, Y, input_data_format="discrete_general", output_data_format="discrete_general"):
+    def fit(self, X, Y, input_data_format="discrete_general", output_data_format="discrete_general",
+            return_cputime=False):
         Ywrapped = disc_fd.wrap_functional_data(Y, output_data_format)
         Xwrapped = disc_fd.wrap_functional_data(X, input_data_format)
         Xfunc = Xwrapped.func_linearinterp()
@@ -107,8 +109,12 @@ class KernelAdditiveModel:
         Y = self.compute_Y(Ycentered, Yfpca, self.space_out, self.domain_out)
         A = np.kron(A_evals_in, A_evals_fpca)
         self.Xfunc = Xfunc
+        start = time.process_time()
         self.alpha = np.linalg.inv(A.T.dot(A) + self.regu * A).dot(A).dot(Y.flatten())
+        end = time.process_time()
         self.alpha = self.alpha.reshape((len(Xfunc), len(Yfpca)))
+        if return_cputime:
+            return end - start
 
     def predict_evaluate(self, Xnew, locs, input_data_format="discrete_general"):
         Xnew_wrapped = disc_fd.wrap_functional_data(Xnew, input_data_format)
@@ -219,7 +225,7 @@ class KernelAdditiveModelBis:
         inter_const = domain[0, 1] - domain[0, 0]
         return inter_const * (1 / approx_space.shape[0]) * Y_evals.dot(Yfpca_evals.T)
 
-    def fit(self, X, Y):
+    def fit(self, X, Y, return_cputime=False):
         self.Ymean = disc_fd.mean_func(*Y)
         X_dg = disc_fd.to_discrete_general(*X)
         Y_dg = disc_fd.to_discrete_general(*Y)
@@ -234,8 +240,12 @@ class KernelAdditiveModelBis:
         Y = self.compute_Y(Ycentered_func, Yfpca, self.space_out, self.domain_out)
         A = np.kron(A_evals_in, A_evals_fpca)
         self.Xfunc = Xfunc
+        start = time.process_time()
         self.alpha = np.linalg.inv(A.T.dot(A) + self.regu * A).dot(A).dot(Y.flatten())
+        end = time.process_time()
         self.alpha = self.alpha.reshape((len(Xfunc), len(Yfpca)))
+        if return_cputime:
+            return end - start
 
     def predict_evaluate(self, Xnew, locs):
         Xnew_dg = disc_fd.to_discrete_general(*Xnew)
