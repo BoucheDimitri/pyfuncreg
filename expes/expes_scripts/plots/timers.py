@@ -64,11 +64,49 @@ for folder in folders_dti:
     means_dti[folders_method_dti[folder]].append(m)
     stds_dti[folders_method_dti[folder]].append(s)
 
-error_kw = dict(lw=5, capsize=5, capthick=3)
+error_kw = dict(lw=6, capsize=6, capthick=4)
 width = 0.2  # the width of the bars
 cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
-cycle_modif = cycle[0:3] + [cycle[4]]
+# cycle_modif = cycle[0:3] + [cycle[4]]
+cycle_modif = cycle[0:4]
 
+
+# Horizontal bars
+fig, ax = plt.subplots()
+
+yticks = np.arange(0, 2)
+yticks_text = ["DTI", "Speech"]
+
+add = 0
+count = 0
+for folder in folders_dti:
+    rects = ax.barh(np.array([0]) - 2 * width + width/2 + add,
+                      means_dti[folders_method_dti[folder]], width,
+                      xerr=stds_dti[folders_method_dti[folder]],
+                      error_kw=error_kw, label=folders_method_dti[folder], color=cycle_modif[count])
+    add += width
+    count += 1
+
+add = 0
+count = 0
+for folder in folders_speech:
+    rects = ax.barh(np.array([1]) - 1 * width + add,
+                   means_speech[folders_method_speech[folder]], width,
+                   xerr=stds_speech[folders_method_speech[folder]],
+                   error_kw=error_kw, color=cycle[count])
+    add += width
+    count += 1
+
+ax.legend()
+ax.set_yticks(yticks)
+ax.set_yticklabels(yticks_text)
+ax.set_xscale('log')
+ax.set_xlabel("CPU time (log scale)")
+
+
+
+
+# Vertical bars
 fig, ax = plt.subplots()
 
 xticks = np.arange(0, 2)

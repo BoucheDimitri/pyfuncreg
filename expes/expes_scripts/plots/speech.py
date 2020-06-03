@@ -20,14 +20,15 @@ def mean_variance_result_speech(path, key):
 
 
 path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_02-06-2020_20-35/outputs/"
-# KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
-# KEYS = ("LP", "LA", "TBCL", "TBCD", "GLO", "TTCD", "TTCL", "VEL")
-KEYS = ("LP", "LA", "TBCL", "TBCD", "GLO", "TTCD", "VEL")
+KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
+# KEYS = ("LP", "LA", "TBCL", "TBCD", "GLO", "VEL")
+# KEYS = ("LP", "LA", "TBCL", "TBCD", "GLO", "TTCD", "VEL")
 # KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL")
 
-# folders_speech = ["speech_kpl_rffs100_max", "speech_3be_fourier_morefreqs", "speech_fkrr", "speech_ke_multi"]
+folders_speech = ["speech_kpl_rffs100_max", "speech_3be_fourier_morefreqs", "speech_fkrr_multi"]# , "speech_ke_multi"]
+# folders_speech = ["speech_kpl_rffs100_max", "speech_3be_fourier_morefreqs", "speech_fkrr_multi"]#, "speech_ke_multi"]
 # folders_speech = ["speech_kpl_rffs75_missing", "speech_3be_fourier_missing", "speech_fkrr_missing", "speech_ke_multi"]
-folders_speech = ["speech_kpl_rffs75_missing", "speech_3be_fourier_missing", "speech_fkrr_missing"]
+# folders_speech = ["speech_kpl_rffs75_missing", "speech_3be_fourier_missing", "speech_fkrr_missing"]
 folders_method_dict = dict()
 folders_method_dict[folders_speech[0]] = "KPL"
 folders_method_dict[folders_speech[1]] = "3BE"
@@ -44,25 +45,27 @@ for key in KEYS:
         means[folders_method_dict[folder]].append(m)
         stds[folders_method_dict[folder]].append(s)
 
-# count = 0
-# for key in KEYS:
-#     best = np.min([means[folders_method_dict[folder]][count] for folder in folders_speech])
-#     for folder in folders_speech:
-#         means[folders_method_dict[folder]][count] *= 1 / best
-#         stds[folders_method_dict[folder]][count] *= 1 / best
-#     count += 1
+count = 0
+for key in KEYS:
+    best = np.min([means[folders_method_dict[folder]][count] for folder in folders_speech])
+    for folder in folders_speech:
+        means[folders_method_dict[folder]][count] *= 1 / best
+        stds[folders_method_dict[folder]][count] *= 1 / best
+    count += 1
 
 
-# Plot
+# Plot vert
 x = np.arange(len(KEYS))  # the label locations
-width = 0.2  # the width of the bars
+width = 0.29 # the width of the bars
 
 fig, ax = plt.subplots()
 n_folders = len(folders_speech)
 add = 0
-error_kw = dict(lw=5, capsize=5, capthick=3)
+error_kw = dict(lw=6, capsize=6, capthick=4)
 for folder in folders_speech:
-    rects = ax.bar(x - 2 * width + width/2 + add, means[folders_method_dict[folder]], width, yerr=stds[folders_method_dict[folder]],
+    # rects = ax.bar(x - 2 * width + width/2 + add, means[folders_method_dict[folder]], width, yerr=stds[folders_method_dict[folder]],
+    #                error_kw=error_kw, label=folders_method_dict[folder])
+    rects = ax.bar(x - 1 * width + add, means[folders_method_dict[folder]], width, yerr=stds[folders_method_dict[folder]],
                    error_kw=error_kw, label=folders_method_dict[folder])
     add += width
 
@@ -71,5 +74,31 @@ ax.set_xticks(x)
 ax.set_xticklabels(KEYS)
 ax.legend()
 ax.set_xlabel("Vocal tract")
-ax.set_ylabel("MSE")
+ax.set_ylabel("normalized MSE")
+ax.set_ylim(0.827, 1.23)
+# ax.set_yscale("log")
+
+
+# Plot horizontal
+y = np.arange(len(KEYS))  # the label locations
+width = 0.225  # the width of the bars
+
+fig, ax = plt.subplots()
+n_folders = len(folders_speech)
+add = 0
+error_kw = dict(lw=5, capsize=5, capthick=3)
+for folder in folders_speech:
+    # rects = ax.bar(x - 2 * width + width/2 + add, means[folders_method_dict[folder]], width, yerr=stds[folders_method_dict[folder]],
+    #                error_kw=error_kw, label=folders_method_dict[folder])
+    rects = ax.barh(y - 1 * width + add, means[folders_method_dict[folder]], width, xerr=stds[folders_method_dict[folder]],
+                   error_kw=error_kw, label=folders_method_dict[folder])
+    add += width
+
+# Add some text for labels, title and custom x-axis tick labels, etc.
+ax.set_yticks(y)
+ax.set_yticklabels(KEYS)
+ax.legend()
+ax.set_ylabel("Vocal tract")
+ax.set_xlabel("normalized MSE")
+ax.set_xlim(0.827)
 # ax.set_yscale("log")
