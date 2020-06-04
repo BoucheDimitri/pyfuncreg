@@ -194,19 +194,27 @@ class SeparableOVKRidgeFunctionalEigsolve:
         uin, vin = np.linalg.eigh(Kin)
         uin, vin = np.flip(uin), np.flip(vin, axis=1)
         n = Kin.shape[0]
-        # Complete Eigenvectors
-        V = []
+        m = self.Kout.shape[0]
+        # Less memory usage
+        self.alpha = np.zeros((n, m))
         for i in range(n):
             for s in range(self.kappa):
-                V.append(np.kron(np.expand_dims(vin[:, i], axis=1), np.expand_dims(self.vout[:, s], axis=0)))
-        V = np.array(V)
-        # Complete Eigenvalues
-        U = np.kron(uin, self.uout[:self.kappa].T).flatten()
-        scalar_prods = np.sum(np.multiply(V, Yeval), axis=(1, 2))
-        coefs = scalar_prods * (1 / (U + self.regu))
-        coefs = coefs[:, np.newaxis, np.newaxis]
-        # Representer coefficients
-        self.alpha = (coefs * V).sum(axis=0)
+                V = np.kron(np.expand_dims(vin[:, i], axis=1), np.expand_dims(self.vout[:, s], axis=0))
+                self.alpha += (1 / (uin[i] * self.uout[s] + self.regu)) * (np.multiply(V, Yeval)).sum() * V
+        # With numpy
+        # Complete Eigenvectors
+        # V = []
+        # for i in range(n):
+        #     for s in range(self.kappa):
+        #         V.append(np.kron(np.expand_dims(vin[:, i], axis=1), np.expand_dims(self.vout[:, s], axis=0)))
+        # V = np.array(V)
+        # # Complete Eigenvalues
+        # U = np.kron(uin, self.uout[:self.kappa].T).flatten()
+        # scalar_prods = np.sum(np.multiply(V, Yeval), axis=(1, 2))
+        # coefs = scalar_prods * (1 / (U + self.regu))
+        # coefs = coefs[:, np.newaxis, np.newaxis]
+        # # Representer coefficients
+        # self.alpha = (coefs * V).sum(axis=0)
         end = time.process_time()
         if return_cputime:
             return end - start

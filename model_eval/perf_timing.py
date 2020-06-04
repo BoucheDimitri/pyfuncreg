@@ -39,18 +39,18 @@ def check_cpu_availability(min_nprocs=32, timeout_sleep=3, n_timeout=0, cpu_avai
         The number of available CPUs for execution
     """
     cpu_occup = np.array(psutil.cpu_percent(percpu=True))
-    return len(cpu_occup)
-    # TODO: Shortcut chanmé attention
-    # n_procs = (cpu_occup[cpu_occup < cpu_avail_thresh]).shape[0]
-    # timeout_count = 0
-    # while n_procs < min_nprocs and timeout_count < n_timeout:
-    #     time.sleep(timeout_sleep)
-    #     cpu_occup = np.array(psutil.cpu_percent(percpu=True))
-    #     n_procs = (cpu_occup[cpu_occup < 90]).shape[0]
-    #     timeout_count += 1
-    # if n_procs < min_nprocs:
-    #     raise ResourceWarning("The minimum number of CPUs required could not be allocated")
-    # return n_procs
+    # return len(cpu_occup)
+    # # TODO: Shortcut chanmé attention
+    n_procs = (cpu_occup[cpu_occup < cpu_avail_thresh]).shape[0]
+    timeout_count = 0
+    while n_procs < min_nprocs and timeout_count < n_timeout:
+        time.sleep(timeout_sleep)
+        cpu_occup = np.array(psutil.cpu_percent(percpu=True))
+        n_procs = (cpu_occup[cpu_occup < 90]).shape[0]
+        timeout_count += 1
+    if n_procs < min_nprocs:
+        raise ResourceWarning("The minimum number of CPUs required could not be allocated")
+    return n_procs
 
 
 def run_fit_batch(regs_split, Xfit, Yfit, Xtest, Ytest):
