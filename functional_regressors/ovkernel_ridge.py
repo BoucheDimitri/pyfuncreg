@@ -135,26 +135,26 @@ class SeparableOVKRidgeFunctional:
         return preds
 
 
-@numba.njit
-def invert_kroneig(alpha, Vin, uin, Vout, uout, Yeval, regu, n, t, neig_in, neig_out):
-    vin = np.zeros((n, 1), dtype=numba.float64)
-    vout = np.zeros((1, t), dtype=numba.float64)
-    for i in range(neig_in):
-        for s in range(neig_out):
-            vin[:, 0] = Vin[:, i]
-            vout[0, :] = Vout[:, s]
-            V = np.kron(vin, vout)
-            alpha += (1 / (uin[i] * uout[s] + regu)) * (np.multiply(V, Yeval)).sum() * V
-
+# @numba.njit
 # def invert_kroneig(alpha, Vin, uin, Vout, uout, Yeval, regu, n, t, neig_in, neig_out):
-#     vin = np.zeros((n, 1), dtype=np.float64)
-#     vout = np.zeros((1, t), dtype=np.float64)
+#     vin = np.zeros((n, 1), dtype=numba.float64)
+#     vout = np.zeros((1, t), dtype=numba.float64)
 #     for i in range(neig_in):
 #         for s in range(neig_out):
 #             vin[:, 0] = Vin[:, i]
 #             vout[0, :] = Vout[:, s]
 #             V = np.kron(vin, vout)
 #             alpha += (1 / (uin[i] * uout[s] + regu)) * (np.multiply(V, Yeval)).sum() * V
+
+def invert_kroneig(alpha, Vin, uin, Vout, uout, Yeval, regu, n, t, neig_in, neig_out):
+    vin = np.zeros((n, 1), dtype=np.float64)
+    vout = np.zeros((1, t), dtype=np.float64)
+    for i in range(neig_in):
+        for s in range(neig_out):
+            vin[:, 0] = Vin[:, i]
+            vout[0, :] = Vout[:, s]
+            V = np.kron(vin, vout)
+            alpha += (1 / (uin[i] * uout[s] + regu)) * (np.multiply(V, Yeval)).sum() * V
 
 
 class SeparableOVKRidgeFunctionalEigsolve:
