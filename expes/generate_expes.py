@@ -363,10 +363,11 @@ def speech_fkrr(kin_sigma, kout_sigma, regu, approx_locs, center_output):
     return configs, regs
 
 
-def speech_fkrr_eig(kin_sigma, kout_sigma, regu, kappa, approx_locs, center_output):
+def speech_fkrr_eig(kin_sigma, kout_sigma, regu, neig_in, neig_out, approx_locs, center_output):
     kernels_in, kernels_out = kernels_generator_fkrr_speech(kin_sigma, kout_sigma)
-    params = {"regu": regu, "kernel_in": kernels_in, "kernel_out": kernels_out, "kappa": kappa,
-              "approx_locs": approx_locs, "center_output": center_output}
+    params = {"regu": regu, "kernel_in": kernels_in, "kernel_out": kernels_out,
+              "neig_out": neig_out, "neig_in": neig_in, "approx_locs": approx_locs,
+              "center_output": center_output}
     configs = configs_generation.configs_combinations(params, exclude_list=["approx_locs"])
     regs = [ovkernel_ridge.SeparableOVKRidgeFunctionalEigsolve(**config) for config in configs]
     return configs, regs

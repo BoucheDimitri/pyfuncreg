@@ -3,6 +3,7 @@
 from slycot import sb04qd
 import numpy as np
 import time
+import numba
 
 from functional_data import smoothing
 from functional_data import discrete_functional_data as disc_fd
@@ -134,6 +135,28 @@ class SeparableOVKRidgeFunctional:
         return preds
 
 
+# @numba.njit
+# def invert_kroneig(alpha, Vin, uin, Vout, uout, Yeval, regu, n, t, neig_in, neig_out):
+#     vin = np.zeros((n, 1), dtype=numba.float64)
+#     vout = np.zeros((1, t), dtype=numba.float64)
+#     for i in range(neig_in):
+#         for s in range(neig_out):
+#             vin[:, 0] = Vin[:, i]
+#             vout[0, :] = Vout[:, s]
+#             V = np.kron(vin, vout)
+#             alpha += (1 / (uin[i] * uout[s] + regu)) * (np.multiply(V, Yeval)).sum() * V
+
+def invert_kroneig(alpha, Vin, uin, Vout, uout, Yeval, regu, n, t, neig_in, neig_out):
+    vin = np.zeros((n, 1), dtype=np.float64)
+    vout = np.zeros((1, t), dtype=np.float64)
+    for i in range(neig_in):
+        for s in range(neig_out):
+            vin[:, 0] = Vin[:, i]
+            vout[0, :] = Vout[:, s]
+            V = np.kron(vin, vout)
+            alpha += (1 / (uin[i] * uout[s] + regu)) * (np.multiply(V, Yeval)).sum() * V
+
+
 class SeparableOVKRidgeFunctionalEigsolve:
     """
     Discrete approximation of FKRR with separable kernel using Sylvester solver
@@ -153,10 +176,11 @@ class SeparableOVKRidgeFunctionalEigsolve:
     center_output : bool
         Should the outputs be centered upon training
     """
-    def __init__(self, regu, kernel_in, kernel_out, kappa, approx_locs, center_output=False):
+    def __init__(self, regu, kernel_in, kernel_out, neig_in, neig_out, approx_locs, center_output=False):
         self.kernel_in = kernel_in
         self.kernel_out = kernel_out
-        self.kappa = kappa
+        self.neig_out = neig_out
+        self.neig_in = neig_in
         self.regu = regu
         self.approx_locs = np.squeeze(approx_locs)
         self.Kout = (1 / self.approx_locs.shape[0]) * self.kernel_out(np.expand_dims(self.approx_locs, axis=1),
@@ -196,11 +220,13 @@ class SeparableOVKRidgeFunctionalEigsolve:
         n = Kin.shape[0]
         m = self.Kout.shape[0]
         # Less memory usage
-        self.alpha = np.zeros((n, m))
-        for i in range(n):
-            for s in range(self.kappa):
-                V = np.kron(np.expand_dims(vin[:, i], axis=1), np.expand_dims(self.vout[:, s], axis=0))
-                self.alpha += (1 / (uin[i] * self.uout[s] + self.regu)) * (np.multiply(V, Yeval)).sum() * V
+        self.alpha = np.zeros((n, m), dtype="float64")
+        invert_kroneig(self.alpha, vin, uin, self.vout, self.uout, Yeval, self.regu, n, m, self.neig_in, self.neig_out)
+        # self.alpha = np.zeros((n, m))
+        # for i in range(n):
+        #     for s in range(self.kappa):
+        #         V = np.kron(np.expand_dims(vin[:, i], axis=1), np.expand_dims(self.vout[:, s], axis=0))
+        #         self.alpha += (1 / (uin[i] * self.uout[s] + self.regu)) * (np.multiply(V, Yeval)).sum() * V
         # With numpy
         # Complete Eigenvectors
         # V = []

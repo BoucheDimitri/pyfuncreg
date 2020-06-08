@@ -38,7 +38,8 @@ REGU_GRID = [1e-10, 1e-7, 1e-5]
 # Standard deviation parameter for the input kernel
 KIN_SIGMA = 1
 KOUT_SIGMA = [0.05, 0.1, 0.15]
-KAPPA = [30]
+NEIG_OUT = [20]
+NEIG_IN = [300]
 # Approximation locations
 APPROX_LOCS = np.linspace(0, 1, 300)
 #
@@ -57,7 +58,8 @@ if __name__ == '__main__':
     # Create folder for saving results
     rec_path = run_expes.create_output_folder(path, OUTPUT_FOLDER)
     # Generate configurations and corresponding regressors
-    configs, regs = generate_expes.speech_fkrr_eig(KIN_SIGMA, KOUT_SIGMA, REGU_GRID, KAPPA, APPROX_LOCS, CENTER_OUTPUT)
+    configs, regs = generate_expes.speech_fkrr_eig(KIN_SIGMA, KOUT_SIGMA, REGU_GRID, NEIG_IN, NEIG_OUT,
+                                                   APPROX_LOCS, CENTER_OUTPUT)
     perfs = run_expes.run_expe_perf_speech(regs, seeds=seeds_data, data_path=DATA_PATH, rec_path=rec_path,
                                            min_nprocs=MIN_PROCS, n_procs=N_PROCS)
     print(perfs)

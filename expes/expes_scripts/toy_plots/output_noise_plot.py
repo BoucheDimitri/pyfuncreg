@@ -8,8 +8,8 @@ from data import toy_data_spline
 plt.rcParams.update({"pdf.fonttype": 42})
 plt.rcParams.update({"font.size": 40})
 # plt.rcParams.update({'ps.useafm': True})
-plt.rcParams.update({"lines.linewidth": 9})
-plt.rcParams.update({"lines.markersize": 14})
+plt.rcParams.update({"lines.linewidth": 6})
+plt.rcParams.update({"lines.markersize": 20})
 plt.rcParams.update({"axes.linewidth": 2.5})
 plt.rcParams.update({"xtick.major.size": 10})
 plt.rcParams.update({"xtick.major.width": 2.5})
@@ -50,9 +50,12 @@ for key in sub_n_samples:
         concat_results.append(results_test)
 
 sub_n_samples = [10, 50, 100, 500]
+markers = ["o", "v", "s", "D"]
+count = 0
 for key in sub_n_samples:
     results_test = np.flip(np.array(scores[key][beg_ind:]))
-    plt.semilogy(snr_grid, results_test, label="N=" + str(key), marker="o")
+    plt.semilogy(snr_grid, results_test, label="N=" + str(key), marker=markers[count])
+    count += 1
 plt.legend()
 plt.xlabel("SNR")
 plt.ylabel("MSE (log scale)")

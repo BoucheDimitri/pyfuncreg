@@ -10,14 +10,13 @@ import os
 plt.rcParams.update({"pdf.fonttype": 42})
 plt.rcParams.update({"font.size": 40})
 # plt.rcParams.update({'ps.useafm': True})
-plt.rcParams.update({"lines.linewidth": 9})
-plt.rcParams.update({"lines.markersize": 12})
+plt.rcParams.update({"lines.linewidth": 6})
+plt.rcParams.update({"lines.markersize": 20})
 plt.rcParams.update({"axes.linewidth": 2.5})
 plt.rcParams.update({"xtick.major.size": 10})
 plt.rcParams.update({"xtick.major.width": 2.5})
 plt.rcParams.update({"ytick.major.size": 10})
 plt.rcParams.update({"ytick.major.width": 2.5})
-
 
 # path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_30-03-2020_11-02/outputs/output_missing2/"
 # # path = "/home/dimitri/Desktop/Telecom/nonlinear_functional_regressions/outputs/toy_correlated/"
@@ -53,12 +52,14 @@ for n in n_samples:
     means_dict[n] = array_dict[n].mean(axis=0)
 
 sub_n_samples = [10, 50, 100, 500]
+markers = ["o", "v", "s", "D"]
+count = 0
 for n in sub_n_samples:
     # plt.plot(missing_levels, means_dict[n], label="N=" + str(n))
     plt.errorbar(100 * np.array(missing_levels), means_dict[n],
-                 yerr=stds_dict[n], marker="o", capsize=5, label="N=" + str(n), lolims=True)
+                 yerr=stds_dict[n], marker=markers[count], capsize=5, label="N=" + str(n), lolims=True)
+    count += 1
 
 plt.legend()
 plt.ylabel("MSE")
 plt.xlabel("Percentage missing")
-

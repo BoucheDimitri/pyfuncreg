@@ -16,7 +16,7 @@ from expes import generate_expes, run_expes
 # Path to the data
 DATA_PATH = path + "/data/dataspeech/raw/"
 # Record config
-OUTPUT_FOLDER = "/speech_fkrr_eigsolve"
+OUTPUT_FOLDER = "/speech_fkrr_eigapprox"
 # Indexing
 INPUT_INDEXING = "list"
 OUTPUT_INDEXING = "discrete_general"
@@ -33,15 +33,16 @@ MIN_PROCS = 32
 # Output domain
 DOMAIN = np.array([[0, 1]])
 # Regularization parameters grid
-# REGU_GRID = list(np.geomspace(1e-10, 1e-3, 50))
+REGU_GRID = list(np.geomspace(1e-10, 1e-3, 50))
 # REGU_GRID = [1e-7]
 # Standard deviation parameter for the input kernel
 KIN_SIGMA = 1
 # KOUT_SIGMA = [0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.125, 0.15]
-KOUT_SIGMA = [0.025, 0.05, 0.1, 0.15]
+KOUT_SIGMA = [0.02, 0.05, 0.1, 0.15]
 # Approximation locations
 APPROX_LOCS = np.linspace(0, 1, 300)
-KAPPA = [20, 30]
+NEIG_OUT = [20]
+NEIG_IN = [50]
 #
 CENTER_OUTPUT = [True]
 

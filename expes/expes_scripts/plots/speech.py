@@ -19,16 +19,17 @@ def mean_variance_result_speech(path, key):
     return np.mean(score_test), np.std(score_test)
 
 
-path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_02-06-2020_20-35/outputs/"
-KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
+path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_05-06-2020_09-25/outputs/"
+# KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
 # KEYS = ("LP", "LA", "TBCL", "TBCD", "GLO", "VEL")
 # KEYS = ("LP", "LA", "TBCL", "TBCD", "GLO", "TTCD", "VEL")
-# KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL")
+KEYS = ("LA", "TBCD", "TTCD", "VEL")
 
 folders_speech = ["speech_kpl_rffs100_max", "speech_3be_fourier_morefreqs", "speech_fkrr_multi"]# , "speech_ke_multi"]
 # folders_speech = ["speech_kpl_rffs100_max", "speech_3be_fourier_morefreqs", "speech_fkrr_multi"]#, "speech_ke_multi"]
 # folders_speech = ["speech_kpl_rffs75_missing", "speech_3be_fourier_missing", "speech_fkrr_missing", "speech_ke_multi"]
 # folders_speech = ["speech_kpl_rffs75_missing", "speech_3be_fourier_missing", "speech_fkrr_missing"]
+folders_speech = ["speech_kpl_rffs100_max", "speech_3be_fourier_morefreqs", "speech_fkrr_eigsolve"]
 folders_method_dict = dict()
 folders_method_dict[folders_speech[0]] = "KPL"
 folders_method_dict[folders_speech[1]] = "3BE"
