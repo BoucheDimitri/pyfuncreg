@@ -59,7 +59,8 @@ if __name__ == '__main__':
     # Create folder for saving results
     rec_path = run_expes.create_output_folder(path, OUTPUT_FOLDER)
     # Generate configurations and corresponding regressors
-    configs, regs = generate_expes.speech_fkrr_eig(KIN_SIGMA, KOUT_SIGMA, REGU_GRID, KAPPA, APPROX_LOCS, CENTER_OUTPUT)
+    configs, regs = generate_expes.speech_fkrr_eig(KIN_SIGMA, KOUT_SIGMA, REGU_GRID, NEIG_IN, NEIG_OUT,
+                                                   APPROX_LOCS, CENTER_OUTPUT)
     # Run expes
     best_configs, best_results, scores_test = run_expes.run_expe_speech(
         configs, regs, seeds=seeds_data, data_path=DATA_PATH, rec_path=rec_path,
