@@ -33,20 +33,20 @@ MIN_PROCS = None
 # Output domain
 DOMAIN = np.array([[0, 1]])
 # Regularization parameters grid
-# REGU_GRID = list(np.geomspace(1e-10, 1e-3, 20))
-REGU_GRID = [1e-10, 1e-7, 1e-5]
+REGU_GRID = list(np.geomspace(1e-10, 1e-3, 25))
+# REGU_GRID = [1e-10, 1e-7, 1e-5]
 # Standard deviation parameter for the input kernel
 KIN_SIGMA = 1
-KOUT_SIGMA = [0.05, 0.1, 0.15]
+KOUT_SIGMA = [0.02, 0.05, 0.1, 0.15]
 NEIG_OUT = [20]
-NEIG_IN = [300]
+NEIG_IN = [50]
 # Approximation locations
 APPROX_LOCS = np.linspace(0, 1, 300)
 #
 CENTER_OUTPUT = [True]
 
 # Seeds for averaging of expes (must all be of the same size)
-N_AVERAGING = 2
+N_AVERAGING = 10
 SEED_DATA = 784
 
 # Generate seeds
