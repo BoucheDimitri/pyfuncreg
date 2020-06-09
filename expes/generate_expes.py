@@ -373,6 +373,15 @@ def speech_fkrr_eig(kin_sigma, kout_sigma, regu, neig_in, neig_out, approx_locs,
     return configs, regs
 
 
+def speech_fkrr_eigapprox(kin_sigma, kout_sigma, regu, neig, approx_locs, center_output):
+    kernels_in, kernels_out = kernels_generator_fkrr_speech(kin_sigma, kout_sigma)
+    params = {"regu": regu, "kernel_in": kernels_in, "kernel_out": kernels_out,
+              "neig": neig, "approx_locs": approx_locs, "center_output": center_output}
+    configs = configs_generation.configs_combinations(params, exclude_list=["approx_locs"])
+    regs = [ovkernel_ridge.SeparableOVKRidgeFunctionalEigapprox(**config) for config in configs]
+    return configs, regs
+
+
 def kernels_generator_gauss_fkrr_speech(kin_sigma, kout_sigma):
     kin_sigmas = kin_sigma * np.ones(13)
     gauss_kers = [kernels.GaussianScalarKernel(sig, normalize=False, normalize_dist=True) for sig in kin_sigmas]

@@ -21,16 +21,21 @@ kin_sigmas = np.ones(13)
 gauss_kers = [kernels.GaussianScalarKernel(sig, normalize=False, normalize_dist=True) for sig in kin_sigmas]
 kerin = kernels.SumOfScalarKernel(gauss_kers, normalize=False)
 approx_locs = Ytrain_ext[0][0]
-neig_out = 20
-neig_in = 50
+# neig_out = 20
+# neig_in = 50
+neig = 200
 regu = 1e-8
 
-reg = ovkernel_ridge.SeparableOVKRidgeFunctionalEigsolve(regu, kerin, kerout, neig_in, neig_out,
+reg = ovkernel_ridge.SeparableOVKRidgeFunctionalEigapprox(regu, kerin, kerout, neig,
                                                          approx_locs, center_output=True)
-#
-# u, v = np.linalg.eigh(reg.Kout)
-#
-# Kin = kerin(Xtrain, Xtrain)
-# uin, vin = np.linalg.eigh(Kin)
+
+uout, vout = np.linalg.eigh(reg.Kout)
+
+Kin = kerin(Xtrain, Xtrain)
+uin, vin = np.linalg.eigh(Kin)
+
+u = np.kron(uin, uout)
+u.sort()
+plt.plot(np.flip(u))
 
 cpu_time = reg.fit(Xtrain, Ytrain_ext, return_cputime=True)
