@@ -69,7 +69,7 @@ seeds_noise_out = np.random.randint(100, 2000, N_AVERAGING)
 np.random.seed(SEED_MISSING)
 seeds_missing = np.random.randint(100, 2000, N_AVERAGING)
 #
-# 
+#
 # Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(N_SAMPLES, seed=784)
 # Xtest = ([LOCS_IN for j in range(Xtest.shape[0])], [Xtest[j] for j in range(Xtest.shape[0])])
 # Xtrain_deg = degradation.add_noise_inputs(Xtrain, NOISE_INPUT, 675)
