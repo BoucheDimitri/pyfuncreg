@@ -18,11 +18,11 @@ def add_noise_outputs(Y, std, seed):
 def downsample_output(Y, remove_frac, seed):
     n = len(Y[0])
     Ydown = [[], []]
+    random_state = np.random.RandomState(seed)
     for i in range(n):
-        np.random.seed(seed)
         n_evals = len(Y[0][i])
         n_remove = int(remove_frac * n_evals)
-        inds = np.random.choice(np.arange(n_evals), size=n_evals - n_remove, replace=False)
+        inds = random_state.choice(np.arange(n_evals), size=n_evals - n_remove, replace=False)
         inds.sort()
         Ydown[0].append(Y[0][i][inds])
         Ydown[1].append(np.array([Y[1][i][j] for j in inds]))

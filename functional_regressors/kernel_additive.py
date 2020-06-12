@@ -210,7 +210,10 @@ class KernelAdditiveModelBis:
 
     @staticmethod
     def compute_Aout_pred(Yfpca, kernel_out, approx_space, pred_locs, domain):
-        Klocs_out = kernel_out(np.expand_dims(pred_locs, axis=1), np.expand_dims(approx_space, axis=1))
+        if pred_locs.ndim == 1:
+            Klocs_out = kernel_out(np.expand_dims(pred_locs, axis=1), np.expand_dims(approx_space, axis=1))
+        else:
+            Klocs_out = kernel_out(pred_locs, np.expand_dims(approx_space, axis=1))
         Aout_pred = np.zeros((pred_locs.shape[0], len(Yfpca)))
         Yfpca_evals = np.array([f(approx_space) for f in Yfpca])
         inter_const = domain[0, 1] - domain[0, 0]
@@ -232,9 +235,11 @@ class KernelAdditiveModelBis:
         Ycentered = disc_fd.center_discrete(*Y_dg, self.Ymean)
         Ycentered_func = disc_fd.to_function_linearinterp(*Ycentered)
         Xfunc = disc_fd.to_function_linearinterp(*X_dg)
+        # return Ycentered_func, self.Ymean
         self.fpca.fit(Ycentered_func)
         Yfpca = self.fpca.get_regressors(self.n_fpca)
         A_evals_in = self.compute_Aevals(Xfunc, Xfunc, self.kernel_in, self.kernel_eval, self.space_in, self.domain_in)
+        # return Yfpca, self.kernel_out, self.space_out, self.domain_out
         A_evals_fpca = self.compute_Aout(Yfpca, self.kernel_out, self.space_out, self.domain_out)
         self.Yfpca = Yfpca
         Y = self.compute_Y(Ycentered_func, Yfpca, self.space_out, self.domain_out)

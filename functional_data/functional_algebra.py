@@ -13,6 +13,16 @@ class NoNanWrapper:
         return np.nan_to_num(evals, nan=0)
 
 
+class MeanFunction:
+
+    def __init__(self, func_list):
+        self.func_list = func_list
+
+    def __call__(self, x):
+        evals = np.array([func(x) for func in self.func_list]).squeeze()
+        return evals.mean(axis=0)
+
+
 def mean_function(func_list):
     """
     Compute the mean function of a list of functions

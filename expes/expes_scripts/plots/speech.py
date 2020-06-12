@@ -19,24 +19,24 @@ def mean_variance_result_speech(path, key):
     return np.mean(score_test), np.std(score_test)
 
 
-path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_09-06-2020_08-48/outputs/"
+path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_10-06-2020_09-15/outputs/"
 KEYS = ("LP", "LA", "TBCL", "TBCD", "VEL", "GLO", "TTCL", "TTCD")
 # KEYS = ("LP", "LA", "TBCL", "TBCD", "GLO", "VEL")
 # KEYS = ("LP", "LA", "TBCL", "TBCD", "GLO", "TTCD", "VEL")
 # KEYS = ("LA", "TBCD", "TTCD", "VEL")
 
-folders_speech = ["speech_kpl_rffs100_max", "speech_3be_fourier_morefreqs", "speech_fkrr_multi", "speech_ke_multi"]
+# folders_speech = ["speech_kpl_rffs75_max", "speech_3be_fourier_morefreqs", "speech_fkrr_multi" , "speech_ke_multi"]
 # folders_speech = ["speech_kpl_rffs100_max", "speech_3be_fourier_morefreqs", "speech_fkrr_multi"]#, "speech_ke_multi"]
 # folders_speech = ["speech_kpl_rffs75_missing", "speech_3be_fourier_missing", "speech_fkrr_missing", "speech_ke_multi"]
 # folders_speech = ["speech_kpl_rffs75_missing", "speech_3be_fourier_missing", "speech_fkrr_missing"]
-# folders_speech = ["speech_fkrr_multi", "speech_fkrr_eigapprox"]
+folders_speech = ["speech_fkrr_multi", "speech_fkrr_eigsolve"]
 folders_method_dict = dict()
-folders_method_dict[folders_speech[0]] = "KPL"
-folders_method_dict[folders_speech[1]] = "3BE"
-folders_method_dict[folders_speech[2]] = "FKRR"
-# folders_method_dict[folders_speech[0]] = "FKRR Syl"
-# folders_method_dict[folders_speech[1]] = "FKRR Eig"
-folders_method_dict[folders_speech[3]] = "KE"
+# folders_method_dict[folders_speech[0]] = "KPL"
+# folders_method_dict[folders_speech[1]] = "3BE"
+# folders_method_dict[folders_speech[2]] = "FKRR"
+folders_method_dict[folders_speech[0]] = "FKRR Syl"
+folders_method_dict[folders_speech[1]] = "FKRR Eigapprox"
+# folders_method_dict[folders_speech[3]] = "KE"
 
 means = {folders_method_dict[folder]: [] for folder in folders_speech}
 stds = {folders_method_dict[folder]: [] for folder in folders_speech}
@@ -60,17 +60,24 @@ for key in KEYS:
 # Plot vert
 x = np.arange(len(KEYS))  # the label locations
 width = 0.2 # the width of the bars
+cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
+# cycle_modif = cycle[0:3] + [cycle[4]]
+cycle_modif = [cycle[2], cycle[6]]
+# cycle_modif = cycle[0:4]
 
-fig, ax = plt.subplots()
+# fig, ax = plt.subplots()
+ax = plt.subplot(gs[0])
 n_folders = len(folders_speech)
 add = 0
 error_kw = dict(lw=6, capsize=6, capthick=4)
+count = 0
 for folder in folders_speech:
-    rects = ax.bar(x - 2 * width + width/2 + add, means[folders_method_dict[folder]], width, yerr=stds[folders_method_dict[folder]],
-                   error_kw=error_kw, label=folders_method_dict[folder])
-    # rects = ax.bar(x - 1 * width + add, means[folders_method_dict[folder]], width, yerr=stds[folders_method_dict[folder]],
-    #                error_kw=error_kw, label=folders_method_dict[folder])
+    # rects = ax.bar(x - 2 * width + width/2 + add, means[folders_method_dict[folder]], width, yerr=stds[folders_method_dict[folder]],
+    #                error_kw=error_kw, label=folders_method_dict[folder], color=cycle_modif[count])
+    rects = ax.bar(x - 1 * width/2 + add, means[folders_method_dict[folder]], width, yerr=stds[folders_method_dict[folder]],
+                   error_kw=error_kw, label=folders_method_dict[folder],  color=cycle_modif[count])
     add += width
+    count += 1
 
 # Add some text for labels, title and custom x-axis tick labels, etc.
 ax.set_xticks(x)
@@ -78,7 +85,7 @@ ax.set_xticklabels(KEYS)
 ax.legend()
 ax.set_xlabel("Vocal tract")
 ax.set_ylabel("normalized MSE")
-ax.set_ylim(0.827)
+ax.set_ylim(0.827, 1.3)
 # ax.set_yscale("log")
 
 
@@ -91,10 +98,10 @@ n_folders = len(folders_speech)
 add = 0
 error_kw = dict(lw=5, capsize=5, capthick=3)
 for folder in folders_speech:
-    # rects = ax.bar(x - 2 * width + width/2 + add, means[folders_method_dict[folder]], width, yerr=stds[folders_method_dict[folder]],
-    #                error_kw=error_kw, label=folders_method_dict[folder])
-    rects = ax.barh(y - 1 * width + add, means[folders_method_dict[folder]], width, xerr=stds[folders_method_dict[folder]],
+    rects = ax.bar(x - 2 * width + width/2 + add, means[folders_method_dict[folder]], width, yerr=stds[folders_method_dict[folder]],
                    error_kw=error_kw, label=folders_method_dict[folder])
+    # rects = ax.barh(y - 1 * width + add, means[folders_method_dict[folder]], width, xerr=stds[folders_method_dict[folder]],
+    #                error_kw=error_kw, label=folders_method_dict[folder])
     add += width
 
 # Add some text for labels, title and custom x-axis tick labels, etc.

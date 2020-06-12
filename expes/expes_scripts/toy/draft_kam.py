@@ -5,9 +5,9 @@ import pickle
 import pathlib
 
 # Execution path
-exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
-path = str(exec_path.parent.parent.parent)
-# path = os.getcwd()
+# exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
+# path = str(exec_path.parent.parent.parent)
+path = os.getcwd()
 
 # Local imports
 from data import degradation
@@ -17,7 +17,7 @@ from model_eval import parallel_tuning
 
 # ############################### Config ###############################################################################
 # Record config
-OUTPUT_FOLDER = "toy_kam_kertuning"
+OUTPUT_FOLDER = "toy_kam_test"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 # Shuffle seed
 SHUFFLE_SEED = 784
@@ -30,23 +30,17 @@ MIN_PROCS = 32
 # MIN_PROCS = None
 
 # ############################### Experiment parameters ################################################################
-REGU = np.geomspace(1e-8, 1, 50)
-KIN_SIGMA = [0.05, 0.1, 0.25, 0.5, 1, 2.5]
-KOUT_SIGMA = [0.05, 0.1, 0.25, 0.5, 1, 2.5]
-KEVAL_SIGMA = [0.05, 0.1, 0.25, 0.5, 1, 2.5]
-# KIN_SIGMA = [0.05]
-# KOUT_SIGMA = [0.01]
-# KEVAL_SIGMA = [0.03]
-# N_FPCA = [10, 20, 30]
-# REGU = [1e-4]
-# KIN_SIGMA = 0.01
-# KOUT_SIGMA = 0.01
-# KEVAL_SIGMA = 0.03
-N_FPCA = [10, 20, 30]
+# REGU = np.geomspace(1e-8, 1, 50)
+REGU = np.geomspace(1e-8, 1, 5)
+KIN_SIGMA = [0.25]
+KOUT_SIGMA = [0.1]
+KEVAL_SIGMA = [2.5]
+N_FPCA = [20]
 NOISE_INPUT = 0.07
 NOISE_OUTPUT = 0.02
 NSAMPLES_LIST = [100]
-MISSING_LEVELS = np.arange(0, 1, 0.05)
+# MISSING_LEVELS = np.arange(0, 1, 0.05)
+MISSING_LEVELS = [0.9]
 DOMAIN_OUT = toy_data_spline.DOM_OUTPUT
 DOMAIN_IN = toy_data_spline.DOM_INPUT
 LOCS_IN = np.linspace(DOMAIN_IN[0, 0], DOMAIN_IN[0, 1], toy_data_spline.N_LOCS_INPUT)
@@ -56,7 +50,6 @@ N_EVALS_FPCA = 100
 PARAMS = {"regu": REGU, "kin_sigma": KIN_SIGMA, "kout_sigma": KOUT_SIGMA, "keval_sigma": KEVAL_SIGMA,
           "n_fpca": N_FPCA, "n_evals_fpca": N_EVALS_FPCA, "n_evals_in": N_EVALS_IN, "n_evals_out": N_EVALS_OUT,
           "domain_in": DOMAIN_IN, "domain_out": DOMAIN_OUT}
-
 
 # Seeds for averaging of expes (must all be of the same size)
 N_AVERAGING = 10
