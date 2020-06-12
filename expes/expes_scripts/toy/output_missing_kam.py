@@ -5,18 +5,16 @@ import pickle
 import pathlib
 
 # Execution path
-# exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
-# path = str(exec_path.parent.parent.parent)
-# sys.path.append(path)
-path = os.getcwd()
+exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
+path = str(exec_path.parent.parent.parent)
+sys.path.append(path)
+# path = os.getcwd()
 
 # Local imports
 from data import degradation
 from data import toy_data_spline
 from expes import generate_expes
 from model_eval import parallel_tuning
-from functional_data import discrete_functional_data as disc_fd
-from functional_data import functional_algebra
 
 # ############################### Config ###############################################################################
 # Record config
@@ -34,7 +32,7 @@ MIN_PROCS = 32
 
 # ############################### Experiment parameters ################################################################
 # REGU = np.geomspace(1e-8, 1, 50)
-REGU = np.geomspace(1e-8, 1, 5)
+REGU = np.geomspace(1e-11, 1e2, 500)
 KIN_SIGMA = [0.25]
 KOUT_SIGMA = [0.1]
 KEVAL_SIGMA = [2.5]
@@ -43,19 +41,19 @@ NOISE_INPUT = 0.07
 NOISE_OUTPUT = 0.02
 # MISSING_LEVELS = np.arange(0, 1, 0.05)
 MISSING_LEVELS = [0.9]
-N_SAMPLES = 50
+N_SAMPLES = 200
 DOMAIN_OUT = toy_data_spline.DOM_OUTPUT
 DOMAIN_IN = toy_data_spline.DOM_INPUT
 LOCS_IN = np.linspace(DOMAIN_IN[0, 0], DOMAIN_IN[0, 1], toy_data_spline.N_LOCS_INPUT)
-N_EVALS_IN = 100
-N_EVALS_OUT = 100
-N_EVALS_FPCA = 100
+N_EVALS_IN = 210
+N_EVALS_OUT = 210
+N_EVALS_FPCA = 210
 PARAMS = {"regu": REGU, "kin_sigma": KIN_SIGMA, "kout_sigma": KOUT_SIGMA, "keval_sigma": KEVAL_SIGMA,
           "n_fpca": N_FPCA, "n_evals_fpca": N_EVALS_FPCA, "n_evals_in": N_EVALS_IN, "n_evals_out": N_EVALS_OUT,
           "domain_in": DOMAIN_IN, "domain_out": DOMAIN_OUT}
 
 # Seeds for averaging of expes (must all be of the same size)
-N_AVERAGING = 2
+N_AVERAGING = 10
 SEED_DATA = 784
 SEED_INPUT = 768
 SEED_OUTPUT = 456
@@ -70,51 +68,49 @@ np.random.seed(SEED_OUTPUT)
 seeds_noise_out = np.random.randint(100, 2000, N_AVERAGING)
 np.random.seed(SEED_MISSING)
 seeds_missing = np.random.randint(100, 2000, N_AVERAGING)
-
-
-# TODO: Better implementation of mean function that can be pickled, using for instance MeanFunction class in functional_algebra
-
-Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(N_SAMPLES, seed=784)
-Xtest = ([LOCS_IN for j in range(Xtest.shape[0])], [Xtest[j] for j in range(Xtest.shape[0])])
-Xtrain_deg = degradation.add_noise_inputs(Xtrain, NOISE_INPUT, 675)
-Xtrain_deg = ([LOCS_IN for j in range(Xtrain_deg.shape[0])], [Xtrain_deg[j]for j in range(Xtrain_deg.shape[0])])
-Ytrain_deg = degradation.add_noise_outputs(Ytrain, NOISE_OUTPUT, 743)
-Ytrain_deg = degradation.downsample_output(Ytrain_deg, MISSING_LEVELS[0], 342)
-
-configs, regs = generate_expes.dti_kam(**PARAMS)
-
-reg = regs[0]
-
-reg.fit(Xtrain_deg, Ytrain_deg)
-
 #
-# preds = reg.predict_evaluate_diff_locs(Xtest, Ytest[0])
+# 
+# Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(N_SAMPLES, seed=784)
+# Xtest = ([LOCS_IN for j in range(Xtest.shape[0])], [Xtest[j] for j in range(Xtest.shape[0])])
+# Xtrain_deg = degradation.add_noise_inputs(Xtrain, NOISE_INPUT, 675)
+# Xtrain_deg = ([LOCS_IN for j in range(Xtrain_deg.shape[0])], [Xtrain_deg[j]for j in range(Xtrain_deg.shape[0])])
+# Ytrain_deg = degradation.add_noise_outputs(Ytrain, NOISE_OUTPUT, 743)
+# Ytrain_deg = degradation.downsample_output(Ytrain_deg, MISSING_LEVELS[0], 342)
 #
-# Klocs_out = reg.kernel_out(np.expand_dims(Ytest[0][0], axis=1), np.expand_dims(reg.space_out, axis=1))
-
-# Ycentered_func, Ymean = reg.fit(Xtrain_deg, Ytrain_deg)
+# configs, regs = generate_expes.dti_kam(**PARAMS)
 #
-# reg.fpca.fit(Ycentered_func)
-# Yfpca = reg.fpca.get_regressors(reg.n_fpca)
+# reg = regs[0]
 #
-# Yfpca_evals = np.array([f(reg.space_out) for f in Yfpca])
+# reg.fit(Xtrain_deg, Ytrain_deg)
 #
-# reg.fpca.fit(Ycentered_func)
+# #
+# # preds = reg.predict_evaluate_diff_locs(Xtest, Ytest[0])
+# #
+# # Klocs_out = reg.kernel_out(np.expand_dims(Ytest[0][0], axis=1), np.expand_dims(reg.space_out, axis=1))
 #
-# Yevals = [y(reg.space_out) for y in Ycentered_func]
+# # Ycentered_func, Ymean = reg.fit(Xtrain_deg, Ytrain_deg)
+# #
+# # reg.fpca.fit(Ycentered_func)
+# # Yfpca = reg.fpca.get_regressors(reg.n_fpca)
+# #
+# # Yfpca_evals = np.array([f(reg.space_out) for f in Yfpca])
+# #
+# # reg.fpca.fit(Ycentered_func)
+# #
+# # Yevals = [y(reg.space_out) for y in Ycentered_func]
+# # # Ymean_eval = Ymean(reg.space_out)
+#
+# # Ycentered, Ymean = reg.fit(Xtrain_deg, Ytrain_deg)
+# #
+# # Yevals = [y(reg.space_out) for y in Ycentered]
 # # Ymean_eval = Ymean(reg.space_out)
-
-# Ycentered, Ymean = reg.fit(Xtrain_deg, Ytrain_deg)
+# # Yfpca, kernel_out, space_out, domain_out = reg.fit(Xtrain_deg, Ytrain_deg)
+# #
+# # Klocs_out = kernel_out(np.expand_dims(space_out, axis=1), np.expand_dims(space_out, axis=1))
+# # n_fpca = len(Yfpca)
+# # Yfpca_evals = np.array([f(space_out) for f in Yfpca])
+# # test = Yfpca[0](space_out)
 #
-# Yevals = [y(reg.space_out) for y in Ycentered]
-# Ymean_eval = Ymean(reg.space_out)
-# Yfpca, kernel_out, space_out, domain_out = reg.fit(Xtrain_deg, Ytrain_deg)
-#
-# Klocs_out = kernel_out(np.expand_dims(space_out, axis=1), np.expand_dims(space_out, axis=1))
-# n_fpca = len(Yfpca)
-# Yfpca_evals = np.array([f(space_out) for f in Yfpca])
-# test = Yfpca[0](space_out)
-
 
 
 if __name__ == '__main__':

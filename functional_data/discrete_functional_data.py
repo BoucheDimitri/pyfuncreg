@@ -27,7 +27,8 @@ def mean_func_samelocs(Ylocs, Yobs):
 
 
 def mean_func_difflocs(Ylocs, Yobs):
-    mean_func = functional_algebra.mean_function(discrete_to_func_lininterp(Ylocs, Yobs))
+    # mean_func = functional_algebra.mean_function(discrete_to_func_lininterp(Ylocs, Yobs))
+    mean_func = functional_algebra.MeanFunction(discrete_to_func_lininterp(Ylocs, Yobs))
     return mean_func
 
 
