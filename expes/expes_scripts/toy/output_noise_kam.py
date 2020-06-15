@@ -50,7 +50,6 @@ PARAMS = {"regu": REGU, "kin_sigma": KIN_SIGMA, "kout_sigma": KOUT_SIGMA, "keval
           "domain_in": DOMAIN_IN, "domain_out": DOMAIN_OUT}
 
 
-# REGU = np.geomspace(1e-9, 1, 10)
 NOISE_INPUT = 0.07
 NOISE_OUTPUT = np.linspace(0, 1.5, 50)
 # NOISE_OUTPUT = np.linspace(0, 1.5, 1)
