@@ -5,10 +5,10 @@ import pickle
 import pathlib
 
 # Execution path
-exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
-path = str(exec_path.parent.parent.parent)
-sys.path.append(path)
-# path = os.getcwd()
+# exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
+# path = str(exec_path.parent.parent.parent)
+# sys.path.append(path)
+path = os.getcwd()
 
 # Local imports
 from data import degradation
@@ -73,13 +73,13 @@ seeds_noise_out = np.random.randint(100, 2000, N_AVERAGING)
 np.random.seed(SEED_MISSING)
 seeds_missing = np.random.randint(100, 2000, N_AVERAGING)
 
-#
-# Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(N_SAMPLES, seed=784, squeeze_locs=True)
-# Xtest = ([LOCS_IN for j in range(Xtest.shape[0])], [Xtest[j] for j in range(Xtest.shape[0])])
-# Xtrain_deg = degradation.add_noise_inputs(Xtrain, NOISE_INPUT, 675)
-# Xtrain_deg = ([LOCS_IN for j in range(Xtrain_deg.shape[0])], [Xtrain_deg[j]for j in range(Xtrain_deg.shape[0])])
-# Ytrain_deg = degradation.add_noise_outputs(Ytrain, NOISE_OUTPUT, 743)
-# Ytrain_deg = degradation.downsample_output(Ytrain_deg, MISSING_LEVELS[0], 342)
+
+Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(N_SAMPLES, seed=784, squeeze_locs=True)
+Xtest = ([LOCS_IN for j in range(Xtest.shape[0])], [Xtest[j] for j in range(Xtest.shape[0])])
+Xtrain_deg = degradation.add_noise_inputs(Xtrain, NOISE_INPUT, 675)
+Xtrain_deg = ([LOCS_IN for j in range(Xtrain_deg.shape[0])], [Xtrain_deg[j]for j in range(Xtrain_deg.shape[0])])
+Ytrain_deg = degradation.add_noise_outputs(Ytrain, NOISE_OUTPUT, 743)
+Ytrain_deg = degradation.downsample_output(Ytrain_deg, MISSING_LEVELS[0], 342)
 #
 # configs, regs = generate_expes.dti_kam(**PARAMS)
 #

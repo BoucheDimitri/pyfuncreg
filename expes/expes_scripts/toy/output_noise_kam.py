@@ -42,9 +42,9 @@ N_FPCA = [20]
 DOMAIN_OUT = toy_data_spline.DOM_OUTPUT
 DOMAIN_IN = toy_data_spline.DOM_INPUT
 LOCS_IN = np.linspace(DOMAIN_IN[0, 0], DOMAIN_IN[0, 1], toy_data_spline.N_LOCS_INPUT)
-N_EVALS_IN = 60
-N_EVALS_OUT = 60
-N_EVALS_FPCA = 60
+N_EVALS_IN = 210
+N_EVALS_OUT = 210
+N_EVALS_FPCA = 210
 PARAMS = {"regu": REGU, "kin_sigma": KIN_SIGMA, "kout_sigma": KOUT_SIGMA, "keval_sigma": KEVAL_SIGMA,
           "n_fpca": N_FPCA, "n_evals_fpca": N_EVALS_FPCA, "n_evals_in": N_EVALS_IN, "n_evals_out": N_EVALS_OUT,
           "domain_in": DOMAIN_IN, "domain_out": DOMAIN_OUT}
@@ -53,7 +53,7 @@ PARAMS = {"regu": REGU, "kin_sigma": KIN_SIGMA, "kout_sigma": KOUT_SIGMA, "keval
 # REGU = np.geomspace(1e-9, 1, 10)
 NOISE_INPUT = 0.07
 NOISE_OUTPUT = np.linspace(0, 1.5, 50)
-# NOISE_OUTPUT = np.linspace(0, 1.5, 2)
+# NOISE_OUTPUT = np.linspace(0, 1.5, 1)
 # NOISE_OUTPUT = np.linspace(0, 1.5, 10)
 # NSAMPLES_LIST = [10, 50, 100, 500]
 N_SAMPLES = 200
@@ -95,7 +95,7 @@ if __name__ == '__main__':
         Xtest = ([LOCS_IN for j in range(Xtest.shape[0])], [Xtest[j] for j in range(Xtest.shape[0])])
         # Add input noise
         Xtrain = degradation.add_noise_inputs(Xtrain, NOISE_INPUT, seeds_noise_in[i])
-        Xtrain = ([LOCS_IN for j in range(Xtrain.shape[0])], [Xtrain[j] for j in range(Xtrain.shape[0])])
+        Xtrain = ([LOCS_IN for j in range(Xtrain.shape[0])], [Xtrain[j]for j in range(Xtrain.shape[0])])
         scores_dicts[i][N_SAMPLES] = []
         for noise in NOISE_OUTPUT:
             Ytrain_deg = degradation.add_noise_outputs(Ytrain, noise, seeds_noise_out[i])
