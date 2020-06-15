@@ -18,21 +18,21 @@ from model_eval import parallel_tuning
 
 # ############################### Config ###############################################################################
 # Record config
-OUTPUT_FOLDER = "output_missing_multi"
+OUTPUT_FOLDER = "output_missing_fkrr"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 # Shuffle seed
 SHUFFLE_SEED = 784
 INPUT_INDEXING = "array"
 OUTPUT_INDEXING = "discrete_general"
 N_FOLDS = 5
-# N_PROCS = None
-# MIN_PROCS = 32
-N_PROCS = 7
-MIN_PROCS = None
+N_PROCS = None
+MIN_PROCS = 32
+# N_PROCS = 7
+# MIN_PROCS = None
 
 # ############################### Experiment parameters ################################################################
 KIN_SIGMA = 20
-REGU = np.geomspace(1e-11, 1e2, 500)
+REGU = np.geomspace(1e-11, 1e2, 100)
 # REGU = np.geomspace(1e-9, 1, 10)
 NOISE_INPUT = 0.07
 NOISE_OUTPUT = 0.02
