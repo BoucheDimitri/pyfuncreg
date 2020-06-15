@@ -31,15 +31,19 @@ N_PROCS = 7
 MIN_PROCS = None
 
 # ############################### Experiment parameters ################################################################
-KER_SIGMA = 20
+KIN_SIGMA = 20
 REGU = np.geomspace(1e-11, 1e2, 500)
 # REGU = np.geomspace(1e-9, 1, 10)
 NOISE_INPUT = 0.07
 NOISE_OUTPUT = 0.02
-NSAMPLES_LIST = [250]
+NSAMPLES_LIST = [200]
 MISSING_LEVELS = np.arange(0, 1, 0.05)
 # NSAMPLES_LIST = [20, 50]
 # MISSING_LEVELS = [0, 0.1]
+
+KOUT_SIGMA = [0.5]
+
+APPROX_LOCS = np.linspace(toy_data_spline.DOM_OUTPUT[0, 0], toy_data_spline.DOM_OUTPUT[0, 1], 200)
 
 # Seeds for averaging of expes (must all be of the same size)
 N_AVERAGING = 10
@@ -72,7 +76,7 @@ if __name__ == '__main__':
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
     # ############################# Load the data ######################################################################
-    configs, regs = generate_expes.toy_spline_kpl(KER_SIGMA, REGU)
+    configs, regs = generate_expes.dti_fkrr(KIN_SIGMA, KOUT_SIGMA, REGU, APPROX_LOCS, False)
     scores_dicts = []
     for i in range(N_AVERAGING):
         scores_dicts.append({})

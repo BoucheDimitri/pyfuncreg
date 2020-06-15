@@ -24,7 +24,7 @@ REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 SHUFFLE_SEED = 784
 INPUT_INDEXING = "discrete_general"
 OUTPUT_INDEXING = "discrete_general"
-N_FOLDS = 5
+N_FOLDS = 2
 N_PROCS = None
 MIN_PROCS = 32
 # N_PROCS = 7
@@ -32,7 +32,8 @@ MIN_PROCS = 32
 
 # ############################### Experiment parameters ################################################################
 # REGU = np.geomspace(1e-8, 1, 50)
-REGU = np.geomspace(1e-11, 1e2, 500)
+# REGU = np.geomspace(1e-11, 1e2, 500)
+REGU = [1e-8, 1e-6]
 KIN_SIGMA = [0.25]
 KOUT_SIGMA = [0.1]
 KEVAL_SIGMA = [2.5]
@@ -40,6 +41,7 @@ N_FPCA = [20]
 NOISE_INPUT = 0.07
 NOISE_OUTPUT = 0.02
 MISSING_LEVELS = np.arange(0, 1, 0.05)
+# MISSING_LEVELS = [0.95]
 # MISSING_LEVELS = [0.9]
 N_SAMPLES = 200
 DOMAIN_OUT = toy_data_spline.DOM_OUTPUT
@@ -53,7 +55,8 @@ PARAMS = {"regu": REGU, "kin_sigma": KIN_SIGMA, "kout_sigma": KOUT_SIGMA, "keval
           "domain_in": DOMAIN_IN, "domain_out": DOMAIN_OUT}
 
 # Seeds for averaging of expes (must all be of the same size)
-N_AVERAGING = 10
+N_AVERAGING = 1
+# N_AVERAGING = 10
 SEED_DATA = 784
 SEED_INPUT = 768
 SEED_OUTPUT = 456
