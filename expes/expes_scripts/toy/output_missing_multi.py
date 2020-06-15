@@ -18,7 +18,7 @@ from model_eval import parallel_tuning
 
 # ############################### Config ###############################################################################
 # Record config
-OUTPUT_FOLDER = "output_missing_multi2"
+OUTPUT_FOLDER = "output_missing_kpl"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 # Shuffle seed
 SHUFFLE_SEED = 784
@@ -32,11 +32,11 @@ MIN_PROCS = 32
 
 # ############################### Experiment parameters ################################################################
 KER_SIGMA = 20
-REGU = np.geomspace(1e-11, 1e2, 500)
+REGU = np.geomspace(1e-11, 1e2, 100)
 # REGU = np.geomspace(1e-9, 1, 10)
 NOISE_INPUT = 0.07
 NOISE_OUTPUT = 0.02
-NSAMPLES_LIST = [10, 50, 100, 500]
+NSAMPLES_LIST = [200]
 MISSING_LEVELS = np.arange(0, 1, 0.05)
 # NSAMPLES_LIST = [20, 50]
 # MISSING_LEVELS = [0, 0.1]
