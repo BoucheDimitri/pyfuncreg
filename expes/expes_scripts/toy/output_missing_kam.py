@@ -26,8 +26,8 @@ SHUFFLE_SEED = 784
 INPUT_INDEXING = "discrete_general"
 OUTPUT_INDEXING = "discrete_general"
 N_FOLDS = 5
-# N_PROCS = None
-# MIN_PROCS = 32
+N_PROCS = None
+MIN_PROCS = 32
 # N_PROCS = 7
 # MIN_PROCS = None
 
