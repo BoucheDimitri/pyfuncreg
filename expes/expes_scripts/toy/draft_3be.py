@@ -5,9 +5,10 @@ import pickle
 import pathlib
 
 # Execution path
-# exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
-# path = str(exec_path.parent.parent.parent)
-path = os.getcwd()
+exec_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
+path = str(exec_path.parent.parent.parent)
+sys.path.append(path)
+# path = os.getcwd()
 
 # Local imports
 from data import degradation
@@ -41,8 +42,8 @@ DOMAIN_OUT = toy_data_spline.DOM_OUTPUT
 DOMAIN_IN = toy_data_spline.DOM_INPUT
 LOCS_IN = np.linspace(DOMAIN_IN[0, 0], DOMAIN_IN[0, 1], toy_data_spline.N_LOCS_INPUT)
 
-FREQS_IN = [1, 2, 3, 4, 5, 7, 10, 15]
-FREQS_OUT = [1, 2, 3, 4, 5, 7, 10, 15, 20]
+FREQS_IN = [1, 2, 3, 4, 5, 6, 8, 10, 15, 20]
+FREQS_OUT = [1, 2, 3, 4, 5, 6, 8, 10, 15, 20]
 KIN_SIGMA = [0.01, 0.05, 0.1, 0.5, 1, 5, 10, 50, 100]
 N_RFFS = 100
 
