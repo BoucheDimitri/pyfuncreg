@@ -127,14 +127,19 @@ def generate_toy_spline(n_samples, dom_input, dom_output, n_locs_input, n_locs_o
     return X, Y
 
 
-def get_toy_data(n_train, seed=SEED_TOY):
+def get_toy_data(n_train, seed=SEED_TOY, squeeze_locs=False):
     X, Y = generate_toy_spline(N_SAMPLES + N_TEST, DOM_INPUT, DOM_OUTPUT, N_LOCS_INPUT, N_LOCS_OUTPUT, N_FREQS,
                                FREQS_DRAW_FUNC, COEFS_DRAW_FUNC, WIDTH, seed)
     Xtrain = np.array([X[1][n] for n in range(n_train)])
-    Ytrain = ([np.expand_dims(Y[0][n], axis=1) for n in range(n_train)], [Y[1][n] for n in range(n_train)])
     Xtest = np.array([X[1][n] for n in range(N_SAMPLES, N_SAMPLES + N_TEST)])
-    Ytest = ([np.expand_dims(Y[0][n], axis=1) for n in range(N_SAMPLES, N_SAMPLES + N_TEST)],
-             [Y[1][n] for n in range(N_SAMPLES, N_SAMPLES + N_TEST)])
+    if squeeze_locs:
+        Ytrain = ([Y[0][n] for n in range(n_train)], [Y[1][n] for n in range(n_train)])
+        Ytest = ([Y[0][n]for n in range(N_SAMPLES, N_SAMPLES + N_TEST)],
+                 [Y[1][n] for n in range(N_SAMPLES, N_SAMPLES + N_TEST)])
+    else:
+        Ytrain = ([np.expand_dims(Y[0][n], axis=1) for n in range(n_train)], [Y[1][n] for n in range(n_train)])
+        Ytest = ([np.expand_dims(Y[0][n], axis=1) for n in range(N_SAMPLES, N_SAMPLES + N_TEST)],
+                 [Y[1][n] for n in range(N_SAMPLES, N_SAMPLES + N_TEST)])
     return Xtrain, Ytrain, Xtest, Ytest
 
 

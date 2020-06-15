@@ -14,6 +14,7 @@ sys.path.append(path)
 from data import degradation
 from data import toy_data_spline
 from expes import generate_expes
+from model_eval import metrics
 from model_eval import parallel_tuning
 
 # ############################### Config ###############################################################################
@@ -24,16 +25,16 @@ REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 SHUFFLE_SEED = 784
 INPUT_INDEXING = "discrete_general"
 OUTPUT_INDEXING = "discrete_general"
-N_FOLDS = 2
-N_PROCS = None
-MIN_PROCS = 32
+N_FOLDS = 5
+# N_PROCS = None
+# MIN_PROCS = 32
 # N_PROCS = 7
 # MIN_PROCS = None
 
 # ############################### Experiment parameters ################################################################
 # REGU = np.geomspace(1e-8, 1, 50)
-# REGU = np.geomspace(1e-11, 1e2, 500)
-REGU = [1e-8, 1e-6]
+REGU = np.geomspace(1e-11, 1e2, 100)
+# REGU = [5.689866029018293e-05]
 KIN_SIGMA = [0.25]
 KOUT_SIGMA = [0.1]
 KEVAL_SIGMA = [2.5]
@@ -55,8 +56,8 @@ PARAMS = {"regu": REGU, "kin_sigma": KIN_SIGMA, "kout_sigma": KOUT_SIGMA, "keval
           "domain_in": DOMAIN_IN, "domain_out": DOMAIN_OUT}
 
 # Seeds for averaging of expes (must all be of the same size)
-N_AVERAGING = 1
-# N_AVERAGING = 10
+# N_AVERAGING = 1
+N_AVERAGING = 10
 SEED_DATA = 784
 SEED_INPUT = 768
 SEED_OUTPUT = 456
@@ -71,9 +72,9 @@ np.random.seed(SEED_OUTPUT)
 seeds_noise_out = np.random.randint(100, 2000, N_AVERAGING)
 np.random.seed(SEED_MISSING)
 seeds_missing = np.random.randint(100, 2000, N_AVERAGING)
+
 #
-#
-# Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(N_SAMPLES, seed=784)
+# Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(N_SAMPLES, seed=784, squeeze_locs=True)
 # Xtest = ([LOCS_IN for j in range(Xtest.shape[0])], [Xtest[j] for j in range(Xtest.shape[0])])
 # Xtrain_deg = degradation.add_noise_inputs(Xtrain, NOISE_INPUT, 675)
 # Xtrain_deg = ([LOCS_IN for j in range(Xtrain_deg.shape[0])], [Xtrain_deg[j]for j in range(Xtrain_deg.shape[0])])
@@ -86,8 +87,16 @@ seeds_missing = np.random.randint(100, 2000, N_AVERAGING)
 #
 # reg.fit(Xtrain_deg, Ytrain_deg)
 #
-# #
-# # preds = reg.predict_evaluate_diff_locs(Xtest, Ytest[0])
+# preds = reg.predict_evaluate_diff_locs(Xtest, Ytest[0])
+#
+# score = metrics.mse(preds, Ytest[1])
+#
+# import matplotlib.pyplot as plt
+#
+# plt.plot(Ytest[0][0], Ytest[1][0])
+# plt.plot(Ytest[0][0], preds[0][0])
+
+
 # #
 # # Klocs_out = reg.kernel_out(np.expand_dims(Ytest[0][0], axis=1), np.expand_dims(reg.space_out, axis=1))
 #
@@ -134,7 +143,7 @@ if __name__ == '__main__':
     scores_dicts = []
     for i in range(N_AVERAGING):
         scores_dicts.append({})
-        Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(N_SAMPLES, seed=seeds_data[i])
+        Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(N_SAMPLES, seed=seeds_data[i], squeeze_locs=True)
         scores_dicts[i][N_SAMPLES] = []
         Xtest = ([LOCS_IN for j in range(Xtest.shape[0])], [Xtest[j] for j in range(Xtest.shape[0])])
         for deg in MISSING_LEVELS:

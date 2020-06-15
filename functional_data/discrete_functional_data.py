@@ -40,7 +40,7 @@ def mean_func(Ylocs, Yobs):
 def center_discrete(Ylocs, Yobs, mean_func):
     Yobs_centered = list()
     for i in range(len(Ylocs)):
-        Yobs_centered.append(Yobs[i] - mean_func(Ylocs[i]))
+        Yobs_centered.append(Yobs[i] - mean_func(np.squeeze(Ylocs[i])))
     return Ylocs, Yobs_centered
 
 

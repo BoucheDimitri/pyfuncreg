@@ -1,5 +1,6 @@
 import numpy as np
 import time
+from slycot import sb04qd
 
 from functional_data import smoothing
 from functional_data import fpca
@@ -201,6 +202,7 @@ class KernelAdditiveModelBis:
         Klocs_out = kernel_out(np.expand_dims(approx_space, axis=1), np.expand_dims(approx_space, axis=1))
         n_fpca = len(Yfpca)
         Yfpca_evals = np.array([f(approx_space) for f in Yfpca])
+        # return Yfpca_evals
         Afpca = np.zeros((n_fpca, n_fpca))
         inter_const = domain[0, 1] - domain[0, 0]
         for i in range(n_fpca):
@@ -243,10 +245,12 @@ class KernelAdditiveModelBis:
         A_evals_fpca = self.compute_Aout(Yfpca, self.kernel_out, self.space_out, self.domain_out)
         self.Yfpca = Yfpca
         Y = self.compute_Y(Ycentered_func, Yfpca, self.space_out, self.domain_out)
-        A = np.kron(A_evals_in, A_evals_fpca)
+        # A = np.kron(A_evals_in, A_evals_fpca)
         self.Xfunc = Xfunc
         start = time.process_time()
-        self.alpha = np.linalg.inv(A.T.dot(A) + self.regu * A).dot(A).dot(Y.flatten())
+        n, m = A_evals_in.shape[0], A_evals_fpca.shape[0]
+        self.alpha = sb04qd(n, m, A_evals_in / self.regu, A_evals_fpca, Y / self.regu)
+        # self.alpha = np.linalg.inv(A.T.dot(A) + self.regu * A).dot(A).dot(Y.flatten())
         end = time.process_time()
         self.alpha = self.alpha.reshape((len(Xfunc), len(Yfpca)))
         if return_cputime:
