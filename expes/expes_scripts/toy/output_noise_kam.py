@@ -20,45 +20,44 @@ from expes import generate_expes
 # Record config
 OUTPUT_FOLDER = "output_noise_kam"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
-EXPE_NAME = "output_noise"
-
-# ############################### Experiment parameters ################################################################
-
-# REGU = np.geomspace(1e-8, 1, 50)
-REGU = np.geomspace(1e-11, 1e2, 500)
-KIN_SIGMA = [0.25]
-KOUT_SIGMA = [0.1]
-KEVAL_SIGMA = [2.5]
-N_FPCA = [20]
-# MISSING_LEVELS = [0.9]
-N_SAMPLES = 200
-DOMAIN_OUT = toy_data_spline.DOM_OUTPUT
-DOMAIN_IN = toy_data_spline.DOM_INPUT
-LOCS_IN = np.linspace(DOMAIN_IN[0, 0], DOMAIN_IN[0, 1], toy_data_spline.N_LOCS_INPUT)
-N_EVALS_IN = 210
-N_EVALS_OUT = 210
-N_EVALS_FPCA = 210
-PARAMS = {"regu": REGU, "kin_sigma": KIN_SIGMA, "kout_sigma": KOUT_SIGMA, "keval_sigma": KEVAL_SIGMA,
-          "n_fpca": N_FPCA, "n_evals_fpca": N_EVALS_FPCA, "n_evals_in": N_EVALS_IN, "n_evals_out": N_EVALS_OUT,
-          "domain_in": DOMAIN_IN, "domain_out": DOMAIN_OUT}
-
-
-KER_SIGMA = 20
-REGU = np.geomspace(1e-11, 1e2, 250)
-# REGU = np.geomspace(1e-9, 1, 10)
-NOISE_INPUT = 0.07
-NOISE_OUTPUT = np.linspace(0, 1.5, 50)
-# NOISE_OUTPUT = np.linspace(0, 1.5, 10)
-# NSAMPLES_LIST = [10, 50, 100, 500]
-# NSAMPLES_LIST = [10, 25, 50]
-# NOISE_OUTPUT = np.linspace(0, 1.5, 3)
-INPUT_INDEXING = "array"
+# Shuffle seed
+SHUFFLE_SEED = 784
+INPUT_INDEXING = "discrete_general"
 OUTPUT_INDEXING = "discrete_general"
 N_FOLDS = 5
 N_PROCS = None
 MIN_PROCS = 32
 # N_PROCS = 7
 # MIN_PROCS = None
+
+# ############################### Experiment parameters ################################################################
+
+# REGU = np.geomspace(1e-8, 1, 50)
+REGU = np.geomspace(1e-11, 1e2, 100)
+# REGU = [1e-4]
+KIN_SIGMA = [0.25]
+KOUT_SIGMA = [0.1]
+KEVAL_SIGMA = [2.5]
+N_FPCA = [20]
+DOMAIN_OUT = toy_data_spline.DOM_OUTPUT
+DOMAIN_IN = toy_data_spline.DOM_INPUT
+LOCS_IN = np.linspace(DOMAIN_IN[0, 0], DOMAIN_IN[0, 1], toy_data_spline.N_LOCS_INPUT)
+N_EVALS_IN = 60
+N_EVALS_OUT = 60
+N_EVALS_FPCA = 60
+PARAMS = {"regu": REGU, "kin_sigma": KIN_SIGMA, "kout_sigma": KOUT_SIGMA, "keval_sigma": KEVAL_SIGMA,
+          "n_fpca": N_FPCA, "n_evals_fpca": N_EVALS_FPCA, "n_evals_in": N_EVALS_IN, "n_evals_out": N_EVALS_OUT,
+          "domain_in": DOMAIN_IN, "domain_out": DOMAIN_OUT}
+
+
+# REGU = np.geomspace(1e-9, 1, 10)
+NOISE_INPUT = 0.07
+NOISE_OUTPUT = np.linspace(0, 1.5, 50)
+# NOISE_OUTPUT = np.linspace(0, 1.5, 2)
+# NOISE_OUTPUT = np.linspace(0, 1.5, 10)
+# NSAMPLES_LIST = [10, 50, 100, 500]
+N_SAMPLES = 200
+# NOISE_OUTPUT = np.linspace(0, 1.5, 3)
 
 # Seeds for averaging of expes (must all be of the same size)
 N_AVERAGING = 10
@@ -88,11 +87,11 @@ if __name__ == '__main__':
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
     # ############################## Run experiment ####################################################################
-    configs, regs = generate_expes.toy_spline_kpl(KER_SIGMA, REGU)
+    configs, regs = generate_expes.dti_kam(**PARAMS)
     scores_dicts = [{} for i in range(N_AVERAGING)]
     # for i in range(N_AVERAGING):
     for i in range(N_AVERAGING):
-        Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(N_SAMPLES, seed=seeds_data[i])
+        Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(N_SAMPLES, seed=seeds_data[i], squeeze_locs=True)
         Xtest = ([LOCS_IN for j in range(Xtest.shape[0])], [Xtest[j] for j in range(Xtest.shape[0])])
         # Add input noise
         Xtrain = degradation.add_noise_inputs(Xtrain, NOISE_INPUT, seeds_noise_in[i])
