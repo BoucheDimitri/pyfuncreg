@@ -74,7 +74,7 @@ if __name__ == '__main__':
     configs, regs = generate_expes.dti_fkrr(KIN_SIGMA, KOUT_SIGMA, REGU, APPROX_LOCS, False)
     scores_dicts = [{} for i in range(N_AVERAGING)]
     # for i in range(N_AVERAGING):
-    for i in range(N_AVERAGING):
+    for i in range(2, N_AVERAGING):
         Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(N_SAMPLES, seed=seeds_data[i])
         # Add input noise
         Xtrain = degradation.add_noise_inputs(Xtrain, NOISE_INPUT, seeds_noise_in[i])

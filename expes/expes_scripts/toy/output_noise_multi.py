@@ -71,7 +71,7 @@ if __name__ == '__main__':
     configs, regs = generate_expes.toy_spline_kpl(KER_SIGMA, REGU)
     scores_dicts = [{} for i in range(N_AVERAGING)]
     # for i in range(N_AVERAGING):
-    for i in range(N_AVERAGING):
+    for i in range(5, N_AVERAGING):
         for n_samples in NSAMPLES_LIST:
             Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(n_samples, seed=seeds_data[i])
             # Add input noise
