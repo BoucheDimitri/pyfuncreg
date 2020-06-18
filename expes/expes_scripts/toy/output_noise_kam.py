@@ -89,7 +89,7 @@ if __name__ == '__main__':
     configs, regs = generate_expes.dti_kam(**PARAMS)
     scores_dicts = [{} for i in range(N_AVERAGING)]
     # for i in range(N_AVERAGING):
-    for i in range(N_AVERAGING):
+    for i in range(1, N_AVERAGING):
         Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(N_SAMPLES, seed=seeds_data[i], squeeze_locs=True)
         Xtest = ([LOCS_IN for j in range(Xtest.shape[0])], [Xtest[j] for j in range(Xtest.shape[0])])
         # Add input noise

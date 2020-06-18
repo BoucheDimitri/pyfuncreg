@@ -141,7 +141,7 @@ if __name__ == '__main__':
     # ############################# Load the data ######################################################################
     configs, regs = generate_expes.dti_kam(**PARAMS)
     scores_dicts = []
-    for i in range(N_AVERAGING):
+    for i in range(1, N_AVERAGING):
         scores_dicts.append({})
         Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(N_SAMPLES, seed=seeds_data[i], squeeze_locs=True)
         scores_dicts[i][N_SAMPLES] = []
