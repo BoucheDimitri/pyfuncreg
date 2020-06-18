@@ -77,7 +77,7 @@ if __name__ == '__main__':
 
     # ############################# Load the data ######################################################################
     configs, regs = generate_expes.dti_fkrr(KIN_SIGMA, KOUT_SIGMA, REGU, APPROX_LOCS, False)
-    scores_dicts = []
+    scores_dicts = [{} for i in range(N_AVERAGING)]
     for i in range(4, N_AVERAGING):
         scores_dicts.append({})
         for n_samples in NSAMPLES_LIST:

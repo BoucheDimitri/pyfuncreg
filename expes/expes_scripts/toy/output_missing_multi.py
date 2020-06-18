@@ -73,7 +73,7 @@ if __name__ == '__main__':
 
     # ############################# Load the data ######################################################################
     configs, regs = generate_expes.toy_spline_kpl(KER_SIGMA, REGU)
-    scores_dicts = []
+    scores_dicts = [{} for i in range(N_AVERAGING)]
     for i in range(7, N_AVERAGING):
         scores_dicts.append({})
         for n_samples in NSAMPLES_LIST:
