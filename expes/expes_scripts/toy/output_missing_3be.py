@@ -18,7 +18,7 @@ from model_eval import parallel_tuning
 
 # ############################### Config ###############################################################################
 # Record config
-OUTPUT_FOLDER = "output_missing_3be"
+OUTPUT_FOLDER = "output_missing_3be2"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 # Shuffle seed
 SHUFFLE_SEED = 784
@@ -31,14 +31,14 @@ MIN_PROCS = 32
 # MIN_PROCS = None
 
 # ############################### Experiment parameters ################################################################
-# REGU = np.geomspace(1e-11, 1e2, 100)
-REGU = np.geomspace(1e-9, 1, 10)
+REGU = np.geomspace(1e-11, 1e2, 100)
+# REGU = np.geomspace(1e-9, 1, 10)
 NOISE_INPUT = 0.07
 NOISE_OUTPUT = 0.02
 NSAMPLES_LIST = [200]
-# MISSING_LEVELS = np.arange(0, 1, 0.05)
+MISSING_LEVELS = np.arange(0, 1, 0.05)
 # NSAMPLES_LIST = [20, 50]
-MISSING_LEVELS = [0, 0.1]
+# MISSING_LEVELS = [0, 0.1]
 DOMAIN_OUT = toy_data_spline.DOM_OUTPUT
 DOMAIN_IN = toy_data_spline.DOM_INPUT
 LOCS_IN = np.linspace(DOMAIN_IN[0, 0], DOMAIN_IN[0, 1], toy_data_spline.N_LOCS_INPUT)
@@ -50,7 +50,7 @@ N_RFFS = [200]
 RFFS_SEED = [347]
 
 # Seeds for averaging of expes (must all be of the same size)
-N_AVERAGING = 2
+N_AVERAGING = 10
 SEED_DATA = 784
 SEED_INPUT = 768
 SEED_OUTPUT = 456

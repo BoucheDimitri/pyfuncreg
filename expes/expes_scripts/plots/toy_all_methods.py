@@ -1,6 +1,7 @@
 import os
 import pickle
 import numpy as np
+from data import toy_data_spline
 
 path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_30-06-2020_09-47/outputs/"
 
