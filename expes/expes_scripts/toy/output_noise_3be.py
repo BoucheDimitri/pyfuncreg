@@ -18,7 +18,7 @@ from expes import generate_expes
 
 # ############################### Config ###############################################################################
 # Record config
-OUTPUT_FOLDER = "output_noise_3be"
+OUTPUT_FOLDER = "output_noise_3be2"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 # Shuffle seed
 SHUFFLE_SEED = 784
@@ -31,31 +31,22 @@ MIN_PROCS = 32
 # MIN_PROCS = None
 
 # ############################### Experiment parameters ################################################################
-
-# REGU = np.geomspace(1e-8, 1, 50)
 REGU = np.geomspace(1e-11, 1e2, 100)
-
 
 DOMAIN_OUT = toy_data_spline.DOM_OUTPUT
 DOMAIN_IN = toy_data_spline.DOM_INPUT
 LOCS_IN = np.linspace(DOMAIN_IN[0, 0], DOMAIN_IN[0, 1], toy_data_spline.N_LOCS_INPUT)
 
-NSAMPLES_LIST = [200]
-
-KIN_SIGMA = [0.05]
+KIN_SIGMA = [0.025]
 N_FREQS_IN = [15]
-N_FREQS_OUT = [20]
-N_RFFS = [100]
+N_RFFS = [200]
 RFFS_SEED = [347]
 
+NSAMPLES_LIST = [200]
 
 NOISE_INPUT = 0.07
 NOISE_OUTPUT = np.linspace(0, 1.5, 50)
-# NOISE_OUTPUT = np.linspace(0, 1.5, 1)
-# NOISE_OUTPUT = np.linspace(0, 1.5, 10)
-# NSAMPLES_LIST = [10, 50, 100, 500]
 N_SAMPLES = 200
-# NOISE_OUTPUT = np.linspace(0, 1.5, 3)
 
 # Seeds for averaging of expes (must all be of the same size)
 N_AVERAGING = 10
@@ -85,8 +76,9 @@ if __name__ == '__main__':
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
     # ############################## Run experiment ####################################################################
-    configs, regs = generate_expes.dti_3be_fourier(KIN_SIGMA, REGU, False, N_FREQS_IN, N_FREQS_OUT,
-                                                   N_RFFS, RFFS_SEED, DOMAIN_IN, DOMAIN_OUT)
+    # configs, regs = generate_expes.dti_3be_fourier(KIN_SIGMA, REGU, False, N_FREQS_IN, N_FREQS_OUT,
+    #                                                N_RFFS, RFFS_SEED, DOMAIN_IN, DOMAIN_OUT)
+    configs, regs = generate_expes.toy_3be_fpcasplines(KIN_SIGMA, REGU, False, N_FREQS_IN, N_RFFS, RFFS_SEED)
     scores_dicts = [{} for i in range(N_AVERAGING)]
     # for i in range(N_AVERAGING):
     for i in range(1, N_AVERAGING):
