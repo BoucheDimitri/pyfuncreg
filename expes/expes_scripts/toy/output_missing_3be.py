@@ -43,9 +43,8 @@ DOMAIN_OUT = toy_data_spline.DOM_OUTPUT
 DOMAIN_IN = toy_data_spline.DOM_INPUT
 LOCS_IN = np.linspace(DOMAIN_IN[0, 0], DOMAIN_IN[0, 1], toy_data_spline.N_LOCS_INPUT)
 
-KIN_SIGMA = [0.05]
-N_FREQS_IN = [20]
-N_FREQS_OUT = [20]
+KIN_SIGMA = [0.025]
+N_FREQS_IN = [15]
 N_RFFS = [200]
 RFFS_SEED = [347]
 
