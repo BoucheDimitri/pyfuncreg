@@ -44,9 +44,9 @@ DOMAIN_IN = toy_data_spline.DOM_INPUT
 LOCS_IN = np.linspace(DOMAIN_IN[0, 0], DOMAIN_IN[0, 1], toy_data_spline.N_LOCS_INPUT)
 
 KIN_SIGMA = [0.05]
-N_FREQS_IN = [15]
+N_FREQS_IN = [4]
 N_FREQS_OUT = [20]
-N_RFFS = [100]
+N_RFFS = [200]
 RFFS_SEED = [347]
 
 # Seeds for averaging of expes (must all be of the same size)

@@ -7,10 +7,11 @@ from functional_data import smoothing
 from functional_data import discrete_functional_data as disc_fd
 
 
-def projection_coefs(X, func_basis):
+def projection_coefs(X, func_basis, domain):
     n_samples = len(X[0])
     eval_mats = [func_basis.compute_matrix(X[0][i]) for i in range(n_samples)]
-    scalar_prods = np.array([eval_mats[i].T.dot((1/X[1][i].shape[0]) * X[1][i]) for i in range(n_samples)])
+    scalar_prods = np.array([eval_mats[i].T.dot(((domain[0, 1] - domain[0, 0])/X[1][i].shape[0]) * X[1][i])
+                             for i in range(n_samples)])
     return scalar_prods
 
 
@@ -83,8 +84,8 @@ class TripleBasisEstimator:
         Y_dg = disc_fd.to_discrete_general(*Y)
         Ycentered = disc_fd.center_discrete(*Y_dg, self.Ymean)
         self.generate_bases(X_dg, Ycentered)
-        coefsX = projection_coefs(X_dg, self.basis_in)
-        coefsY = projection_coefs(Ycentered, self.basis_out)
+        coefsX = projection_coefs(X_dg, self.basis_in, self.basis_in.domain)
+        coefsY = projection_coefs(Ycentered, self.basis_out, self.basis_out.domain)
         n_probs = coefsY.shape[1]
         # regressors = []
         # for prob in range(n_probs):
@@ -106,7 +107,7 @@ class TripleBasisEstimator:
 
     def predict(self, Xnew):
         Xnew_dg = disc_fd.to_discrete_general(*Xnew)
-        coefsXnew = projection_coefs(Xnew_dg, self.basis_in)
+        coefsXnew = projection_coefs(Xnew_dg, self.basis_in, self.basis_in.domain)
         Znew = self.basis_rffs.compute_matrix(coefsXnew)
         # preds = np.array([reg(coefsXnew) for reg in self.regressors]).T
         preds = np.array([Znew.dot(alpha) for alpha in self.dual_coefs]).T
@@ -176,7 +177,7 @@ class BiBasisEstimator:
         else:
             Ycentered = disc_fd.to_discrete_general(*Y)
         self.generate_base(Ycentered)
-        coefsY = projection_coefs(Ycentered, self.basis_out)
+        coefsY = projection_coefs(Ycentered, self.basis_out, self.basis_out.domain)
         if K is None:
             K = self.kernel(X, X)
         n_probs = coefsY.shape[1]
