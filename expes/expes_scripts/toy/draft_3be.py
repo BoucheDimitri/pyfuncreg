@@ -18,7 +18,7 @@ from model_eval import parallel_tuning
 
 # ############################### Config ###############################################################################
 # Record config
-OUTPUT_FOLDER = "toy_3be_kertuning"
+OUTPUT_FOLDER = "toy_3be_kertuning2"
 REC_PATH = path + "/outputs/" + OUTPUT_FOLDER
 # Shuffle seed
 SHUFFLE_SEED = 784
@@ -43,8 +43,7 @@ DOMAIN_IN = toy_data_spline.DOM_INPUT
 LOCS_IN = np.linspace(DOMAIN_IN[0, 0], DOMAIN_IN[0, 1], toy_data_spline.N_LOCS_INPUT)
 
 FREQS_IN = [1, 2, 3, 4, 5, 6, 8, 10, 15, 20]
-FREQS_OUT = [1, 2, 3, 4, 5, 6, 8, 10, 15, 20]
-KIN_SIGMA = [0.01, 0.05, 0.1, 0.5, 1, 5, 10, 50, 100]
+KIN_SIGMA = [0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10, 25, 50, 75, 100]
 N_RFFS = 100
 
 # Seeds for averaging of expes (must all be of the same size)
@@ -79,8 +78,9 @@ if __name__ == '__main__':
     rec_path = path + "/outputs/" + OUTPUT_FOLDER
 
     # ############################# Load the data ######################################################################
-    configs, regs = generate_expes.dti_3be_fourier(KIN_SIGMA, REGU, False, FREQS_IN, FREQS_OUT,
-                    N_RFFS, RFFS_SEED, toy_data_spline.DOM_INPUT, toy_data_spline.DOM_OUTPUT)
+    # configs, regs = generate_expes.dti_3be_fourier(KIN_SIGMA, REGU, False, FREQS_IN, FREQS_OUT,
+    #                 N_RFFS, RFFS_SEED, toy_data_spline.DOM_INPUT, toy_data_spline.DOM_OUTPUT)
+    configs, regs = generate_expes.toy_3be_fpcasplines(KIN_SIGMA, REGU, False, FREQS_IN, N_RFFS, RFFS_SEED)
     scores_dicts = []
     Xtrain, Ytrain, Xtest, Ytest = toy_data_spline.get_toy_data(NSAMPLES_LIST[0], seed=784)
     Xtrain_deg = degradation.add_noise_inputs(Xtrain, NOISE_INPUT, 586)

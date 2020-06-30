@@ -6,15 +6,17 @@ path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_30-06-2020_09-47/outpu
 
 def consolidate_dicts(folder, path=path):
     results = []
-    for i in range(10):
+    for i in range(9):
         with open(path + folder + str(i) + ".pkl", "rb") as inp:
             missing_levels, result_dict = pickle.load(inp)
         results.append(result_dict[i][200])
     return np.array(results)
 
 
-folders = ["output_missing_kpl/", "output_missing_fkrr/", "output_missing_3be/"]
-corresp = ["KPL", "FKRR", "3BE"]
+# folders = ["output_missing_kpl/", "output_missing_fkrr/", "output_missing_3be/"]
+# corresp = ["KPL", "FKRR", "3BE", "KAM"]
+folders = ["output_missing_kpl/", "output_missing_fkrr/", "output_missing_kam/"]
+corresp = ["KPL", "FKRR", "KAM"]
 
 all_results = {corresp[i]: np.array(consolidate_dicts(folders[i])) for i in range(len(folders))}
 means = {key: np.mean(all_results[key], axis=0) for key in all_results.keys()}

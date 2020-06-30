@@ -200,6 +200,24 @@ def dti_kam(kin_sigma, kout_sigma, keval_sigma, regu, n_fpca, n_evals_fpca, n_ev
 
 
 # ############################### 3BE ##################################################################################
+def toy_3be_fpcasplines(ker_sigma, regu, center_output, max_freq_in, n_rffs, rffs_seed):
+    input_basis_dict = {"lower_freq": 0, "upper_freq": max_freq_in, "domain": toy_data_spline.DOM_INPUT}
+    locs_bounds = np.array([toy_data_spline.BOUNDS_FREQS[0], toy_data_spline.BOUNDS_FREQS[1]])
+    domain = toy_data_spline.DOM_OUTPUT
+    basis_out = basis.FPCAOrthoSplines(domain, toy_data_spline.BOUNDS_FREQS[-1],
+                                       locs_bounds, width=toy_data_spline.WIDTH, add_constant=False)
+    rffs_basis_dict = {"n_basis": n_rffs, "domain": domain, "bandwidth": ker_sigma, "seed": rffs_seed}
+    bases_in = configs_generation.subconfigs_combinations("fourier", input_basis_dict, exclude_list=["domain"])
+    bases_rffs = configs_generation.subconfigs_combinations("random_fourier",
+                                                            rffs_basis_dict, exclude_list=["domain"])
+    # Generate full configs
+    params = {"basis_in": bases_in, "basis_out": basis_out, 'basis_rffs': bases_rffs, "regu": regu,
+              "center_output": center_output}
+    configs = configs_generation.configs_combinations(params)
+    # Create list of regressors from that config
+    regs = [triple_basis.TripleBasisEstimator(**config) for config in configs]
+    return configs, regs
+
 
 def dti_3be_fourier(ker_sigma, regu, center_output, max_freq_in, max_freq_out,
                     n_rffs, rffs_seed, domain_in, domain_out):

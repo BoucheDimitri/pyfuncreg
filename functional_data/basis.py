@@ -522,6 +522,35 @@ class BSplineMultiscaleBasis(Basis):
         return np.concatenate(evals, axis=1)
 
 
+class FPCAOrthoSplines(Basis):
+
+    def __init__(self, domain, n_basis, locs_bounds, width=1.0, bounds_disc=False,
+                 order=3, add_constant=True, n_evals_fpca=500):
+        self.locs_bounds = locs_bounds
+        self.bounds_disc = bounds_disc
+        self.order = order
+        self.width = width
+        self.knots = BSplineUniscaleBasis.knots_generator(domain, n_basis, locs_bounds, width, bounds_disc, order)
+        splines = [falgebra.NoNanWrapper(BSpline.basis_element(self.knots[i], extrapolate=False))
+                        for i in range(len(self.knots))]
+        self.add_constant = add_constant
+        self.norms = [np.sqrt(integration.func_scalar_prod(sp, sp, domain)) for sp in splines]
+        # self.norms = [np.sqrt(integration.func_scalar_prod(sp, sp, domain)[0]) for sp in self.splines]
+        input_dim = 1
+        super().__init__(n_basis + int(self.add_constant), input_dim, domain)
+        self.fpca = fpca.FunctionalPCA(domain, n_evals_fpca)
+        self.fpca.fit_from_funcs(splines)
+
+    def compute_matrix(self, X):
+        # evals = [self.fpca.predict(X[i])[:self.n_basis] for i in range(len(X))]
+        # return np.array(evals)
+        n = X.shape[0]
+        funcs = self.fpca.get_regressors(self.n_basis)
+        mat = np.zeros((n, self.n_basis))
+        for i in range(self.n_basis):
+            mat[:, i] = funcs[i](X)
+        return mat
+
 class UniscaleCompactlySupported(Basis):
     """
     Uniscale basis of compactly supported discrete wavelets
