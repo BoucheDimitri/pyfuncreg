@@ -105,4 +105,3 @@ if __name__ == '__main__':
 
     with open(rec_path + "/full.pkl", "wb") as out:
         pickle.dump((MISSING_LEVELS, scores_dicts), out, pickle.HIGHEST_PROTOCOL)
-    print(scores_dicts)
