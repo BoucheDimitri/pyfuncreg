@@ -50,7 +50,7 @@ N_RFFS = [200]
 RFFS_SEED = [347]
 
 # Seeds for averaging of expes (must all be of the same size)
-N_AVERAGING = 10
+N_AVERAGING = 2
 SEED_DATA = 784
 SEED_INPUT = 768
 SEED_OUTPUT = 456
