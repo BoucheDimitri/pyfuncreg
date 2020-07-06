@@ -4,11 +4,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from data import toy_data_spline
 
-path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_30-06-2020_09-47/outputs/"
+path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_06-07-2020_10-26/outputs/"
 
-def consolidate_dicts(folder, path=path):
+
+def consolidate_dicts(folder, path=path, nfiles=9):
     results = []
-    for i in range(9):
+    for i in range(nfiles):
         with open(path + folder + str(i) + ".pkl", "rb") as inp:
             missing_levels, result_dict = pickle.load(inp)
         results.append(result_dict[i][200])
@@ -18,8 +19,8 @@ def consolidate_dicts(folder, path=path):
 # ########################### OUTPUT MISSING ###########################################################################
 # folders = ["output_missing_kpl/", "output_missing_fkrr/", "output_missing_3be/"]
 # corresp = ["KPL", "FKRR", "3BE", "KAM"]
-folders = ["output_missing_kpl/", "output_missing_fkrr/", "output_missing_kam/"]
-corresp = ["KPL", "FKRR", "KAM"]
+folders = ["output_missing_kpl/", "output_missing_fkrr/", "output_missing_3be2/", "output_missing_kam/"]
+corresp = ["KPL", "FKRR", "3BE", "KAM"]
 
 all_results = {corresp[i]: np.array(consolidate_dicts(folders[i])) for i in range(len(folders))}
 means = {key: np.mean(all_results[key], axis=0) for key in all_results.keys()}
@@ -35,10 +36,12 @@ for key in corresp:
 
 
 # ########################### OUTPUT NOISE #############################################################################
-folders = ["output_noise_kpl/", "output_noise_fkrr/"]
-corresp = ["KPL", "FKRR"]
+# folders = ["output_noise_kpl/", "output_noise_fkrr/", "output_noise_3be2/", "output_noise_kam/"]
+# corresp = ["KPL", "FKRR", "3BE", "KAM"]
+folders = ["output_noise_kpl/", "output_noise_fkrr/", "output_noise_kam/"]
+corresp = ["KPL", "FKRR", "KAM"]
 
-all_results = {corresp[i]: np.array(consolidate_dicts(folders[i])) for i in range(len(folders))}
+all_results = {corresp[i]: np.array(consolidate_dicts(folders[i], nfiles=5)) for i in range(len(folders))}
 means = {key: np.mean(all_results[key], axis=0) for key in all_results.keys()}
 stds = {key: np.std(all_results[key], axis=0) for key in all_results.keys()}
 noise_levels = np.linspace(0, 1.5, 50)
