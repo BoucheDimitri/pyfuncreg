@@ -46,7 +46,7 @@ LOCS_IN = np.linspace(DOMAIN_IN[0, 0], DOMAIN_IN[0, 1], toy_data_spline.N_LOCS_I
 KER_SIGMA = 20
 
 # Seeds for averaging of expes (must all be of the same size)
-N_AVERAGING = 2
+N_AVERAGING = 10
 SEED_DATA = 784
 SEED_INPUT = 768
 SEED_OUTPUT = 456
