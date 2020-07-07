@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from data import toy_data_spline
 
-path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_06-07-2020_17-20/outputs/"
+path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_07-07-2020_10-49/outputs/"
 
 
 def consolidate_dicts(folder, path=path, nfiles=9):
@@ -19,10 +19,10 @@ def consolidate_dicts(folder, path=path, nfiles=9):
 # ########################### OUTPUT MISSING ###########################################################################
 # folders = ["output_missing_kpl/", "output_missing_fkrr/", "output_missing_3be/"]
 # corresp = ["KPL", "FKRR", "3BE", "KAM"]
-folders = ["output_missing_kpl/", "output_missing_fkrr/", "output_missing_3befour/", "output_missing_kam/"]
+folders = ["output_missing_kpl/", "output_missing_fkrr/", "output_missing_2be/", "output_missing_kam/"]
 corresp = ["KPL", "FKRR", "3BE", "KAM"]
 
-nfiles = 2
+nfiles = 10
 
 all_results = {corresp[i]: np.array(consolidate_dicts(folders[i], nfiles=nfiles)) for i in range(len(folders))}
 means = {key: np.mean(all_results[key], axis=0) for key in all_results.keys()}

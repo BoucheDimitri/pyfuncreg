@@ -212,6 +212,17 @@ def toy_2be(ker_sigma, regu, domain=np.array([[0, 1]])):
     regs = [triple_basis.BiBasisEstimator(**config) for config in configs]
     return configs, regs
 
+def toy_2be_four(ker_sigma, regu, max_freq_out, domain=np.array([[0, 1]])):
+    output_basis_dict = {"lower_freq": 0, "upper_freq": max_freq_out, "domain": domain}
+    bases_out = configs_generation.subconfigs_combinations("fourier", output_basis_dict, exclude_list=["domain"])
+    gauss_ker = kernels.GaussianScalarKernel(ker_sigma, normalize=False)
+    # Generate full configs
+    params = {"kernel": gauss_ker, "basis_out": bases_out, "regu": regu, "center_output": False}
+    configs = configs_generation.configs_combinations(params)
+    # Create list of regressors from that config
+    regs = [triple_basis.BiBasisEstimator(**config) for config in configs]
+    return configs, regs
+
 def toy_3be_fpcasplines(ker_sigma, regu, center_output, max_freq_in, n_rffs, rffs_seed):
     input_basis_dict = {"lower_freq": 0, "upper_freq": max_freq_in, "domain": toy_data_spline.DOM_INPUT}
     locs_bounds = np.array([toy_data_spline.BOUNDS_FREQS[0], toy_data_spline.BOUNDS_FREQS[1]])
