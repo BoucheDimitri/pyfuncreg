@@ -1,7 +1,6 @@
 import numpy as np
 
-from functional_data import basis
-from functional_data import smoothing
+from . import basis, smoothing
 
 
 class FunctionalPCA:

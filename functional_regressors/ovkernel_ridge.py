@@ -5,8 +5,7 @@ import numpy as np
 import time
 import numba
 
-from functional_data import smoothing
-from functional_data import discrete_functional_data as disc_fd
+from ..functional_data import smoothing, discrete_functional_data as disc_fd
 
 
 class SeparableOVKRidge:

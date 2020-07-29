@@ -1,5 +1,3 @@
-from functional_data import functional_algebra
-
 from scipy import integrate
 import numpy as np
 

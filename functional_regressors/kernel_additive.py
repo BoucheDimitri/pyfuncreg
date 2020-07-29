@@ -2,9 +2,7 @@ import numpy as np
 import time
 from slycot import sb04qd
 
-from functional_data import smoothing
-from functional_data import fpca
-from functional_data import discrete_functional_data as disc_fd
+from ..functional_data import smoothing, fpca, discrete_functional_data as disc_fd
 
 
 class KernelAdditiveModel:

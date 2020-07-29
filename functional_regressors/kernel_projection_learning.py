@@ -2,10 +2,14 @@ import numpy as np
 import time
 from slycot import sb04qd
 
-from functional_data import basis
-from functional_regressors import regularization
-from functional_data import discrete_functional_data as disc_fd
-from functional_regressors.functional_regressor import FunctionalRegressor
+# from functional_data import basis
+# from functional_regressors import regularization
+# from functional_data import discrete_functional_data as disc_fd
+# from functional_regressors.functional_regressor import FunctionalRegressor
+
+from ..functional_data import basis, discrete_functional_data as disc_fd
+from . import regularization
+from .functional_regressor import FunctionalRegressor
 
 
 class SeparableSubridgeSVD:

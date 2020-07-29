@@ -2,9 +2,7 @@ import numpy as np
 from sklearn import kernel_ridge
 import time
 
-from functional_data import basis
-from functional_data import smoothing
-from functional_data import discrete_functional_data as disc_fd
+from ..functional_data import basis, discrete_functional_data as disc_fd
 
 
 def projection_coefs(X, func_basis, domain):

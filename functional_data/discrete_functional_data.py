@@ -1,5 +1,4 @@
-from functional_data import smoothing
-from functional_data import functional_algebra
+from . import smoothing, functional_algebra
 
 import numpy as np
 

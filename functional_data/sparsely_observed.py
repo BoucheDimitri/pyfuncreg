@@ -1,7 +1,4 @@
 import numpy as np
-from functional_data import functional_algebra
-from functional_data import smoothing
-
 
 def mean_missing(Ylocs, Yevals):
     """

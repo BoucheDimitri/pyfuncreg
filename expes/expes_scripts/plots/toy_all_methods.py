@@ -1,10 +1,15 @@
 import os
+import sys
+import pathlib
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 from data import toy_data_spline
 
-path = "/home/dimitri/Desktop/Telecom/Outputs/all_outputs_07-07-2020_14-48/outputs/"
+sys.path.append(str(pathlib.Path(os.getcwd()).parent))
+from python_utils import cluster_outputs
+
+path = cluster_outputs.path_to_latest() + "/outputs/"
 
 
 def consolidate_dicts(folder, path=path, nfiles=9):
@@ -22,7 +27,7 @@ def consolidate_dicts(folder, path=path, nfiles=9):
 folders = ["output_missing_kpl/", "output_missing_fkrr/", "output_missing_2be_four/", "output_missing_kam/"]
 corresp = ["KPL", "FKRR", "3BE", "KAM"]
 
-nfiles = 2
+nfiles = 10
 
 all_results = {corresp[i]: np.array(consolidate_dicts(folders[i], nfiles=nfiles)) for i in range(len(folders))}
 means = {key: np.mean(all_results[key], axis=0) for key in all_results.keys()}
@@ -40,10 +45,11 @@ for key in corresp:
 # ########################### OUTPUT NOISE #############################################################################
 # folders = ["output_noise_kpl/", "output_noise_fkrr/", "output_noise_3be2/", "output_noise_kam/"]
 # corresp = ["KPL", "FKRR", "3BE", "KAM"]
-folders = ["output_noise_kpl/", "output_noise_fkrr/", "output_noise_kam/"]
-corresp = ["KPL", "FKRR", "KAM"]
+folders = ["output_noise_kpl/", "output_noise_2be_four/", "output_noise_fkrr/", "output_noise_kam/"]
+corresp = ["KPL", "3BE", "FKRR", "KAM"]
+nfiles = 6
 
-all_results = {corresp[i]: np.array(consolidate_dicts(folders[i], nfiles=5)) for i in range(len(folders))}
+all_results = {corresp[i]: np.array(consolidate_dicts(folders[i], nfiles=nfiles)) for i in range(len(folders))}
 means = {key: np.mean(all_results[key], axis=0) for key in all_results.keys()}
 stds = {key: np.std(all_results[key], axis=0) for key in all_results.keys()}
 noise_levels = np.linspace(0, 1.5, 50)

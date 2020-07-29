@@ -2,12 +2,10 @@ from abc import ABC, abstractmethod
 import numpy as np
 import functools
 from scipy.interpolate import BSpline
-from integration import integration
 import pywt
 
-from functional_data import smoothing
-from functional_data import fpca
-from functional_data import functional_algebra as falgebra
+from . import smoothing, fpca, functional_algebra as falgebra
+from ..integration import integration
 
 
 def constant_function(domain):

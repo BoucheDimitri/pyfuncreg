@@ -1,9 +1,6 @@
 import numpy as np
 
-from functional_data import smoothing
-from functional_data import functional_algebra
-from functional_data import discrete_functional_data as disc_fd
-
+from ..functional_data import smoothing, fpca, discrete_functional_data as disc_fd
 
 def gaussian_window(x):
     return (1 / (np.sqrt(2 * np.pi))) * np.exp(- x ** 2 / 2)
